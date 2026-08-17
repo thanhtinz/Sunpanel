@@ -1,0 +1,26 @@
+# Sản phẩm build
+/bin/
+/dist/
+coverage.out
+
+# Giao diện đã build được nhúng vào binary, không cần theo dõi trong git
+/web/dist/*
+!/web/dist/.gitkeep
+
+# Phụ thuộc của giao diện
+/frontend/node_modules/
+/frontend/.vite/
+
+# Dữ liệu chạy thử cục bộ
+/data/
+*.db
+*.db-shm
+*.db-wal
+master.key
+config.yaml
+
+# Công cụ soạn thảo
+.idea/
+.vscode/
+*.swp
+.DS_Store

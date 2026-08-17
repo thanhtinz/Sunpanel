@@ -1,0 +1,129 @@
+// Package router khai báo toàn bộ tuyến HTTP của panel.
+package router
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+
+	v1 "github.com/thanhtinz/sunpanel/internal/api/v1"
+	"github.com/thanhtinz/sunpanel/internal/config"
+	"github.com/thanhtinz/sunpanel/internal/middleware"
+	"github.com/thanhtinz/sunpanel/internal/response"
+	"github.com/thanhtinz/sunpanel/internal/service"
+	"github.com/thanhtinz/sunpanel/web"
+)
+
+// loginRateLimit là giới hạn tần suất cho các endpoint xác thực: 20 lần mỗi phút
+// với khả năng dồn cục 10 lần, đủ thoáng cho người dùng thật và đủ chặt để việc
+// dò mật khẩu tự động trở nên vô vọng.
+const (
+	loginRatePerMinute = 20
+	loginBurst         = 10
+)
+
+// Services gom các service mà router cần.
+type Services struct {
+	Auth    *service.AuthService
+	Users   *service.UserService
+	Audit   *service.AuditService
+	Monitor *service.MonitorService
+	Tokens  *service.TokenIssuer
+}
+
+// New dựng handler HTTP hoàn chỉnh của panel.
+func New(cfg config.Config, svc Services) (http.Handler, error) {
+	if cfg.Log.Level != "debug" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	engine := gin.New()
+	engine.RedirectTrailingSlash = false
+
+	if err := engine.SetTrustedProxies(cfg.Security.TrustedProxies); err != nil {
+		return nil, err
+	}
+
+	engine.Use(
+		middleware.Recovery(),
+		middleware.WithRequestID(),
+		middleware.WithLanguage(),
+		middleware.Logger(),
+		middleware.SecurityHeaders(),
+	)
+
+	// Danh sách IP và đường dẫn bí mật đứng trước mọi thứ khác: yêu cầu không hợp
+	// lệ bị loại bỏ trước khi chạm tới bất kỳ logic nào.
+	if allowlist := middleware.IPAllowlist(cfg.Security.AllowedIPs); allowlist != nil {
+		engine.Use(allowlist)
+	}
+	registerAPI(engine, svc)
+
+	// Giao diện được nhúng sẵn trong binary; mọi đường dẫn không phải API đều trả
+	// về trang đơn để bộ định tuyến phía trình duyệt tự xử lý.
+	if err := web.Register(engine, cfg.Server.EntryPath); err != nil {
+		return nil, err
+	}
+
+	// Đường dẫn bí mật được gỡ ở ngoài engine vì bộ định tuyến khớp đường dẫn
+	// trước khi middleware bên trong kịp chạy.
+	return middleware.StripEntryPath(cfg.Server.EntryPath, engine), nil
+}
+
+func registerAPI(engine *gin.Engine, svc Services) {
+	authHandler := v1.NewAuthHandler(svc.Auth, svc.Users)
+	userHandler := v1.NewUserHandler(svc.Users, svc.Audit)
+	monitorHandler := v1.NewMonitorHandler(svc.Monitor)
+
+	api := engine.Group("/api/v1")
+
+	// Kiểm tra sống dùng cho giám sát ngoài; không cần xác thực và không lộ gì.
+	api.GET("/health", func(c *gin.Context) {
+		response.OK(c, gin.H{"status": "ok"})
+	})
+
+	limiter := middleware.NewRateLimiter(loginRatePerMinute, loginBurst).Middleware()
+	public := api.Group("/auth", limiter)
+	{
+		public.POST("/login", authHandler.Login)
+		public.POST("/refresh", authHandler.Refresh)
+		public.POST("/logout", authHandler.Logout)
+	}
+
+	authenticated := api.Group("", middleware.Auth(svc.Tokens, svc.Auth))
+	{
+		me := authenticated.Group("/auth")
+		{
+			me.GET("/me", authHandler.Me)
+			me.POST("/password", authHandler.ChangePassword)
+			me.GET("/sessions", authHandler.ListSessions)
+			me.DELETE("/sessions/:id", authHandler.RevokeSession)
+			me.POST("/totp/setup", authHandler.BeginTOTP)
+			me.POST("/totp/confirm", authHandler.ConfirmTOTP)
+			me.POST("/totp/disable", authHandler.DisableTOTP)
+		}
+
+		monitor := authenticated.Group("/monitor")
+		{
+			monitor.GET("/overview", monitorHandler.Overview)
+			monitor.GET("/current", monitorHandler.Current)
+			monitor.GET("/history", monitorHandler.History)
+			monitor.GET("/stream", monitorHandler.Stream)
+		}
+
+		authenticated.PATCH("/users/me/preferences", userHandler.UpdatePreferences)
+
+		// Quản lý người dùng và nhật ký kiểm toán chỉ dành cho quản trị viên.
+		admin := authenticated.Group("", middleware.RequireAdmin())
+		{
+			admin.GET("/users", userHandler.List)
+			admin.POST("/users", userHandler.Create)
+			admin.GET("/users/:id", userHandler.Get)
+			admin.PATCH("/users/:id", userHandler.Update)
+			admin.DELETE("/users/:id", userHandler.Delete)
+			admin.POST("/users/:id/password", userHandler.ResetPassword)
+			admin.GET("/audit", userHandler.ListAudit)
+			admin.GET("/audit/logins", userHandler.ListLoginLogs)
+		}
+	}
+}

@@ -1,0 +1,48 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - bodyclose
+    - errorlint
+    - gosec
+    - misspell
+    - revive
+    - unconvert
+    - whitespace
+
+  settings:
+    gosec:
+      excludes:
+        # Panel là công cụ quản trị máy chủ: chạy lệnh hệ thống và đọc tệp theo
+        # đường dẫn người dùng nhập là chức năng cốt lõi. Hai lớp bảo vệ tương ứng
+        # (host.SafeJoin và allowlist của host.Exec) đã có test riêng.
+        - G204
+        - G304
+    revive:
+      rules:
+        - name: exported
+          disabled: false
+
+  exclusions:
+    rules:
+      # Test được phép bỏ qua giá trị lỗi ở các bước dựng dữ liệu mẫu.
+      - path: _test\.go
+        linters:
+          - errcheck
+          - gosec
+
+formatters:
+  enable:
+    - gofmt
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

@@ -1,0 +1,46 @@
+:root {
+  color-scheme: light;
+  --sp-bg: #f5f6f8;
+  --sp-bg-elevated: #ffffff;
+  --sp-border: #e5e7eb;
+  --sp-text-muted: #6b7280;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --sp-bg: #101014;
+  --sp-bg-elevated: #18181c;
+  --sp-border: #2d2d31;
+  --sp-text-muted: #9ca3af;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    'Noto Sans', sans-serif;
+  background: var(--sp-bg);
+  /* Panel hiển thị nhiều số liệu tiếng Việt có dấu; -webkit-font-smoothing giúp
+     chữ có dấu không bị dày và nhòe trên màn hình thường. */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Số liệu đo lường dùng chữ đẳng khoảng để cột số không nhảy khi giá trị đổi. */
+.sp-metric {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+.sp-muted {
+  color: var(--sp-text-muted);
+}

@@ -1,0 +1,210 @@
+<div align="center">
+
+# ☀ SunPanel
+
+**Bảng điều khiển quản trị máy chủ — một binary duy nhất, đa nền tảng, đa ngôn ngữ**
+
+[English](#english) · [Tiếng Việt](#tiếng-việt)
+
+</div>
+
+---
+
+## Tiếng Việt
+
+SunPanel là bảng điều khiển quản trị máy chủ mã nguồn mở, thay thế cho aaPanel / cPanel.
+Toàn bộ panel — API, giao diện web và bộ giám sát — nằm gọn trong **một tệp thực thi duy nhất**:
+không cần cài Python, Node hay bất kỳ runtime nào lên máy chủ.
+
+### Đặc điểm
+
+| | |
+|---|---|
+| **Một binary** | Tải một tệp là chạy được. Giao diện được nhúng sẵn bên trong. |
+| **Đa nền tảng** | Linux (amd64/arm64/arm), macOS, Windows — biên dịch chéo từ một máy. |
+| **Đa ngôn ngữ** | Tiếng Việt và English đầy đủ, kể cả thông báo lỗi từ máy chủ. |
+| **Nhẹ** | Dưới 60 MB RAM khi chạy. Chạy tốt trên VPS 512 MB. |
+| **Bảo mật từ gốc** | Argon2id, 2FA TOTP, RBAC, đường dẫn bí mật, nhật ký kiểm toán. |
+
+### Cài đặt
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/thanhtinz/Sunpanel/main/deploy/install.sh | sudo sh
+```
+
+Trình cài đặt tự nhận kiến trúc máy, tạo dịch vụ systemd, mở cổng tường lửa và in ra
+thông tin đăng nhập. **Mật khẩu chỉ hiển thị một lần** — hãy lưu lại ngay.
+
+Quên mật khẩu:
+
+```sh
+sunpanel reset-password -user admin
+```
+
+### Tính năng hiện có
+
+- **Xác thực**: đăng nhập, xác thực hai lớp TOTP, quản lý phiên (xem và thu hồi từng phiên),
+  tự động khóa tài khoản sau nhiều lần sai mật khẩu, xoay vòng refresh token.
+- **Giám sát**: CPU (tổng và từng nhân), RAM, swap, ổ đĩa, tải trung bình, tốc độ mạng
+  và đĩa — cập nhật trực tiếp qua WebSocket, kèm biểu đồ lịch sử tới 7 ngày.
+- **Người dùng**: ba vai trò (quản trị viên / vận hành / chỉ xem), tạo, sửa, vô hiệu hóa,
+  đặt lại mật khẩu.
+- **Nhật ký**: nhật ký thao tác và nhật ký đăng nhập, có phân trang.
+- **Giao diện**: chế độ sáng/tối, chuyển ngôn ngữ tức thời, hoạt động tốt trên di động.
+
+Xem [lộ trình phát triển](docs/ROADMAP.md) cho các tính năng đang tới: quản lý Docker,
+chợ ứng dụng một chạm, website và SSL tự động, cơ sở dữ liệu và sao lưu.
+
+### Bảo mật
+
+Panel chạy với quyền root, nên bảo mật được đặt lên hàng đầu ngay từ thiết kế:
+
+- Mật khẩu băm bằng **Argon2id**; bí mật trong cơ sở dữ liệu (khóa TOTP) mã hóa **AES-256-GCM**
+  bằng khóa chủ lưu ở tệp riêng quyền `0600`.
+- **Đường dẫn bí mật**: panel chỉ trả lời trên một đường dẫn ngẫu nhiên, mọi URL khác trả về 404 —
+  công cụ quét tự động không tìm thấy gì.
+- **Chống path traversal**: mọi thao tác tệp đi qua `host.SafeJoin`, chặn cả `../`, đường dẫn
+  tuyệt đối lẫn symlink trỏ ra ngoài. Có bộ test riêng cho từng dạng tấn công.
+- **Không có shell injection**: lệnh hệ thống chỉ nhận `(chương trình, []tham số)`, không bao
+  giờ nhận chuỗi shell.
+- **Thu hồi tức thì**: thu hồi một phiên vô hiệu hóa luôn access token của phiên đó, không
+  phải chờ hết hạn.
+- Giới hạn tần suất đăng nhập, danh sách IP cho phép, header bảo mật và CSP chặt.
+
+Phát hiện lỗ hổng? Xin đừng mở issue công khai — gửi email tới người bảo trì.
+
+### Phát triển
+
+```sh
+git clone https://github.com/thanhtinz/Sunpanel.git && cd Sunpanel
+
+make frontend        # build giao diện vào web/dist
+make build           # build binary vào bin/sunpanel
+make run             # build rồi chạy
+
+make check           # lint + test
+make release         # build cho cả 6 nền tảng vào dist/
+```
+
+Khi phát triển giao diện, chạy song song hai tiến trình — Vite sẽ chuyển tiếp `/api` sang backend:
+
+```sh
+make run             # cửa sổ 1: backend ở cổng 9527
+make frontend-dev    # cửa sổ 2: giao diện ở cổng 5173
+```
+
+Chi tiết kiến trúc: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+### Cấu hình
+
+Cấu hình nằm ở `/opt/sunpanel/config.yaml`, mọi giá trị đều có thể ghi đè bằng biến môi
+trường với tiền tố `SUNPANEL_`:
+
+```sh
+SUNPANEL_PORT=8080 SUNPANEL_DATA_DIR=/srv/sunpanel sunpanel serve
+```
+
+| Biến | Mặc định | Ý nghĩa |
+|---|---|---|
+| `SUNPANEL_HOST` | `0.0.0.0` | Địa chỉ lắng nghe |
+| `SUNPANEL_PORT` | `9527` | Cổng lắng nghe |
+| `SUNPANEL_DATA_DIR` | `/opt/sunpanel` | Thư mục dữ liệu |
+| `SUNPANEL_ENTRY_PATH` | *(sinh ngẫu nhiên)* | Đường dẫn bí mật |
+| `SUNPANEL_FILE_ROOT` | `/` | Phạm vi trình quản lý tệp |
+| `SUNPANEL_LOG_LEVEL` | `info` | `debug` / `info` / `warn` / `error` |
+| `SUNPANEL_TLS_ENABLED` | `false` | Bật HTTPS |
+
+### Giấy phép
+
+[AGPL-3.0](LICENSE) — bạn được tự do dùng, sửa và phân phối, với điều kiện mọi bản sửa đổi
+chạy dưới dạng dịch vụ mạng cũng phải công khai mã nguồn.
+
+---
+
+## English
+
+SunPanel is an open-source server management panel — an alternative to aaPanel / cPanel.
+The entire panel — API, web UI, and monitoring — ships as **one single binary**: no Python,
+no Node, no runtime to install on your server.
+
+### Highlights
+
+| | |
+|---|---|
+| **One binary** | Download one file and run it. The UI is embedded inside. |
+| **Cross-platform** | Linux (amd64/arm64/arm), macOS, Windows — cross-compiled from one machine. |
+| **Multilingual** | Full Vietnamese and English, including server error messages. |
+| **Light** | Under 60 MB RAM at runtime. Comfortable on a 512 MB VPS. |
+| **Secure by design** | Argon2id, TOTP 2FA, RBAC, secret entry path, audit logging. |
+
+### Install
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/thanhtinz/Sunpanel/main/deploy/install.sh | sudo sh
+```
+
+The installer detects your architecture, sets up a systemd service, opens the firewall port,
+and prints your credentials. **The password is shown only once** — save it immediately.
+
+Forgot the password:
+
+```sh
+sunpanel reset-password -user admin
+```
+
+### What works today
+
+- **Authentication**: sign-in, TOTP two-factor, session management (list and revoke individual
+  sessions), account lockout after repeated failures, refresh-token rotation.
+- **Monitoring**: CPU (total and per core), memory, swap, disks, load average, network and disk
+  throughput — streamed live over WebSocket, with history charts up to 7 days.
+- **Users**: three roles (admin / operator / read-only), create, edit, disable, reset password.
+- **Logs**: activity log and sign-in log, paginated.
+- **UI**: light/dark theme, instant language switching, works on mobile.
+
+See the [roadmap](docs/ROADMAP.md) for what's next: Docker management, one-click app store,
+websites with automatic SSL, databases and backups.
+
+### Security
+
+The panel runs as root, so security is a design constraint rather than a feature:
+
+- Passwords hashed with **Argon2id**; secrets in the database (TOTP keys) encrypted with
+  **AES-256-GCM** using a master key stored in a separate `0600` file.
+- **Secret entry path**: the panel only answers on a random path; every other URL returns 404,
+  so automated scanners find nothing.
+- **Path traversal protection**: every file operation goes through `host.SafeJoin`, which blocks
+  `../`, absolute paths, and symlinks escaping the root. Each attack shape has its own test.
+- **No shell injection**: system commands take `(program, []args)` only, never a shell string.
+- **Instant revocation**: revoking a session immediately invalidates its access token rather
+  than waiting for expiry.
+- Login rate limiting, IP allowlisting, security headers, and a strict CSP.
+
+Found a vulnerability? Please don't open a public issue — email the maintainer instead.
+
+### Development
+
+```sh
+git clone https://github.com/thanhtinz/Sunpanel.git && cd Sunpanel
+
+make frontend        # build the UI into web/dist
+make build           # build the binary into bin/sunpanel
+make run             # build and run
+
+make check           # lint + test
+make release         # build all 6 platforms into dist/
+```
+
+For UI work, run both processes — Vite proxies `/api` to the backend:
+
+```sh
+make run             # terminal 1: backend on port 9527
+make frontend-dev    # terminal 2: UI on port 5173
+```
+
+Architecture details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+### License
+
+[AGPL-3.0](LICENSE) — free to use, modify, and distribute, provided that modified versions
+running as a network service also publish their source.

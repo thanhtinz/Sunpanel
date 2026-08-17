@@ -1,0 +1,173 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  GO_VERSION: '1.24'
+  NODE_VERSION: '22'
+
+jobs:
+  frontend:
+    name: Giao diện
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Cài phụ thuộc
+        working-directory: frontend
+        run: npm ci
+
+      - name: Kiểm tra kiểu
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Kiểm tra hai tệp ngôn ngữ khớp khóa
+        working-directory: frontend
+        run: node scripts/check-locales.mjs
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+      # Backend nhúng thư mục này vào binary, nên các job sau cần dùng lại.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: web/dist
+          retention-days: 1
+
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    needs: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: web/dist
+
+      - name: Kiểm tra định dạng
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "Các tệp sau chưa được gofmt:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+
+      - name: Test
+        run: go test -race -coverprofile=coverage.out ./...
+
+      - name: Độ phủ
+        run: go tool cover -func=coverage.out | tail -1
+
+  build:
+    name: Build ${{ matrix.goos }}/${{ matrix.goarch }}
+    runs-on: ubuntu-latest
+    needs: [frontend, backend]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { goos: linux, goarch: amd64 }
+          - { goos: linux, goarch: arm64 }
+          - { goos: linux, goarch: arm }
+          - { goos: darwin, goarch: amd64 }
+          - { goos: darwin, goarch: arm64 }
+          - { goos: windows, goarch: amd64 }
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: web/dist
+
+      # CGO_ENABLED=0 là bắt buộc: driver SQLite thuần Go cho phép biên dịch chéo
+      # mọi nền tảng từ một runner Linux duy nhất.
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: '0'
+        run: |
+          output="sunpanel-${GOOS}-${GOARCH}"
+          [ "$GOOS" = "windows" ] && output="${output}.exe"
+          go build -trimpath \
+            -ldflags "-s -w -X main.version=${GITHUB_SHA::7} -X main.commit=${GITHUB_SHA::7}" \
+            -o "dist/$output" ./cmd/sunpanel
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sunpanel-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/
+          retention-days: 7
+
+  smoke:
+    name: Chạy thử
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: sunpanel-linux-amd64
+
+      # Kiểm tra binary thật sự khởi động được và phục vụ API, chứ không chỉ
+      # biên dịch xong là coi như đạt.
+      - name: Khởi động panel và gọi thử API
+        run: |
+          chmod +x sunpanel-linux-amd64
+          SUNPANEL_DATA_DIR="$PWD/data" SUNPANEL_PORT=19527 \
+            ./sunpanel-linux-amd64 serve > server.log 2>&1 &
+
+          for i in $(seq 1 30); do
+            grep -q 'SunPanel đã khởi động' server.log && break
+            sleep 1
+          done
+
+          entry=$(grep -oP 'bí mật: /\K[^/]+' server.log)
+          [ -n "$entry" ] || { echo "Không đọc được đường dẫn bí mật"; cat server.log; exit 1; }
+
+          # Đường dẫn không có tiền tố bí mật phải trả về 404.
+          code=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:19527/api/v1/health")
+          [ "$code" = "404" ] || { echo "Đường dẫn không có tiền tố trả về $code, mong đợi 404"; exit 1; }
+
+          # Đường dẫn đúng phải trả về JSON thành công.
+          curl -fsS "http://127.0.0.1:19527/$entry/api/v1/health" | grep -q '"success":true'
+
+          # Giao diện phải được phục vụ từ trong binary.
+          curl -fsS "http://127.0.0.1:19527/$entry/" | grep -q '<base href='
+
+          echo "Chạy thử đạt"
