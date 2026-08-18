@@ -24,12 +24,13 @@ const (
 
 // Services gom các service mà router cần.
 type Services struct {
-	Auth    *service.AuthService
-	Users   *service.UserService
-	Audit   *service.AuditService
-	Monitor *service.MonitorService
-	Files   *service.FileService
-	Tokens  *service.TokenIssuer
+	Auth     *service.AuthService
+	Users    *service.UserService
+	Audit    *service.AuditService
+	Monitor  *service.MonitorService
+	Files    *service.FileService
+	Terminal *service.TerminalService
+	Tokens   *service.TokenIssuer
 }
 
 // New dựng handler HTTP hoàn chỉnh của panel.
@@ -76,6 +77,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	userHandler := v1.NewUserHandler(svc.Users, svc.Audit)
 	monitorHandler := v1.NewMonitorHandler(svc.Monitor)
 	fileHandler := v1.NewFileHandler(svc.Files, svc.Audit, svc.Tokens)
+	terminalHandler := v1.NewTerminalHandler(svc.Terminal)
 
 	api := engine.Group("/api/v1")
 
@@ -118,6 +120,14 @@ func registerAPI(engine *gin.Engine, svc Services) {
 		}
 
 		authenticated.PATCH("/users/me/preferences", userHandler.UpdatePreferences)
+
+		// Terminal là shell đầy đủ trên máy chủ, nên chỉ dành cho quyền vận hành
+		// trở lên — tài khoản chỉ xem không được chạm vào.
+		terminal := authenticated.Group("/terminal", middleware.RequireWrite())
+		{
+			terminal.GET("/status", terminalHandler.Status)
+			terminal.GET("/ws", terminalHandler.Connect)
+		}
 
 		// Đọc tệp thì ai đăng nhập cũng được; mọi thao tác ghi đòi quyền vận hành.
 		files := authenticated.Group("/files")

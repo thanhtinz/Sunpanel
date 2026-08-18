@@ -20,6 +20,7 @@ import { useThemeStore } from '@/stores/theme'
 import { SUPPORTED_LOCALES, setLocale, type Locale } from '@/locales'
 import IconGauge from '@/components/icons/IconGauge.vue'
 import IconFolder from '@/components/icons/IconFolder.vue'
+import IconTerminal from '@/components/icons/IconTerminal.vue'
 import IconUsers from '@/components/icons/IconUsers.vue'
 import IconLogs from '@/components/icons/IconLogs.vue'
 import IconMoon from '@/components/icons/IconMoon.vue'
@@ -55,6 +56,14 @@ const menuOptions = computed<MenuOption[]>(() => {
       icon: renderIcon(IconFolder),
     },
   ]
+
+  if (auth.canWrite) {
+    options.push({
+      label: renderLink('terminal', t('nav.terminal')),
+      key: 'terminal',
+      icon: renderIcon(IconTerminal),
+    })
+  }
 
   // Người dùng không phải quản trị viên không nên thấy các mục họ không vào được.
   if (auth.isAdmin) {

@@ -44,7 +44,8 @@
     "settings": "Cài đặt",
     "profile": "Tài khoản",
     "logout": "Đăng xuất",
-    "files": "Tệp"
+    "files": "Tệp",
+    "terminal": "Terminal"
   },
   "dashboard": {
     "title": "Tổng quan hệ thống",
@@ -243,5 +244,19 @@
     "unsupported_format": "Định dạng nén không được hỗ trợ.",
     "corrupt_archive": "Tệp nén bị hỏng hoặc sai định dạng.",
     "unsafe_archive": "Tệp nén chứa mục nguy hiểm ({entry}) cố ghi ra ngoài thư mục đích."
+  },
+  "terminal": {
+    "title": "Terminal",
+    "newTab": "Tab mới",
+    "closeTab": "Đóng tab",
+    "connected": "Đã kết nối",
+    "connecting": "Đang kết nối…",
+    "disconnected": "Đã ngắt kết nối",
+    "reconnect": "Kết nối lại",
+    "sessionEnded": "Phiên đã kết thúc",
+    "hint": "Mọi lệnh chạy ở đây đều được ghi vào nhật ký kiểm toán.",
+    "not_supported": "Nền tảng này chưa hỗ trợ terminal.",
+    "clear": "Xóa màn hình",
+    "startPath": "Thư mục bắt đầu"
   }
 }

@@ -144,3 +144,9 @@ var (
 	// FileUnsafeArchive là tệp nén chứa mục cố ghi ra ngoài thư mục đích.
 	FileUnsafeArchive = New(http.StatusBadRequest, "file.unsafe_archive")
 )
+
+// Các lỗi của terminal.
+var (
+	// TerminalNotSupported là nền tảng hiện tại chưa mở được phiên terminal.
+	TerminalNotSupported = New(http.StatusNotImplemented, "terminal.not_supported")
+)

@@ -44,7 +44,8 @@
     "settings": "Settings",
     "profile": "Account",
     "logout": "Sign out",
-    "files": "Files"
+    "files": "Files",
+    "terminal": "Terminal"
   },
   "dashboard": {
     "title": "System overview",
@@ -243,5 +244,19 @@
     "unsupported_format": "Unsupported archive format.",
     "corrupt_archive": "The archive is corrupt or in an unknown format.",
     "unsafe_archive": "The archive contains an unsafe entry ({entry}) trying to write outside the target folder."
+  },
+  "terminal": {
+    "title": "Terminal",
+    "newTab": "New tab",
+    "closeTab": "Close tab",
+    "connected": "Connected",
+    "connecting": "Connecting…",
+    "disconnected": "Disconnected",
+    "reconnect": "Reconnect",
+    "sessionEnded": "Session ended",
+    "hint": "Every command run here is written to the audit log.",
+    "not_supported": "This platform does not support the terminal yet.",
+    "clear": "Clear screen",
+    "startPath": "Starting folder"
   }
 }

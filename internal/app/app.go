@@ -64,14 +64,16 @@ func New(cfg config.Config) (*App, error) {
 	users := service.NewUserService(db, auth, audit)
 	monitor := service.NewMonitorService(db, localHost, cfg.Monitor)
 	files := service.NewFileService(localHost, audit)
+	terminal := service.NewTerminalService(localHost, cfg.Server.FileRoot, audit)
 
 	svc := router.Services{
-		Auth:    auth,
-		Users:   users,
-		Audit:   audit,
-		Monitor: monitor,
-		Files:   files,
-		Tokens:  tokens,
+		Auth:     auth,
+		Users:    users,
+		Audit:    audit,
+		Monitor:  monitor,
+		Files:    files,
+		Terminal: terminal,
+		Tokens:   tokens,
 	}
 
 	handler, err := router.New(cfg, svc)

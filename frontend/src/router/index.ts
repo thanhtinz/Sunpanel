@@ -28,6 +28,12 @@ const router = createRouter({
           component: () => import('@/views/FilesView.vue'),
         },
         {
+          path: 'terminal',
+          name: 'terminal',
+          component: () => import('@/views/TerminalView.vue'),
+          meta: { writeOnly: true },
+        },
+        {
           path: 'profile',
           name: 'profile',
           component: () => import('@/views/ProfileView.vue'),
@@ -68,6 +74,11 @@ router.beforeEach(async (to) => {
   }
 
   if (to.meta.adminOnly && !auth.isAdmin) {
+    return { name: 'dashboard' }
+  }
+
+  // Terminal là shell đầy đủ trên máy chủ; tài khoản chỉ xem không vào được.
+  if (to.meta.writeOnly && !auth.canWrite) {
     return { name: 'dashboard' }
   }
 

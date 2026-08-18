@@ -192,3 +192,9 @@ func (b *limitedBuffer) String() string {
 	}
 	return b.buf.String()
 }
+
+// asExitError bọc errors.As cho *exec.ExitError, dùng chung giữa các tệp có
+// build tag khác nhau.
+func asExitError(err error, target **exec.ExitError) bool {
+	return errors.As(err, target)
+}
