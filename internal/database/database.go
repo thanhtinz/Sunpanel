@@ -87,6 +87,7 @@ func migrate(db *gorm.DB) error {
 		&model.AlertRule{},
 		&model.AlertEvent{},
 		&model.APIKey{},
+		&model.Node{},
 	}
 	if err := db.AutoMigrate(models...); err != nil {
 		return fmt.Errorf("chạy migration: %w", err)

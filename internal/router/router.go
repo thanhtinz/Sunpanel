@@ -41,6 +41,7 @@ type Services struct {
 	Docker    *service.DockerService
 	Tokens    *service.TokenIssuer
 	APIKeys   *service.APIKeyService
+	Nodes     *service.NodeService
 	Alerts    *service.AlertService
 }
 
@@ -97,6 +98,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	backupHandler := v1.NewBackupHandler(svc.Backups, svc.Audit)
 	alertHandler := v1.NewAlertHandler(svc.Alerts, svc.Audit)
 	apiKeyHandler := v1.NewAPIKeyHandler(svc.APIKeys, svc.Audit)
+	nodeHandler := v1.NewNodeHandler(svc.Nodes, svc.Audit)
 	firewallHandler := v1.NewFirewallHandler(svc.Firewall)
 	dockerHandler := v1.NewDockerHandler(svc.Docker)
 
@@ -320,6 +322,21 @@ func registerAPI(engine *gin.Engine, svc Services) {
 			apiKeys.POST("", apiKeyHandler.Create)
 			apiKeys.POST("/:id/enabled", apiKeyHandler.SetEnabled)
 			apiKeys.DELETE("/:id", apiKeyHandler.Delete)
+		}
+
+		// Node: token của agent mở toàn quyền trên máy chủ đó, nên chỉ quản trị viên
+		// được thêm và sửa.
+		nodes := authenticated.Group("/nodes")
+		{
+			nodes.GET("", nodeHandler.List)
+			nodes.GET("/:id", nodeHandler.Get)
+
+			nodeWrite := nodes.Group("", middleware.RequireAdmin())
+			{
+				nodeWrite.POST("", nodeHandler.Create)
+				nodeWrite.PUT("/:id", nodeHandler.Update)
+				nodeWrite.DELETE("/:id", nodeHandler.Delete)
+			}
 		}
 
 		// Xem trạng thái dịch vụ thì ai đăng nhập cũng được; điều khiển thì không.

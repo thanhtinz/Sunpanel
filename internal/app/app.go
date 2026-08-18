@@ -115,6 +115,7 @@ func New(cfg config.Config) (*App, error) {
 
 	alerts := service.NewAlertService(db, sealer, monitor, audit)
 	apiKeys := service.NewAPIKeyService(db, audit)
+	nodes := service.NewNodeService(db, sealer, audit)
 
 	databases := service.NewDatabaseService(db, sealer, audit)
 	backups := service.NewBackupService(
@@ -169,6 +170,7 @@ func New(cfg config.Config) (*App, error) {
 		Backups:   backups,
 		Alerts:    alerts,
 		APIKeys:   apiKeys,
+		Nodes:     nodes,
 		Websites:  websites,
 		Certs:     certificates,
 		Firewall:  firewallSvc,

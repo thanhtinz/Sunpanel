@@ -43,6 +43,7 @@ const navigationCommands = computed<Command[]>(() => {
     { name: 'alerts', keywords: 'canh bao alert thong bao telegram email webhook nguong' },
     { name: 'firewall', keywords: 'tuong lua port cong' },
     { name: 'terminal', writeOnly: true, keywords: 'shell console bash' },
+    { name: 'nodes', adminOnly: true, keywords: 'node may chu da node agent tu xa remote cluster' },
     { name: 'users', adminOnly: true, keywords: 'nguoi dung user account' },
     { name: 'audit', adminOnly: true, keywords: 'nhat ky log audit' },
     { name: 'profile', keywords: 'tai khoan account 2fa mat khau' },

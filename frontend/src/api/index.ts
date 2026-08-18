@@ -46,6 +46,8 @@ import type {
   Overview,
   NotifyChannel,
   NotifyChannelPayload,
+  Node,
+  NodePayload,
   PageResult,
   QueryResult,
   Role,
@@ -221,6 +223,21 @@ export const cronApi = {
 
   validate: (schedule: string) =>
     request<{ next: string[] }>('/api/v1/cron/validate', { method: 'POST', body: { schedule } }),
+}
+
+/** Các endpoint quản lý node. */
+export const nodeApi = {
+  list: () => request<Node[]>('/api/v1/nodes'),
+
+  get: (id: number) => request<Node>(`/api/v1/nodes/${id}`),
+
+  create: (payload: NodePayload) =>
+    request<Node>('/api/v1/nodes', { method: 'POST', body: payload }),
+
+  update: (id: number, payload: NodePayload) =>
+    request<Node>(`/api/v1/nodes/${id}`, { method: 'PUT', body: payload }),
+
+  remove: (id: number) => request<void>(`/api/v1/nodes/${id}`, { method: 'DELETE' }),
 }
 
 /** Các endpoint cảnh báo. */

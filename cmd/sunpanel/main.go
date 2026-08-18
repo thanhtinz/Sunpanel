@@ -37,6 +37,8 @@ func run() error {
 	switch command {
 	case "serve":
 		return runServe(args)
+	case "agent":
+		return runAgent(args)
 	case "reset-password":
 		return runResetPassword(args)
 	case "version":
@@ -172,6 +174,7 @@ Cách dùng:
 
 Lệnh:
   serve            Khởi động panel (mặc định khi không truyền lệnh)
+  agent            Chạy agent trên máy chủ được panel quản lý từ xa
   reset-password   Đặt lại mật khẩu một tài khoản
   version          Hiển thị phiên bản
   help             Hiển thị trợ giúp này
@@ -179,6 +182,9 @@ Lệnh:
 Tham số:
   -config <đường-dẫn>   Tệp cấu hình (mặc định: <thư-mục-dữ-liệu>/config.yaml)
   -user <tên>           Tài khoản cần đặt lại mật khẩu (chỉ với reset-password)
+  -addr <địa-chỉ>       Địa chỉ agent lắng nghe (chỉ với agent, mặc định 0.0.0.0:9528)
+  -root <thư-mục>       Phạm vi thư mục agent được phép truy cập (chỉ với agent)
+  -show-token           In token của agent rồi thoát (chỉ với agent)
 
 Cấu hình cũng có thể đặt qua biến môi trường với tiền tố SUNPANEL_,
 ví dụ SUNPANEL_PORT=8080 hoặc SUNPANEL_DATA_DIR=/srv/sunpanel.

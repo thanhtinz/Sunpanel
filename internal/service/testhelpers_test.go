@@ -37,7 +37,7 @@ func newMemoryDB(t *testing.T) *gorm.DB {
 		&model.Website{}, &model.Certificate{}, &model.InstalledApp{}, &model.DatabaseServer{},
 		&model.BackupPlan{}, &model.BackupRun{},
 		&model.NotifyChannel{}, &model.AlertRule{}, &model.AlertEvent{},
-		&model.APIKey{},
+		&model.APIKey{}, &model.Node{},
 	)
 	if err != nil {
 		t.Fatalf("chạy migration: %v", err)

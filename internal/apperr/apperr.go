@@ -321,6 +321,25 @@ var (
 	APIKeyInvalidRole = New(http.StatusForbidden, "apikey.invalid_role")
 )
 
+// Các lỗi của node.
+var (
+	// NodeNotFound là không tìm thấy node.
+	NodeNotFound = New(http.StatusNotFound, "node.not_found")
+	// NodeNameExists là tên node đã được dùng.
+	NodeNameExists = New(http.StatusConflict, "node.name_exists")
+	// NodeInvalidAddress là địa chỉ agent không hợp lệ.
+	NodeInvalidAddress = New(http.StatusBadRequest, "node.invalid_address")
+	// NodeUnauthorized là token không đúng với agent.
+	//
+	// Tách khỏi NodeUnreachable vì hai lỗi này cần hai cách sửa khác nhau: một
+	// bên là kiểm tra mạng và tường lửa, bên kia là chép lại token.
+	NodeUnauthorized = New(http.StatusUnauthorized, "node.unauthorized")
+	// NodeUnreachable là không kết nối được tới agent.
+	NodeUnreachable = New(http.StatusBadGateway, "node.unreachable")
+	// NodeVersionMismatch là phiên bản agent không khớp với panel.
+	NodeVersionMismatch = New(http.StatusBadGateway, "node.version_mismatch")
+)
+
 // Các lỗi của Docker.
 var (
 	// DockerUnavailable là không kết nối được tới Docker.

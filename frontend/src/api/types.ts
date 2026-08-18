@@ -704,3 +704,44 @@ export interface ApiKeyPayload {
   role?: Role
   expiresInDays?: number
 }
+
+export interface SystemInfo {
+  hostname: string
+  os: string
+  platform: string
+  version: string
+  kernel: string
+  arch: string
+  cpuModel: string
+  cpuCores: number
+  totalMemory: number
+  bootTime: number
+  virtualization: string
+}
+
+export interface Node {
+  id: number
+  name: string
+  address: string
+  skipVerify: boolean
+  remark: string
+  hostname: string
+  os: string
+  arch: string
+  agentVersion: string
+  lastSeenAt?: string
+  lastError?: string
+  online: boolean
+  uptime?: number
+  system?: SystemInfo
+  createdAt: string
+  updatedAt: string
+}
+
+export interface NodePayload {
+  name: string
+  address: string
+  token?: string
+  skipVerify: boolean
+  remark?: string
+}
