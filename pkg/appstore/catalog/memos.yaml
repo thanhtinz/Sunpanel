@@ -1,0 +1,32 @@
+key: memos
+name:
+  vi: Memos
+  en: Memos
+description:
+  vi: "Sổ ghi chú nhanh dạng dòng thời gian, gõ là lưu, tìm lại bằng thẻ."
+  en: "A quick note timeline: type, save, and find things again by tag."
+category: productivity
+version: "1"
+website: https://usememos.com
+images:
+  - neosmemo/memos:0.22.5
+portField: HTTP_PORT
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5230"
+    required: true
+compose: |
+  services:
+    memos:
+      image: neosmemo/memos:0.22.5
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:5230"
+      volumes:
+        - data:/var/opt/memos
+
+  volumes:
+    data:

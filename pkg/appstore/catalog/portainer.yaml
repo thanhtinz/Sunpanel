@@ -1,0 +1,36 @@
+key: portainer
+name:
+  vi: Portainer
+  en: Portainer
+description:
+  vi: "Giao diện quản lý Docker: container, ngăn xếp, image và nhật ký trong một chỗ."
+  en: "A Docker management UI for containers, stacks, images and logs in one place."
+category: tool
+version: "1"
+website: https://portainer.io
+images:
+  - portainer/portainer-ce:2.21.0
+portField: HTTP_PORT
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    help:
+      vi: "Portainer được gắn ổ cắm Docker nên ai vào được nó là có toàn quyền máy chủ. Đừng mở cổng này ra Internet."
+      en: "Portainer mounts the Docker socket, so anyone who reaches it controls the whole host. Do not expose this port to the Internet."
+    type: port
+    default: "9000"
+    required: true
+compose: |
+  services:
+    portainer:
+      image: portainer/portainer-ce:2.21.0
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:9000"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - data:/data
+
+  volumes:
+    data:

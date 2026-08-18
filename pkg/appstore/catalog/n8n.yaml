@@ -25,8 +25,8 @@ fields:
   - key: ADMIN_PASSWORD
     label: {vi: Mật khẩu quản trị, en: Admin password}
     help:
-      vi: Để trống thì panel tự sinh một mật khẩu ngẫu nhiên.
-      en: Leave empty and the panel generates a random password.
+      vi: "Để trống thì panel tự sinh một mật khẩu ngẫu nhiên."
+      en: "Leave empty and the panel generates a random password."
     type: password
     generate: true
   - key: TIMEZONE

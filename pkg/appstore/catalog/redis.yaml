@@ -1,0 +1,40 @@
+key: redis
+name:
+  vi: Redis
+  en: Redis
+description:
+  vi: "Bộ nhớ đệm và hàng đợi trong RAM, thứ hầu hết ứng dụng web cần tới sớm hay muộn."
+  en: "An in-memory cache and queue that most web apps need sooner or later."
+category: database
+version: "1"
+website: https://redis.io
+images:
+  - redis:7-alpine
+portField: PORT
+fields:
+  - key: PORT
+    label: {vi: Cổng, en: Port}
+    help:
+      vi: "Chỉ mở ra Internet khi thật sự cần: Redis không có tường lửa riêng."
+      en: "Only expose this to the Internet if you truly must: Redis has no firewall of its own."
+    type: port
+    default: "6379"
+    required: true
+  - key: PASSWORD
+    label: {vi: Mật khẩu, en: Password}
+    type: password
+    generate: true
+compose: |
+  services:
+    redis:
+      image: redis:7-alpine
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: redis-server --requirepass ${PASSWORD} --appendonly yes
+      ports:
+        - "${PORT}:6379"
+      volumes:
+        - data:/data
+
+  volumes:
+    data:

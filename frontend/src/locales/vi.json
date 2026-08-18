@@ -522,8 +522,15 @@
       "automation": "Tự động hóa",
       "database": "Cơ sở dữ liệu",
       "media": "Đa phương tiện",
-      "tool": "Tiện ích"
-    }
+      "tool": "Tiện ích",
+      "storage": "Lưu trữ",
+      "security": "Bảo mật",
+      "productivity": "Ghi chép"
+    },
+    "searchPlaceholder": "Tìm theo tên hoặc công dụng",
+    "countShown": "Hiện {shown}/{total} ứng dụng",
+    "noMatch": "Không có ứng dụng nào khớp",
+    "homepage": "Trang chủ"
   },
   "appErr": {
     "not_found": "Không tìm thấy ứng dụng đã cài.",

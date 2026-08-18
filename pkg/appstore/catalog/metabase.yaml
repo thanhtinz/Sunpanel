@@ -1,0 +1,55 @@
+key: metabase
+name:
+  vi: Metabase
+  en: Metabase
+description:
+  vi: "Hỏi đáp số liệu bằng giao diện kéo thả, không cần viết SQL, dựng bảng biểu chia sẻ được."
+  en: "Ask questions of your data by pointing and clicking — no SQL needed — and share dashboards."
+category: database
+version: "1"
+website: https://metabase.com
+images:
+  - metabase/metabase:v0.50.21
+  - postgres:16-alpine
+portField: HTTP_PORT
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3003"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    metabase:
+      image: metabase/metabase:v0.50.21
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        MB_DB_TYPE: postgres
+        MB_DB_DBNAME: metabase
+        MB_DB_PORT: "5432"
+        MB_DB_USER: metabase
+        MB_DB_PASS: ${DB_PASSWORD}
+        MB_DB_HOST: db
+      ports:
+        - "${HTTP_PORT}:3000"
+
+    db:
+      image: postgres:16-alpine
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: metabase
+        POSTGRES_USER: metabase
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    db:

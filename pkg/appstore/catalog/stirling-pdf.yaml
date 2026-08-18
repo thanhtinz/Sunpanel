@@ -1,0 +1,32 @@
+key: stirling-pdf
+name:
+  vi: Stirling PDF
+  en: Stirling PDF
+description:
+  vi: "Bộ công cụ PDF chạy ngay trên máy chủ: gộp, tách, xoay, nén, ký, chuyển định dạng."
+  en: "A PDF toolbox on your own server: merge, split, rotate, compress, sign and convert."
+category: tool
+version: "1"
+website: https://stirlingpdf.com
+images:
+  - stirlingtools/stirling-pdf:0.29.0
+portField: HTTP_PORT
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8083"
+    required: true
+compose: |
+  services:
+    stirling:
+      image: stirlingtools/stirling-pdf:0.29.0
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - data:/usr/share/tessdata
+
+  volumes:
+    data:

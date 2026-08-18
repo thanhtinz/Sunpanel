@@ -1,0 +1,43 @@
+key: jellyfin
+name:
+  vi: Jellyfin
+  en: Jellyfin
+description:
+  vi: "Máy chủ phim và nhạc cá nhân, phát tới trình duyệt, TV và điện thoại."
+  en: "A personal movie and music server that streams to browsers, TVs and phones."
+category: media
+version: "1"
+website: https://jellyfin.org
+images:
+  - jellyfin/jellyfin:10.9.11
+portField: HTTP_PORT
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8096"
+    required: true
+  - key: MEDIA_DIR
+    label: {vi: Thư mục phim nhạc, en: Media folder}
+    help:
+      vi: "Thư mục sẵn có trên máy chủ, được gắn vào ứng dụng ở chế độ chỉ đọc."
+      en: "An existing folder on the host, mounted into the app read-only."
+    type: text
+    default: "/srv/media"
+    required: true
+compose: |
+  services:
+    jellyfin:
+      image: jellyfin/jellyfin:10.9.11
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8096"
+      volumes:
+        - config:/config
+        - cache:/cache
+        - ${MEDIA_DIR}:/media:ro
+
+  volumes:
+    config:
+    cache:

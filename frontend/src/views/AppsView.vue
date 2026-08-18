@@ -32,6 +32,7 @@ import {
   type ComposeStatus,
   type InstalledApp,
 } from '@/api'
+import AppIcon from '@/components/AppIcon.vue'
 import { useAuthStore } from '@/stores/auth'
 import { translateError } from '@/locales'
 
@@ -45,6 +46,7 @@ const categories = ref<string[]>([])
 const installed = ref<InstalledApp[]>([])
 const loading = ref(false)
 const category = ref<string>('')
+const search = ref('')
 
 /** Chuỗi trong danh mục ứng dụng nằm ở phía máy chủ nên mang sẵn cả hai bản dịch. */
 function localized(text?: { vi: string; en: string }): string {
@@ -92,13 +94,34 @@ async function load(): Promise<void> {
   }
 }
 
-const visibleCatalog = computed(() =>
-  category.value ? catalog.value.filter((app) => app.category === category.value) : catalog.value,
-)
+/**
+ * Lọc theo cả nhóm lẫn từ khóa.
+ *
+ * Từ khóa quét cả mô tả chứ không riêng tên: người dùng thường nhớ ứng dụng
+ * dùng để làm gì ("sao lưu", "mật khẩu") hơn là nhớ đúng cái tên của nó.
+ */
+const visibleCatalog = computed(() => {
+  const keyword = search.value.trim().toLowerCase()
 
-const categoryOptions = computed(() => [
-  { label: t('apps.allCategories'), value: '' },
-  ...categories.value.map((name) => ({ label: t(`apps.category.${name}`), value: name })),
+  return catalog.value.filter((app) => {
+    if (category.value && app.category !== category.value) return false
+    if (!keyword) return true
+
+    return [app.key, app.name.vi, app.name.en, app.description.vi, app.description.en]
+      .join(' ')
+      .toLowerCase()
+      .includes(keyword)
+  })
+})
+
+/** Các nhóm kèm số ứng dụng, để không ai bấm vào một nhóm rỗng. */
+const categoryTabs = computed(() => [
+  { key: '', label: t('apps.allCategories'), count: catalog.value.length },
+  ...categories.value.map((name) => ({
+    key: name,
+    label: t(`apps.category.${name}`),
+    count: catalog.value.filter((app) => app.category === name).length,
+  })),
 ])
 
 /** Số bản đã cài của mỗi ứng dụng, để thẻ trong danh mục nói được điều đó. */
@@ -322,50 +345,86 @@ const uninstallData = ref(false)
 </script>
 
 <template>
-  <NCard :title="t('apps.title')" size="small">
-    <template #header-extra>
-      <NSpace :size="8" align="center">
-        <NText v-if="status.version" depth="3" style="font-size: 12px">
-          Compose {{ status.version }}
-        </NText>
-        <NButton size="small" :loading="loading" @click="load">{{ t('common.refresh') }}</NButton>
-      </NSpace>
-    </template>
-
+  <!-- Thẻ không đặt tiêu đề: thanh tiêu đề của panel đã nói đây là trang nào,
+       nhắc lại lần nữa chỉ tốn một dòng ngay chỗ cần cho nội dung. -->
+  <NCard size="small">
     <NAlert v-if="!status.available" type="warning" :bordered="false" style="margin-bottom: 12px">
       {{ t('apps.composeUnavailable') }}
     </NAlert>
 
     <NTabs type="line" animated>
-      <NTabPane name="store" :tab="t('apps.store')">
-        <NSpace vertical :size="14">
-          <NSelect
-            v-model:value="category"
-            :options="categoryOptions"
-            style="max-width: 240px"
-            size="small"
-          />
+      <template #suffix>
+        <NSpace :size="8" align="center">
+          <NText v-if="status.version" depth="3" style="font-size: 12px">
+            Compose {{ status.version }}
+          </NText>
+          <NButton size="small" :loading="loading" @click="load">{{ t('common.refresh') }}</NButton>
+        </NSpace>
+      </template>
 
-          <NGrid cols="1 700:2 1100:3" :x-gap="14" :y-gap="14">
+      <NTabPane name="store" :tab="t('apps.store')">
+        <div class="store">
+          <div class="store-tools">
+            <NInput
+              v-model:value="search"
+              :placeholder="t('apps.searchPlaceholder')"
+              clearable
+              size="small"
+              class="store-search"
+            />
+            <span class="store-count sp-metric">
+              {{ t('apps.countShown', { shown: visibleCatalog.length, total: catalog.length }) }}
+            </span>
+          </div>
+
+          <div class="chips">
+            <button
+              v-for="tab in categoryTabs"
+              :key="tab.key"
+              type="button"
+              class="chip"
+              :class="{ 'chip-on': category === tab.key }"
+              @click="category = tab.key"
+            >
+              {{ tab.label }}
+              <span class="chip-count sp-metric">{{ tab.count }}</span>
+            </button>
+          </div>
+
+          <NGrid v-if="visibleCatalog.length > 0" cols="1 640:2 1060:3" :x-gap="14" :y-gap="14">
             <NGi v-for="app in visibleCatalog" :key="app.key">
-              <NCard size="small" class="store-card" :bordered="true">
+              <NCard size="small" class="store-card">
                 <div class="store-head">
-                  <div class="store-title">{{ localized(app.name) }}</div>
-                  <NTag size="tiny" :bordered="false">{{ t(`apps.category.${app.category}`) }}</NTag>
+                  <AppIcon :icon="app.icon" :name="localized(app.name)" :size="44" />
+
+                  <div class="store-ident">
+                    <div class="store-title">{{ localized(app.name) }}</div>
+                    <div class="store-meta sp-metric">
+                      {{ t(`apps.category.${app.category}`) }} · v{{ app.version }}
+                      <template v-if="installCount[app.key]">
+                        · {{ t('apps.installedCount', { count: installCount[app.key] }) }}
+                      </template>
+                    </div>
+                  </div>
                 </div>
 
                 <p class="store-desc">{{ localized(app.description) }}</p>
 
                 <div class="store-foot">
-                  <NText depth="3" style="font-size: 12px">
-                    <template v-if="installCount[app.key]">
-                      {{ t('apps.installedCount', { count: installCount[app.key] }) }}
-                    </template>
-                    <template v-else>v{{ app.version }}</template>
-                  </NText>
+                  <a
+                    v-if="app.website"
+                    class="store-site"
+                    :href="app.website"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                  >
+                    {{ t('apps.homepage') }}
+                  </a>
+                  <span v-else></span>
+
                   <NButton
                     v-if="auth.canWrite"
-                    size="tiny"
+                    size="small"
                     type="primary"
                     :disabled="!status.available"
                     @click="openInstaller(app)"
@@ -376,7 +435,9 @@ const uninstallData = ref(false)
               </NCard>
             </NGi>
           </NGrid>
-        </NSpace>
+
+          <NEmpty v-else :description="t('apps.noMatch')" style="padding: 40px 0" />
+        </div>
       </NTabPane>
 
       <NTabPane name="installed" :tab="t('apps.installedTab')">
@@ -401,7 +462,12 @@ const uninstallData = ref(false)
     :title="t('apps.installTitle', { name: localized(installer.app?.name) })"
     style="width: 92vw; max-width: 620px"
   >
-    <NForm v-if="installer.app" @submit.prevent="install">
+    <NForm v-if="installer.app" class="installer-form" @submit.prevent="install">
+      <div class="installer-head">
+        <AppIcon :icon="installer.app.icon" :name="localized(installer.app.name)" :size="40" />
+        <p class="installer-desc">{{ localized(installer.app.description) }}</p>
+      </div>
+
       <NAlert type="info" :bordered="false" style="margin-bottom: 14px">
         {{ t('apps.pullHint', { images: (installer.app.images ?? []).join(', ') }) }}
       </NAlert>
@@ -478,31 +544,123 @@ const uninstallData = ref(false)
 </template>
 
 <style scoped>
+.store {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.store-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.store-search {
+  max-width: 300px;
+}
+
+/* Trên điện thoại ô tìm kiếm cần cả bề ngang; con số "hiện bao nhiêu trên bao
+   nhiêu" là thông tin phụ nên nhường chỗ. */
+@media (max-width: 560px) {
+  .store-search {
+    max-width: none;
+  }
+
+  .store-count {
+    display: none;
+  }
+}
+
+.store-count {
+  font-size: 12px;
+  color: var(--sp-text-faint);
+}
+
+/* Nhóm ứng dụng hiện thành hàng nút thay vì ô chọn xổ xuống: mười nhóm giấu
+   sau một ô chọn thì không ai biết chợ có gì cho tới khi bấm vào. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--sp-text-muted);
+  cursor: pointer;
+  background: var(--sp-surface-sunken);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  transition: color 0.14s ease, background 0.14s ease, border-color 0.14s ease;
+}
+
+.chip:hover {
+  color: var(--sp-text);
+  border-color: var(--sp-border-strong);
+}
+
+.chip-on {
+  font-weight: 600;
+  color: var(--sp-action);
+  background: color-mix(in srgb, var(--sp-action) 12%, transparent);
+  border-color: color-mix(in srgb, var(--sp-action) 34%, transparent);
+}
+
+.chip-count {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
 .store-card {
   height: 100%;
+  transition: border-color 0.14s ease, transform 0.14s ease;
+}
+
+.store-card:hover {
+  border-color: var(--sp-border-strong);
+  transform: translateY(-1px);
 }
 
 .store-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
+}
+
+.store-ident {
+  min-width: 0;
 }
 
 .store-title {
+  font-size: 15px;
   font-weight: 600;
-  /* Tên dài phải cắt bớt chứ không được đẩy thẻ nhóm ra khỏi thẻ. */
-  min-width: 0;
+  /* Tên dài phải cắt bớt chứ không được đẩy phần còn lại ra khỏi thẻ. */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.store-meta {
+  margin-top: 2px;
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--sp-text-faint);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .store-desc {
-  margin: 8px 0 14px;
-  min-height: 40px;
+  margin: 12px 0 14px;
+  /* Chiều cao tối thiểu giữ hàng nút của mọi thẻ trong lưới thẳng một đường. */
+  min-height: 42px;
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--sp-text-muted);
 }
 
@@ -511,6 +669,38 @@ const uninstallData = ref(false)
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+}
+
+.store-site {
+  font-size: 12px;
+  color: var(--sp-text-faint);
+  text-decoration: none;
+  border-bottom: 1px dashed currentColor;
+}
+
+.store-site:hover {
+  color: var(--sp-action);
+}
+
+/* Dòng gợi ý của một trường dính sát nhãn của trường kế tiếp, khiến biểu mẫu
+   đọc như một khối chữ liền. Nới khoảng dưới để mỗi trường thành một cụm. */
+.installer-form :deep(.n-form-item-feedback-wrapper) {
+  min-height: 0;
+  padding: 3px 0 10px;
+}
+
+.installer-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.installer-desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--sp-text-muted);
 }
 
 .app-link {

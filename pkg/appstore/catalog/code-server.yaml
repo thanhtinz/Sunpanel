@@ -1,0 +1,44 @@
+key: code-server
+name:
+  vi: code-server
+  en: code-server
+description:
+  vi: "VS Code chạy trên máy chủ, mở bằng trình duyệt — sửa mã ngay nơi mã đang chạy."
+  en: "VS Code running on the server and opened in a browser — edit code where it runs."
+category: development
+version: "1"
+website: https://github.com/coder/code-server
+images:
+  - codercom/code-server:4.93.1
+portField: HTTP_PORT
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8443"
+    required: true
+  - key: PASSWORD
+    label: {vi: Mật khẩu truy cập, en: Access password}
+    type: password
+    generate: true
+  - key: WORKSPACE
+    label: {vi: Thư mục làm việc, en: Workspace folder}
+    type: text
+    default: "/srv/code"
+    required: true
+compose: |
+  services:
+    code-server:
+      image: codercom/code-server:4.93.1
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PASSWORD: ${PASSWORD}
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - config:/home/coder/.local/share/code-server
+        - ${WORKSPACE}:/home/coder/project
+
+  volumes:
+    config:

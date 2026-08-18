@@ -522,8 +522,15 @@
       "automation": "Automation",
       "database": "Databases",
       "media": "Media",
-      "tool": "Tools"
-    }
+      "tool": "Tools",
+      "storage": "Storage",
+      "security": "Security",
+      "productivity": "Notes"
+    },
+    "searchPlaceholder": "Search by name or purpose",
+    "countShown": "Showing {shown} of {total} apps",
+    "noMatch": "No app matches your search",
+    "homepage": "Homepage"
   },
   "appErr": {
     "not_found": "Installed application not found.",

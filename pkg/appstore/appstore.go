@@ -94,6 +94,13 @@ type App struct {
 	Version string `yaml:"version" json:"version"`
 	// Website là trang chủ của ứng dụng.
 	Website string `yaml:"website" json:"website"`
+	// Icon là biểu trưng dạng SVG, giao diện hiển thị qua data URI.
+	//
+	// Để trống thì panel tự lấy tệp icons/<định danh>.svg trong cùng danh mục.
+	// Giao diện nhúng nó vào thẻ <img> chứ không chèn thẳng vào trang: danh mục
+	// tự thêm của quản trị viên cũng là dữ liệu ngoài, và một tệp SVG chèn thẳng
+	// vào trang thì chạy được mã kịch bản.
+	Icon string `yaml:"icon" json:"icon"`
 	// Images liệt kê các image cần tải, để giao diện báo trước dung lượng sẽ tải.
 	Images []string `yaml:"images" json:"images"`
 	// PortField là tên biến chứa cổng chính, dùng để dựng liên kết mở ứng dụng.

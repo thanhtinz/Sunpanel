@@ -21,8 +21,8 @@ fields:
   - key: SSH_PORT
     label: {vi: Cổng SSH, en: SSH port}
     help:
-      vi: Cổng để đẩy mã bằng SSH; đặt khác 22 để không đụng SSH của máy chủ.
-      en: Port for pushing over SSH; keep it off 22 so it does not clash with the host.
+      vi: "Cổng để đẩy mã bằng SSH; đặt khác 22 để không đụng SSH của máy chủ."
+      en: "Port for pushing over SSH; keep it off 22 so it does not clash with the host."
     type: port
     default: "2222"
     required: true

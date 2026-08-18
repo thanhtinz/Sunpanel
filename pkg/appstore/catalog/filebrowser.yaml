@@ -1,0 +1,41 @@
+key: filebrowser
+name:
+  vi: File Browser
+  en: File Browser
+description:
+  vi: "Trình quản lý tệp qua web cho một thư mục cụ thể, chia sẻ được cho người ngoài."
+  en: "A web file manager scoped to one folder, with share links for outsiders."
+category: tool
+version: "1"
+website: https://filebrowser.org
+images:
+  - filebrowser/filebrowser:v2.31.2
+portField: HTTP_PORT
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8082"
+    required: true
+  - key: ROOT_DIR
+    label: {vi: Thư mục gốc, en: Root folder}
+    help:
+      vi: "Người dùng chỉ thấy được bên trong thư mục này."
+      en: "Users can only see inside this folder."
+    type: text
+    default: "/srv"
+    required: true
+compose: |
+  services:
+    filebrowser:
+      image: filebrowser/filebrowser:v2.31.2
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - ${ROOT_DIR}:/srv
+        - data:/database
+
+  volumes:
+    data:

@@ -2,8 +2,11 @@ package appstore
 
 import (
 	"errors"
+	"os"
 	"strings"
 	"testing"
+
+	"gopkg.in/yaml.v3"
 )
 
 // Định nghĩa hỏng phải lộ ra ngay khi nạp danh mục, chứ không phải lúc người
@@ -139,4 +142,106 @@ func TestRenderEnvIsStable(t *testing.T) {
 	if !strings.Contains(first, "A=1\nB=2\nC=3\n") {
 		t.Errorf("nội dung .env chưa sắp xếp:\n%s", first)
 	}
+}
+
+// Biểu trưng đi kèm binary vì chính sách nội dung của panel chặn ảnh từ tên
+// miền ngoài: thiếu tệp svg là ô ứng dụng hiện ra trống trơn.
+func TestBuiltinAppsHaveIcons(t *testing.T) {
+	catalog, err := LoadBuiltin()
+	if err != nil {
+		t.Fatalf("nạp danh mục sẵn có: %v", err)
+	}
+
+	for _, app := range catalog.Apps() {
+		if !strings.HasPrefix(app.Icon, "<svg") {
+			t.Errorf("ứng dụng %s không có biểu trưng svg", app.Key)
+			continue
+		}
+		// Giao diện nhúng biểu trưng qua thẻ <img> nên mã kịch bản bên trong không
+		// chạy được, nhưng một tệp svg có <script> là dấu hiệu ai đó nhầm chỗ.
+		if strings.Contains(strings.ToLower(app.Icon), "<script") {
+			t.Errorf("biểu trưng của %s chứa mã kịch bản", app.Key)
+		}
+	}
+}
+
+// Danh mục phân loại phải nằm trong tập giao diện có nhãn dịch, nếu không ô lọc
+// sẽ hiện đúng cái khóa dịch thô cho người dùng đọc.
+func TestBuiltinCategoriesAreKnown(t *testing.T) {
+	known := map[string]bool{
+		"website": true, "development": true, "monitoring": true, "automation": true,
+		"database": true, "media": true, "tool": true, "storage": true,
+		"security": true, "productivity": true,
+	}
+
+	catalog, err := LoadBuiltin()
+	if err != nil {
+		t.Fatalf("nạp danh mục sẵn có: %v", err)
+	}
+
+	for _, app := range catalog.Apps() {
+		if !known[app.Category] {
+			t.Errorf("ứng dụng %s có phân loại %q chưa có nhãn dịch", app.Key, app.Category)
+		}
+	}
+}
+
+// Khuôn compose phải là YAML đọc được, và mọi image nó dùng phải được khai báo
+// ở trường images — giao diện dựa vào danh sách đó để báo trước sẽ tải gì về.
+func TestBuiltinComposeTemplatesParse(t *testing.T) {
+	catalog, err := LoadBuiltin()
+	if err != nil {
+		t.Fatalf("nạp danh mục sẵn có: %v", err)
+	}
+
+	for _, app := range catalog.Apps() {
+		values, err := app.Resolve(defaultsOf(app))
+		if err != nil {
+			t.Errorf("%s: điền giá trị mặc định: %v", app.Key, err)
+			continue
+		}
+		values["CONTAINER_NAME"] = app.Key
+		values["APP_KEY"] = app.Key
+		values["DATA_DIR"] = "/opt/sunpanel/apps/" + app.Key
+
+		rendered := os.Expand(app.Compose, func(name string) string { return values[name] })
+
+		var file struct {
+			Services map[string]struct {
+				Image string `yaml:"image"`
+			} `yaml:"services"`
+		}
+		if err := yaml.Unmarshal([]byte(rendered), &file); err != nil {
+			t.Errorf("%s: khuôn compose không phải YAML hợp lệ: %v", app.Key, err)
+			continue
+		}
+		if len(file.Services) == 0 {
+			t.Errorf("%s: khuôn compose không khai báo dịch vụ nào", app.Key)
+		}
+
+		declared := make(map[string]bool, len(app.Images))
+		for _, image := range app.Images {
+			declared[image] = true
+		}
+		for name, service := range file.Services {
+			if service.Image == "" {
+				t.Errorf("%s: dịch vụ %s không có image", app.Key, name)
+				continue
+			}
+			if !declared[service.Image] {
+				t.Errorf("%s: dịch vụ %s dùng image %q không có trong trường images",
+					app.Key, name, service.Image)
+			}
+		}
+	}
+}
+
+// defaultsOf lấy giá trị mặc định của mọi biến, mô phỏng người dùng bấm cài mà
+// không sửa gì trong biểu mẫu.
+func defaultsOf(app App) map[string]string {
+	values := make(map[string]string, len(app.Fields))
+	for _, field := range app.Fields {
+		values[field.Key] = field.Default
+	}
+	return values
 }

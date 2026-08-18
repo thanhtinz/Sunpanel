@@ -1,0 +1,47 @@
+key: adguard-home
+name:
+  vi: AdGuard Home
+  en: AdGuard Home
+description:
+  vi: "Máy chủ DNS chặn quảng cáo và trình theo dõi cho toàn bộ thiết bị trong mạng."
+  en: "A DNS server that blocks ads and trackers for every device on the network."
+category: security
+version: "1"
+website: https://adguard.com/adguard-home
+images:
+  - adguard/adguardhome:v0.107.52
+portField: SETUP_PORT
+fields:
+  - key: SETUP_PORT
+    label: {vi: Cổng cài đặt, en: Setup port}
+    help:
+      vi: "Lần đầu vào cổng này để chạy trình cài đặt; sau đó giao diện quản trị dùng cổng bạn chọn trong đó."
+      en: "Open this port once to run the setup wizard; afterwards the admin UI uses the port you pick there."
+    type: port
+    default: "3080"
+    required: true
+  - key: DNS_PORT
+    label: {vi: Cổng DNS, en: DNS port}
+    help:
+      vi: "Cổng 53 thường đã bị systemd-resolved chiếm; tắt nó hoặc chọn cổng khác."
+      en: "Port 53 is usually taken by systemd-resolved; disable it or pick another port."
+    type: port
+    default: "53"
+    required: true
+compose: |
+  services:
+    adguard:
+      image: adguard/adguardhome:v0.107.52
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${SETUP_PORT}:3000/tcp"
+        - "${DNS_PORT}:53/tcp"
+        - "${DNS_PORT}:53/udp"
+      volumes:
+        - work:/opt/adguardhome/work
+        - conf:/opt/adguardhome/conf
+
+  volumes:
+    work:
+    conf:

@@ -1,0 +1,27 @@
+key: it-tools
+name:
+  vi: IT Tools
+  en: IT Tools
+description:
+  vi: "Hộp công cụ cho người làm kỹ thuật: mã hóa, JSON, mã QR, chuyển đổi, sinh chuỗi."
+  en: "A toolbox for engineers: encoding, JSON, QR codes, converters and generators."
+category: tool
+version: "1"
+website: https://it-tools.tech
+images:
+  - corentinth/it-tools:2024.10.22
+portField: HTTP_PORT
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8084"
+    required: true
+compose: |
+  services:
+    it-tools:
+      image: corentinth/it-tools:2024.10.22
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:80"

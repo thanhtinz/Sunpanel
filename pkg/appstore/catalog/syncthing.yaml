@@ -1,0 +1,48 @@
+key: syncthing
+name:
+  vi: Syncthing
+  en: Syncthing
+description:
+  vi: "Đồng bộ thư mục giữa các máy theo kiểu ngang hàng, không đi qua máy chủ trung gian."
+  en: "Peer-to-peer folder sync between machines with no server in the middle."
+category: storage
+version: "1"
+website: https://syncthing.net
+images:
+  - syncthing/syncthing:1.27
+portField: HTTP_PORT
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng giao diện, en: Web UI port}
+    type: port
+    default: "8384"
+    required: true
+  - key: SYNC_PORT
+    label: {vi: Cổng đồng bộ, en: Sync port}
+    help:
+      vi: "Cổng các máy khác kết nối tới để truyền dữ liệu; cần mở trên tường lửa."
+      en: "The port other devices connect to for transfers; open it on the firewall."
+    type: port
+    default: "22000"
+    required: true
+  - key: SYNC_DIR
+    label: {vi: Thư mục đồng bộ, en: Sync folder}
+    type: text
+    default: "/srv/sync"
+    required: true
+compose: |
+  services:
+    syncthing:
+      image: syncthing/syncthing:1.27
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8384"
+        - "${SYNC_PORT}:22000/tcp"
+        - "${SYNC_PORT}:22000/udp"
+      volumes:
+        - config:/var/syncthing/config
+        - ${SYNC_DIR}:/var/syncthing/data
+
+  volumes:
+    config:

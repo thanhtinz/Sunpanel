@@ -15,8 +15,8 @@ fields:
   - key: PORT
     label: {vi: Cổng, en: Port}
     help:
-      vi: Cổng để mở giao diện Uptime Kuma trên trình duyệt.
-      en: Port where the Uptime Kuma interface is served.
+      vi: "Cổng để mở giao diện Uptime Kuma trên trình duyệt."
+      en: "Port where the Uptime Kuma interface is served."
     type: port
     default: "3001"
     required: true

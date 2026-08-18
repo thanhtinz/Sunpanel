@@ -1,0 +1,56 @@
+key: umami
+name:
+  vi: Umami
+  en: Umami
+description:
+  vi: "Thống kê truy cập website, nhẹ và không theo dõi người dùng bằng cookie."
+  en: "Website analytics that stays light and does not track visitors with cookies."
+category: monitoring
+version: "1"
+website: https://umami.is
+images:
+  - ghcr.io/umami-software/umami:postgresql-v2.12.1
+  - postgres:16-alpine
+portField: HTTP_PORT
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3002"
+    required: true
+  - key: APP_SECRET
+    label: {vi: Khóa ký phiên, en: Session secret}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    umami:
+      image: ghcr.io/umami-software/umami:postgresql-v2.12.1
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        DATABASE_URL: postgresql://umami:${DB_PASSWORD}@db:5432/umami
+        DATABASE_TYPE: postgresql
+        APP_SECRET: ${APP_SECRET}
+      ports:
+        - "${HTTP_PORT}:3000"
+
+    db:
+      image: postgres:16-alpine
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: umami
+        POSTGRES_USER: umami
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    db:

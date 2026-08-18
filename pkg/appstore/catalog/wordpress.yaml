@@ -16,8 +16,8 @@ fields:
   - key: PORT
     label: {vi: Cổng, en: Port}
     help:
-      vi: Nên đặt cổng nội bộ rồi tạo website dạng chuyển tiếp trỏ tên miền vào đây.
-      en: Use an internal port, then create a reverse-proxy website pointing your domain here.
+      vi: "Nên đặt cổng nội bộ rồi tạo website dạng chuyển tiếp trỏ tên miền vào đây."
+      en: "Use an internal port, then create a reverse-proxy website pointing your domain here."
     type: port
     default: "8080"
     required: true

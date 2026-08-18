@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -12,12 +13,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// builtinCatalog là danh mục ứng dụng đi kèm binary.
+// builtinCatalog là danh mục ứng dụng đi kèm binary, gồm cả biểu trưng.
 //
 // Nhúng sẵn thay vì tải về lúc chạy: panel phải cài được ứng dụng ngay cả trên
-// máy chủ không ra được Internet ngoài registry ảnh.
+// máy chủ không ra được Internet ngoài registry ảnh. Biểu trưng cũng vậy — tải
+// logo từ tên miền ngoài thì trên máy chủ kín mạng chợ ứng dụng sẽ trống trơn,
+// và chính sách nội dung của panel vốn chặn ảnh từ tên miền khác.
 //
-//go:embed catalog/*.yaml
+//go:embed catalog/*.yaml icons/*.svg
 var builtinCatalog embed.FS
 
 // Catalog là tập hợp ứng dụng đã nạp.
@@ -28,7 +31,7 @@ type Catalog struct {
 
 // LoadBuiltin nạp danh mục đi kèm binary.
 func LoadBuiltin() (*Catalog, error) {
-	return load(builtinCatalog, "catalog")
+	return load(builtinCatalog, "catalog", "icons")
 }
 
 // LoadDir nạp thêm định nghĩa ứng dụng từ một thư mục trên đĩa.
@@ -41,10 +44,11 @@ func LoadDir(dir string) (*Catalog, error) {
 		}
 		return nil, fmt.Errorf("đọc thư mục danh mục: %w", err)
 	}
-	return load(os.DirFS(dir), ".")
+	return load(os.DirFS(dir), ".", "icons")
 }
 
-func load(fsys fs.FS, dir string) (*Catalog, error) {
+// load nạp mọi tệp .yaml trong dir, và gắn biểu trưng tìm được ở iconDir.
+func load(fsys fs.FS, dir, iconDir string) (*Catalog, error) {
 	entries, err := fs.ReadDir(fsys, dir)
 	if err != nil {
 		return nil, fmt.Errorf("đọc danh mục ứng dụng: %w", err)
@@ -65,6 +69,14 @@ func load(fsys fs.FS, dir string) (*Catalog, error) {
 		if err := yaml.Unmarshal(content, &app); err != nil {
 			return nil, fmt.Errorf("đọc %s: %w", entry.Name(), err)
 		}
+		// Biểu trưng để rời thành tệp .svg thay vì nhét vào YAML: sửa một hình vẽ
+		// bằng công cụ đồ họa dễ hơn nhiều so với sửa một chuỗi trong tệp cấu hình.
+		if app.Icon == "" {
+			if icon, err := fs.ReadFile(fsys, path.Join(iconDir, app.Key+".svg")); err == nil {
+				app.Icon = strings.TrimSpace(string(icon))
+			}
+		}
+
 		if err := app.Validate(); err != nil {
 			return nil, fmt.Errorf("%s: %w", entry.Name(), err)
 		}

@@ -1,0 +1,67 @@
+key: ghost
+name:
+  vi: Ghost
+  en: Ghost
+description:
+  vi: "Nền tảng viết blog và bản tin, nhanh và tập trung vào nội dung."
+  en: "A fast publishing platform for blogs and newsletters."
+category: website
+version: "1"
+website: https://ghost.org
+images:
+  - ghost:5-alpine
+  - mysql:8
+portField: HTTP_PORT
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "2368"
+    required: true
+  - key: SITE_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    help:
+      vi: "Ghost dựng mọi liên kết từ địa chỉ này, nên phải đúng địa chỉ người đọc gõ vào."
+      en: "Ghost builds every link from this address, so it must match what readers type."
+    type: text
+    default: "http://localhost:2368"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    ghost:
+      image: ghost:5-alpine
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        url: ${SITE_URL}
+        database__client: mysql
+        database__connection__host: db
+        database__connection__user: ghost
+        database__connection__password: ${DB_PASSWORD}
+        database__connection__database: ghost
+      ports:
+        - "${HTTP_PORT}:2368"
+      volumes:
+        - content:/var/lib/ghost/content
+
+    db:
+      image: mysql:8
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        MYSQL_DATABASE: ghost
+        MYSQL_USER: ghost
+        MYSQL_PASSWORD: ${DB_PASSWORD}
+        MYSQL_RANDOM_ROOT_PASSWORD: "1"
+      volumes:
+        - db:/var/lib/mysql
+
+  volumes:
+    content:
+    db:
