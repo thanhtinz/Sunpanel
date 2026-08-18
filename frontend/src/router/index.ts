@@ -79,6 +79,11 @@ const router = createRouter({
           meta: { writeOnly: true },
         },
         {
+          path: 'uptime',
+          name: 'uptime',
+          component: () => import('@/views/UptimeView.vue'),
+        },
+        {
           path: 'alerts',
           name: 'alerts',
           component: () => import('@/views/AlertsView.vue'),

@@ -47,12 +47,46 @@ function collectValues(obj, prefix = '') {
   return values
 }
 
+/**
+ * Tìm khóa bị khai báo hai lần trong cùng một đối tượng.
+ *
+ * JSON.parse im lặng giữ lần khai báo cuối, nên hai khối cùng tên "settings"
+ * trông vẫn hợp lệ với mọi phép kiểm tra dựa trên đối tượng đã phân tích — còn
+ * giao diện thì hiện ra khóa thô vì nửa số chuỗi đã biến mất. Chuyện này đã xảy
+ * ra thật hai lần, nên phép kiểm phải làm trên văn bản gốc.
+ */
+function findDuplicateKeys(raw) {
+  const duplicates = []
+  const stack = [new Set()]
+  const pattern = /"((?:[^"\\]|\\.)*)"\s*:|[{}]/g
+
+  for (const match of raw.matchAll(pattern)) {
+    const token = match[0]
+    if (token === '{') {
+      stack.push(new Set())
+      continue
+    }
+    if (token === '}') {
+      if (stack.length > 1) stack.pop()
+      continue
+    }
+
+    const level = stack[stack.length - 1]
+    const key = match[1]
+    if (level.has(key)) duplicates.push(key)
+    level.add(key)
+  }
+  return duplicates
+}
+
 const locales = files.map((file) => {
-  const parsed = JSON.parse(readFileSync(join(localesDir, file), 'utf8'))
+  const raw = readFileSync(join(localesDir, file), 'utf8')
+  const parsed = JSON.parse(raw)
   return {
     name: file.replace('.json', ''),
     keys: collectKeys(parsed),
     values: collectValues(parsed),
+    duplicates: findDuplicateKeys(raw),
   }
 })
 
@@ -70,6 +104,15 @@ for (const locale of locales) {
       console.error(`  ${value}`)
       console.error(`  Hãy bọc lại, ví dụ: {'@'}daily`)
     }
+  }
+}
+
+for (const locale of locales) {
+  if (locale.duplicates.length > 0) {
+    failed = true
+    console.error(`\n${locale.name}.json có khóa khai báo hai lần:`)
+    for (const key of locale.duplicates) console.error(`  - "${key}"`)
+    console.error('  Gộp hai khối lại; JSON.parse chỉ giữ khối cuối và phần còn lại biến mất.')
   }
 }
 

@@ -88,6 +88,8 @@ func migrate(db *gorm.DB) error {
 		&model.AlertEvent{},
 		&model.APIKey{},
 		&model.Node{},
+		&model.UptimeMonitor{},
+		&model.UptimeCheck{},
 	}
 	if err := db.AutoMigrate(models...); err != nil {
 		return fmt.Errorf("chạy migration: %w", err)

@@ -80,6 +80,8 @@ sunpanel reset-password -user admin
   quy tắc chuyển hướng ngay trong biểu mẫu website.
 - **Cơ sở dữ liệu**: quản lý MySQL/MariaDB và PostgreSQL — tạo cơ sở dữ liệu,
   tài khoản và phân quyền, kèm cửa sổ chạy SQL có bảng kết quả.
+- **Theo dõi uptime**: kiểm tra website và dịch vụ theo chu kỳ, giữ lịch sử, tính tỉ
+  lệ sống 24 giờ, và báo qua kênh cảnh báo khi đổi trạng thái.
 - **Sao lưu**: sao lưu cơ sở dữ liệu và thư mục theo lịch, đẩy lên máy chủ, S3
   hoặc WebDAV, có chính sách giữ bản sao và khôi phục một chạm.
 - **SSL**: chứng chỉ tự ký, tải lên, hoặc xin từ Let's Encrypt qua HTTP-01 và tự
@@ -233,6 +235,8 @@ sunpanel reset-password -user admin
   the website form.
 - **Databases**: manage MySQL/MariaDB and PostgreSQL — create databases, users and
   grants, with an SQL console that renders results as a table.
+- **Uptime monitoring**: periodic checks of sites and services, with history, a 24-hour
+  uptime figure and a notification through the alert channels when the state changes.
 - **Backups**: scheduled database and directory backups shipped to this server, S3
   or WebDAV, with a retention policy and one-click restore.
 - **SSL**: self-signed, uploaded, or Let's Encrypt certificates over HTTP-01, renewed

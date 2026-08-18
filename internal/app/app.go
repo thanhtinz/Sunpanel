@@ -179,6 +179,8 @@ func New(cfg config.Config) (*App, error) {
 	})
 	sysUsers := service.NewSystemUserService(sysuser.New(userHost), audit)
 
+	uptimeMonitors := service.NewUptimeService(db, alerts, audit)
+
 	// Bộ quét dung lượng dùng chung phạm vi với trình quản lý tệp: thứ người dùng
 	// nhìn thấy ở đây cũng là thứ họ vào xóa được ở trang Tệp.
 	diskService := service.NewDiskService(diskscan.New(localHost.FS()), monitor)
@@ -217,6 +219,7 @@ func New(cfg config.Config) (*App, error) {
 		SysUsers:  sysUsers,
 		Logs:      logService,
 		Disks:     diskService,
+		Uptime:    uptimeMonitors,
 	}
 
 	handler, err := router.New(cfg, svc)
@@ -263,6 +266,7 @@ func (a *App) Run() error {
 
 	go a.svc.Certs.RunRenewal(ctx)
 	go a.svc.Alerts.Run(ctx)
+	go a.svc.Uptime.Run(ctx)
 
 	go a.runSessionCleanup(ctx)
 

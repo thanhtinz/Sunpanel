@@ -179,6 +179,20 @@ var (
 	ProcessListFailed = New(http.StatusInternalServerError, "process.list_failed")
 )
 
+// Các lỗi của theo dõi uptime.
+var (
+	// UptimeNotFound là không tìm thấy mục theo dõi.
+	UptimeNotFound = New(http.StatusNotFound, "uptime.not_found")
+	// UptimeNameExists là tên mục theo dõi đã được dùng.
+	UptimeNameExists = New(http.StatusConflict, "uptime.name_exists")
+	// UptimeInvalidName là tên mục theo dõi không hợp lệ.
+	UptimeInvalidName = New(http.StatusBadRequest, "uptime.invalid_name")
+	// UptimeInvalidURL là địa chỉ theo dõi không hợp lệ.
+	UptimeInvalidURL = New(http.StatusBadRequest, "uptime.invalid_url")
+	// UptimeInvalidStatus là mã trạng thái mong đợi không hợp lệ.
+	UptimeInvalidStatus = New(http.StatusBadRequest, "uptime.invalid_status")
+)
+
 // Các lỗi của quản lý tài khoản máy chủ.
 var (
 	// SysUserUnavailable là máy không quản lý được tài khoản hệ điều hành.

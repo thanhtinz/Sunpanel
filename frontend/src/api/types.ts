@@ -943,3 +943,50 @@ export interface DiskReport {
   files: number
   durationMs: number
 }
+
+/** Một địa chỉ được theo dõi định kỳ. */
+export interface UptimeMonitor {
+  id: number
+  name: string
+  url: string
+  intervalSeconds: number
+  timeoutSeconds: number
+  expectedStatus: number
+  keyword: string
+  skipTlsVerify: boolean
+  failureThreshold: number
+  enabled: boolean
+  status: 'up' | 'down' | 'unknown'
+  consecutiveFails: number
+  lastCheckedAt?: string
+  lastLatencyMs: number
+  lastStatusCode: number
+  lastError?: string
+  lastChangedAt?: string
+  certExpiresIn: number
+  uptime24h: number
+  avgLatencyMs: number
+  checks: number
+}
+
+export interface UptimeCheck {
+  id: number
+  monitorId: number
+  checkedAt: string
+  up: boolean
+  statusCode: number
+  latencyMs: number
+  error?: string
+}
+
+export interface UptimeMonitorPayload {
+  name: string
+  url: string
+  intervalSeconds: number
+  timeoutSeconds: number
+  expectedStatus: number
+  keyword: string
+  skipTlsVerify: boolean
+  failureThreshold: number
+  enabled: boolean
+}

@@ -49,6 +49,7 @@ type Services struct {
 	SysUsers  *service.SystemUserService
 	Logs      *service.LogService
 	Disks     *service.DiskService
+	Uptime    *service.UptimeService
 }
 
 // New dựng handler HTTP hoàn chỉnh của panel.
@@ -112,6 +113,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	sysUserHandler := v1.NewSystemUserHandler(svc.SysUsers)
 	logHandler := v1.NewLogHandler(svc.Logs)
 	diskHandler := v1.NewDiskHandler(svc.Disks)
+	uptimeHandler := v1.NewUptimeHandler(svc.Uptime)
 	dockerHandler := v1.NewDockerHandler(svc.Docker)
 
 	api := engine.Group("/api/v1")
@@ -415,6 +417,22 @@ func registerAPI(engine *gin.Engine, svc Services) {
 				write.POST("/chmod", fileHandler.Chmod)
 				write.POST("/compress", fileHandler.Compress)
 				write.POST("/extract", fileHandler.Extract)
+			}
+		}
+
+		// Theo dõi uptime: xem thì ai đăng nhập cũng được, thêm sửa xóa đòi quyền
+		// vận hành vì mỗi mục là một yêu cầu mạng panel tự phát đi theo chu kỳ.
+		uptimeGroup := authenticated.Group("/uptime")
+		{
+			uptimeGroup.GET("", uptimeHandler.List)
+			uptimeGroup.GET("/:id/history", uptimeHandler.History)
+
+			uptimeWrite := uptimeGroup.Group("", middleware.RequireWrite())
+			{
+				uptimeWrite.POST("", uptimeHandler.Create)
+				uptimeWrite.PUT("/:id", uptimeHandler.Update)
+				uptimeWrite.DELETE("/:id", uptimeHandler.Delete)
+				uptimeWrite.POST("/:id/check", uptimeHandler.Check)
 			}
 		}
 

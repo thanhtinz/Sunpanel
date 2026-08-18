@@ -74,6 +74,9 @@ import type {
   SystemAccountPayload,
   SystemService,
   TokenPair,
+  UptimeCheck,
+  UptimeMonitor,
+  UptimeMonitorPayload,
   TotpSetup,
   User,
   WebServerStatus,
@@ -490,6 +493,24 @@ export const websiteApi = {
       body: form,
     })
   },
+}
+
+/** Các endpoint theo dõi uptime. */
+export const uptimeApi = {
+  list: () => request<UptimeMonitor[]>('/api/v1/uptime'),
+
+  history: (id: number, limit = 60) =>
+    request<UptimeCheck[]>(`/api/v1/uptime/${id}/history?limit=${limit}`),
+
+  create: (payload: UptimeMonitorPayload) =>
+    request<UptimeMonitor>('/api/v1/uptime', { method: 'POST', body: payload }),
+
+  update: (id: number, payload: UptimeMonitorPayload) =>
+    request<UptimeMonitor>(`/api/v1/uptime/${id}`, { method: 'PUT', body: payload }),
+
+  remove: (id: number) => request<void>(`/api/v1/uptime/${id}`, { method: 'DELETE' }),
+
+  check: (id: number) => request<UptimeMonitor>(`/api/v1/uptime/${id}/check`, { method: 'POST' }),
 }
 
 /** Các endpoint phân tích dung lượng ổ đĩa. */

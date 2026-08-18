@@ -42,6 +42,7 @@ const navigationCommands = computed<Command[]>(() => {
     { name: 'services', keywords: 'dich vu systemd service' },
     { name: 'processes', keywords: 'tien trinh process top htop cpu ram kill cong dang mo port listen' },
     { name: 'cron', keywords: 'tac vu dinh ky schedule job' },
+    { name: 'uptime', keywords: 'uptime theo doi website song chet ping kiem tra dinh ky do tre' },
     { name: 'alerts', keywords: 'canh bao alert thong bao telegram email webhook nguong' },
     { name: 'firewall', keywords: 'tuong lua port cong' },
     { name: 'terminal', writeOnly: true, keywords: 'shell console bash' },

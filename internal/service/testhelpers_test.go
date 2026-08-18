@@ -36,6 +36,7 @@ func newMemoryDB(t *testing.T) *gorm.DB {
 		&model.CronJob{}, &model.CronRun{},
 		&model.Website{}, &model.Certificate{}, &model.InstalledApp{}, &model.DatabaseServer{},
 		&model.BackupPlan{}, &model.BackupRun{},
+		&model.UptimeMonitor{}, &model.UptimeCheck{},
 		&model.NotifyChannel{}, &model.AlertRule{}, &model.AlertEvent{},
 		&model.APIKey{}, &model.Node{},
 	)

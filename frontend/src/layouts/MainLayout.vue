@@ -120,7 +120,7 @@ const menuOptions = computed<MenuOption[]>(() => {
       type: 'group',
       key: 'group-operations',
       label: renderGroupLabel(t('nav.groupOperations')),
-      children: [item('backups', IconBackup), item('alerts', IconBell)],
+      children: [item('backups', IconBackup), item('uptime', IconPulse), item('alerts', IconBell)],
     },
   ]
 
