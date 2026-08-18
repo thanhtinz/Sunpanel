@@ -1,0 +1,47 @@
+key: shiori
+name:
+  vi: Shiori
+  en: Shiori
+description:
+  vi: "Kho đánh dấu trang tự lưu nội dung bài viết, đọc lại được cả khi trang gốc biến mất."
+  en: "A bookmark store that keeps a copy of each article, readable after the original disappears."
+category: productivity
+website: https://github.com/go-shiori/shiori
+portField: HTTP_PORT
+versions:
+  - name: "1.8.0"
+    images:
+      - ghcr.io/go-shiori/shiori:v1.8.0
+    values:
+      IMAGE: "ghcr.io/go-shiori/shiori:v1.8.0"
+  - name: "1.7.4"
+    images:
+      - ghcr.io/go-shiori/shiori:v1.7.4
+    values:
+      IMAGE: "ghcr.io/go-shiori/shiori:v1.7.4"
+  - name: "1.6.3"
+    images:
+      - ghcr.io/go-shiori/shiori:v1.6.3
+    values:
+      IMAGE: "ghcr.io/go-shiori/shiori:v1.6.3"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8085"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        SHIORI_DIR: "/shiori"
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - data:/shiori
+
+  volumes:
+    data:

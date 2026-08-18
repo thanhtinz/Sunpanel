@@ -1,0 +1,51 @@
+key: calibre
+name:
+  vi: Calibre
+  en: Calibre
+description:
+  vi: "Phần mềm quản lý sách điện tử đầy đủ, chuyển định dạng và phát sách cho máy đọc."
+  en: "The full ebook manager: converts formats and serves the library to reading devices."
+category: media
+website: https://calibre-ebook.com
+portField: HTTP_PORT
+versions:
+  - name: "latest"
+    note:
+      vi: "Dự án chỉ phát hành thẻ latest, nên mỗi lần cài lại sẽ lấy bản mới nhất lúc đó."
+      en: "The project only publishes a latest tag, so each install pulls whatever is newest then."
+    images:
+      - linuxserver/calibre:latest
+    values:
+      IMAGE: "linuxserver/calibre:latest"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8083"
+    required: true
+  - key: LIBRARY_DIR
+    label: {vi: Thư mục sách, en: Library folder}
+    help:
+      vi: "Thư mục sẵn có trên máy chủ, được gắn vào ứng dụng."
+      en: "An existing folder on the host, mounted into the app."
+    type: text
+    default: "/srv/books"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - config:/config
+        - ${LIBRARY_DIR}:/books
+
+  volumes:
+    config:

@@ -1,0 +1,58 @@
+key: stash
+name:
+  vi: Stash
+  en: Stash
+description:
+  vi: "Bộ sắp xếp thư viện video cá nhân: quét thư mục, gắn thẻ và xem ngay trong trình duyệt."
+  en: "Organises a personal video library: scans folders, tags them and plays in the browser."
+category: media
+website: https://stashapp.cc
+portField: HTTP_PORT
+versions:
+  - name: "0.31.1"
+    images:
+      - stashapp/stash:v0.31.1
+    values:
+      IMAGE: "stashapp/stash:v0.31.1"
+  - name: "0.30.1"
+    images:
+      - stashapp/stash:v0.30.1
+    values:
+      IMAGE: "stashapp/stash:v0.30.1"
+  - name: "0.29.3"
+    images:
+      - stashapp/stash:v0.29.3
+    values:
+      IMAGE: "stashapp/stash:v0.29.3"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "9999"
+    required: true
+  - key: MEDIA_DIR
+    label: {vi: Thư mục video, en: Video folder}
+    help:
+      vi: "Thư mục sẵn có trên máy chủ, được gắn vào ứng dụng."
+      en: "An existing folder on the host, mounted into the app."
+    type: text
+    default: "/srv/videos"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        STASH_STASH: "/data/"
+      ports:
+        - "${HTTP_PORT}:9999"
+      volumes:
+        - config:/root/.stash
+        - generated:/generated
+        - ${MEDIA_DIR}:/data
+
+  volumes:
+    config:
+    generated:

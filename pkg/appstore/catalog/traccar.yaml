@@ -1,0 +1,50 @@
+key: traccar
+name:
+  vi: Traccar
+  en: Traccar
+description:
+  vi: "Máy chủ giám sát hành trình cho hơn hai nghìn loại thiết bị định vị, vẽ đường đi trên bản đồ."
+  en: "A GPS tracking server for over two thousand device types, drawing routes on a map."
+category: monitoring
+website: https://www.traccar.org
+portField: HTTP_PORT
+versions:
+  - name: "6.14.5"
+    images:
+      - traccar/traccar:6.14.5-alpine
+    values:
+      IMAGE: "traccar/traccar:6.14.5-alpine"
+  - name: "6.13.3"
+    images:
+      - traccar/traccar:6.13.3-alpine
+    values:
+      IMAGE: "traccar/traccar:6.13.3-alpine"
+  - name: "5.12"
+    images:
+      - traccar/traccar:5.12-alpine
+    values:
+      IMAGE: "traccar/traccar:5.12-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    help:
+      vi: "Mỗi loại thiết bị định vị nghe ở một cổng riêng; mở thêm cổng trong tệp compose khi cần."
+      en: "Each tracker protocol listens on its own port; open more ports in the compose file as needed."
+    type: port
+    default: "8082"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8082"
+      volumes:
+        - data:/opt/traccar/data
+        - logs:/opt/traccar/logs
+
+  volumes:
+    data:
+    logs:

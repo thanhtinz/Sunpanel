@@ -1,0 +1,53 @@
+key: deluge
+name:
+  vi: Deluge
+  en: Deluge
+description:
+  vi: "Trình tải BitTorrent nhẹ, điều khiển qua web và chạy nền trên máy chủ."
+  en: "A light BitTorrent client driven from the browser and left running on the server."
+category: media
+website: https://deluge-torrent.org
+portField: HTTP_PORT
+versions:
+  - name: "latest"
+    note:
+      vi: "Dự án chỉ phát hành thẻ latest, nên mỗi lần cài lại sẽ lấy bản mới nhất lúc đó."
+      en: "The project only publishes a latest tag, so each install pulls whatever is newest then."
+    images:
+      - linuxserver/deluge:latest
+    values:
+      IMAGE: "linuxserver/deluge:latest"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8112"
+    required: true
+  - key: DOWNLOAD_DIR
+    label: {vi: Thư mục tải về, en: Download folder}
+    help:
+      vi: "Thư mục sẵn có trên máy chủ, được gắn vào ứng dụng."
+      en: "An existing folder on the host, mounted into the app."
+    type: text
+    default: "/srv/downloads"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:8112"
+        - 6881:6881
+        - 6881:6881/udp
+      volumes:
+        - config:/config
+        - ${DOWNLOAD_DIR}:/downloads
+
+  volumes:
+    config:

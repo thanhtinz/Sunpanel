@@ -1,0 +1,47 @@
+key: spoolman
+name:
+  vi: Spoolman
+  en: Spoolman
+description:
+  vi: "Sổ kho cuộn nhựa in 3D: trừ dần khối lượng còn lại theo từng bản in."
+  en: "Keeps stock of 3D printing filament, subtracting what each print uses."
+category: automation
+website: https://github.com/Donkie/Spoolman
+portField: HTTP_PORT
+versions:
+  - name: "0.26.1"
+    images:
+      - ghcr.io/donkie/spoolman:0.26.1
+    values:
+      IMAGE: "ghcr.io/donkie/spoolman:0.26.1"
+  - name: "0.25.0"
+    images:
+      - ghcr.io/donkie/spoolman:0.25.0
+    values:
+      IMAGE: "ghcr.io/donkie/spoolman:0.25.0"
+  - name: "0.24.0"
+    images:
+      - ghcr.io/donkie/spoolman:0.24.0
+    values:
+      IMAGE: "ghcr.io/donkie/spoolman:0.24.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "7912"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:8000"
+      volumes:
+        - data:/home/app/.local/share/spoolman
+
+  volumes:
+    data:

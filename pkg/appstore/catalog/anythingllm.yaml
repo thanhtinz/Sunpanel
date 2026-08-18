@@ -1,0 +1,40 @@
+key: anythingllm
+name:
+  vi: AnythingLLM
+  en: AnythingLLM
+description:
+  vi: "Trò chuyện với tài liệu của chính bạn: nạp tệp vào không gian làm việc rồi hỏi đáp trên đó."
+  en: "Chat with your own documents: load files into a workspace and ask questions about them."
+category: automation
+website: https://anythingllm.com
+portField: HTTP_PORT
+versions:
+  - name: "latest"
+    note:
+      vi: "Dự án chỉ phát hành thẻ latest, nên mỗi lần cài lại sẽ lấy bản mới nhất lúc đó."
+      en: "The project only publishes a latest tag, so each install pulls whatever is newest then."
+    images:
+      - mintplexlabs/anythingllm:latest
+    values:
+      IMAGE: "mintplexlabs/anythingllm:latest"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3011"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        STORAGE_DIR: "/app/server/storage"
+      ports:
+        - "${HTTP_PORT}:3001"
+      volumes:
+        - storage:/app/server/storage
+
+  volumes:
+    storage:

@@ -1,0 +1,50 @@
+key: zwave-js-ui
+name:
+  vi: Z-Wave JS UI
+  en: Z-Wave JS UI
+description:
+  vi: "Cầu nối thiết bị Z-Wave sang MQTT kèm giao diện quản lý mạng lưới và cập nhật thiết bị."
+  en: "Bridges Z-Wave devices to MQTT with a UI for managing the mesh and updating devices."
+category: automation
+website: https://zwave-js.github.io/zwave-js-ui
+portField: HTTP_PORT
+versions:
+  - name: "11.22.3"
+    images:
+      - zwavejs/zwave-js-ui:11.22.3
+    values:
+      IMAGE: "zwavejs/zwave-js-ui:11.22.3"
+  - name: "10.11"
+    images:
+      - zwavejs/zwave-js-ui:10.11
+    values:
+      IMAGE: "zwavejs/zwave-js-ui:10.11"
+  - name: "9.33.1"
+    images:
+      - zwavejs/zwave-js-ui:9.33.1
+    values:
+      IMAGE: "zwavejs/zwave-js-ui:9.33.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    help:
+      vi: "Que cắm Z-Wave phải được cấp cho container qua mục devices trong tệp compose."
+      en: "The Z-Wave stick must be passed to the container via devices in the compose file."
+    type: port
+    default: "8091"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:8091"
+      volumes:
+        - store:/usr/src/app/store
+
+  volumes:
+    store:

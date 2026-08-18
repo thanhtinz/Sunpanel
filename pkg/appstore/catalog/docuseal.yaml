@@ -1,0 +1,45 @@
+key: docuseal
+name:
+  vi: DocuSeal
+  en: DocuSeal
+description:
+  vi: "Ký tài liệu điện tử: tải PDF lên, đặt ô ký rồi gửi liên kết cho người ký."
+  en: "Signs documents online: upload a PDF, drop in the fields and send the signer a link."
+category: productivity
+website: https://docuseal.com
+portField: HTTP_PORT
+versions:
+  - name: "3.2.1"
+    images:
+      - docuseal/docuseal:3.2.1
+    values:
+      IMAGE: "docuseal/docuseal:3.2.1"
+  - name: "2.5.3"
+    images:
+      - docuseal/docuseal:2.5.3
+    values:
+      IMAGE: "docuseal/docuseal:2.5.3"
+  - name: "1.9.10"
+    images:
+      - docuseal/docuseal:1.9.10
+    values:
+      IMAGE: "docuseal/docuseal:1.9.10"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3010"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - data:/data
+
+  volumes:
+    data:

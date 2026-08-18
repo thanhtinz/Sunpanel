@@ -1,0 +1,46 @@
+key: qdrant
+name:
+  vi: Qdrant
+  en: Qdrant
+description:
+  vi: "Cơ sở dữ liệu véc-tơ cho tìm kiếm ngữ nghĩa và các ứng dụng dùng mô hình ngôn ngữ."
+  en: "A vector database for semantic search and applications built on language models."
+category: database
+website: https://qdrant.tech
+portField: HTTP_PORT
+versions:
+  - name: "1.19"
+    images:
+      - qdrant/qdrant:v1.19
+    values:
+      IMAGE: "qdrant/qdrant:v1.19"
+  - name: "1.18.3"
+    images:
+      - qdrant/qdrant:v1.18.3
+    values:
+      IMAGE: "qdrant/qdrant:v1.18.3"
+  - name: "1.17.1"
+    images:
+      - qdrant/qdrant:v1.17.1
+    values:
+      IMAGE: "qdrant/qdrant:v1.17.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng REST, en: REST port}
+    type: port
+    default: "6333"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:6333"
+        - 6334:6334
+      volumes:
+        - storage:/qdrant/storage
+
+  volumes:
+    storage:

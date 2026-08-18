@@ -473,4 +473,15 @@ volumes:
   db:
 """,
     ),
+
+    App(
+        key="anythingllm", name="AnythingLLM", category="automation",
+        vi="Trò chuyện với tài liệu của chính bạn: nạp tệp vào không gian làm việc rồi hỏi đáp trên đó.",
+        en="Chat with your own documents: load files into a workspace and ask questions about them.",
+        website="https://anythingllm.com",
+        image="mintplexlabs/anythingllm", fixed_tags=("latest",),
+        container_port=3001, volumes=("storage:/app/server/storage",),
+        fields=(port("HTTP_PORT", "Cổng web", "Web port", 3011),),
+        environment={"STORAGE_DIR": "/app/server/storage"},
+    ),
 ]

@@ -448,4 +448,15 @@ volumes:
         environment={"RENOVATE_PLATFORM": "${PLATFORM}", "RENOVATE_ENDPOINT": "${ENDPOINT}",
                      "RENOVATE_TOKEN": "${TOKEN}", "RENOVATE_REPOSITORIES": "${REPOSITORIES}"},
     ),
+
+    App(
+        key="qdrant", name="Qdrant", category="database",
+        vi="Cơ sở dữ liệu véc-tơ cho tìm kiếm ngữ nghĩa và các ứng dụng dùng mô hình ngôn ngữ.",
+        en="A vector database for semantic search and applications built on language models.",
+        website="https://qdrant.tech",
+        image="qdrant/qdrant", tag_pages=6, min_major=1,
+        container_port=6333, volumes=("storage:/qdrant/storage",),
+        fields=(port("HTTP_PORT", "Cổng REST", "REST port", 6333),),
+        extra_ports=("6334:6334",),
+    ),
 ]

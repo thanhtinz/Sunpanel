@@ -1,0 +1,48 @@
+key: beszel
+name:
+  vi: Beszel
+  en: Beszel
+description:
+  vi: "Bảng giám sát máy chủ gọn nhẹ: CPU, bộ nhớ, đĩa và container, kèm cảnh báo."
+  en: "A lightweight server monitoring dashboard: CPU, memory, disk and containers, with alerts."
+category: monitoring
+website: https://beszel.dev
+portField: HTTP_PORT
+versions:
+  - name: "0.18.8"
+    images:
+      - henrygd/beszel:0.18.8
+    values:
+      IMAGE: "henrygd/beszel:0.18.8"
+  - name: "0.17"
+    images:
+      - henrygd/beszel:0.17
+    values:
+      IMAGE: "henrygd/beszel:0.17"
+  - name: "0.16.1"
+    images:
+      - henrygd/beszel:0.16.1
+    values:
+      IMAGE: "henrygd/beszel:0.16.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    help:
+      vi: "Mỗi máy cần giám sát phải chạy thêm tác tử beszel-agent trỏ về địa chỉ này."
+      en: "Every monitored machine also runs a beszel-agent pointed at this address."
+    type: port
+    default: "8090"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8090"
+      volumes:
+        - data:/beszel_data
+
+  volumes:
+    data:

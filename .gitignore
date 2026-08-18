@@ -25,3 +25,7 @@ config.yaml
 *.swp
 .DS_Store
 resize.json
+
+# Bộ nhớ đệm của Python
+__pycache__/
+*.pyc

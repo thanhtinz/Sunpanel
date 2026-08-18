@@ -34,6 +34,7 @@ MAX_VECTOR_BYTES = 48 * 1024
 # Tên trong bộ sưu tập khác định danh trong danh mục.
 ALIAS = {
     "actual": "actual-budget",
+    "anythingllm": "anything-llm",
     "cloudflared": "cloudflare",
     "drawio": "draw-io",
     "gatus": "gatus",
@@ -52,6 +53,7 @@ ALIAS = {
     "volume-backup": "docker-volume-backup",
     "wg-easy": "wireguard",
     "wikijs": "wikijs",
+    "zwave-js-ui": "z-wave-js-ui",
 }
 
 

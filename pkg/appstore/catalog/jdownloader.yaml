@@ -1,0 +1,51 @@
+key: jdownloader
+name:
+  vi: JDownloader
+  en: JDownloader
+description:
+  vi: "Trình tải nhiều luồng có hàng đợi, dùng qua màn hình ứng dụng phát lại trong trình duyệt."
+  en: "A multi-threaded download manager with a queue, used through its desktop screen in the browser."
+category: media
+website: https://jdownloader.org
+portField: HTTP_PORT
+versions:
+  - name: "latest"
+    note:
+      vi: "Dự án chỉ phát hành thẻ latest, nên mỗi lần cài lại sẽ lấy bản mới nhất lúc đó."
+      en: "The project only publishes a latest tag, so each install pulls whatever is newest then."
+    images:
+      - jlesage/jdownloader-2:latest
+    values:
+      IMAGE: "jlesage/jdownloader-2:latest"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5800"
+    required: true
+  - key: DOWNLOAD_DIR
+    label: {vi: Thư mục tải về, en: Download folder}
+    help:
+      vi: "Thư mục sẵn có trên máy chủ, được gắn vào ứng dụng."
+      en: "An existing folder on the host, mounted into the app."
+    type: text
+    default: "/srv/downloads"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        USER_ID: "1000"
+        GROUP_ID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:5800"
+      volumes:
+        - config:/config
+        - ${DOWNLOAD_DIR}:/output
+
+  volumes:
+    config:

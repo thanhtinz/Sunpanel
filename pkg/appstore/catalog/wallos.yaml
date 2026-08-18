@@ -1,0 +1,49 @@
+key: wallos
+name:
+  vi: Wallos
+  en: Wallos
+description:
+  vi: "Sổ theo dõi thuê bao: nhắc ngày gia hạn và cộng tổng tiền phải trả mỗi tháng."
+  en: "A subscription tracker: reminds you of renewal dates and totals what you pay each month."
+category: productivity
+website: https://wallosapp.com
+portField: HTTP_PORT
+versions:
+  - name: "5.4.4"
+    images:
+      - bellamy/wallos:5.4.4
+    values:
+      IMAGE: "bellamy/wallos:5.4.4"
+  - name: "4.9.6"
+    images:
+      - bellamy/wallos:4.9.6
+    values:
+      IMAGE: "bellamy/wallos:4.9.6"
+  - name: "3.3.1"
+    images:
+      - bellamy/wallos:3.3.1
+    values:
+      IMAGE: "bellamy/wallos:3.3.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8286"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - db:/var/www/html/db
+        - logos:/var/www/html/images/uploads/logos
+
+  volumes:
+    db:
+    logos:
