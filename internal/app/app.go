@@ -113,10 +113,18 @@ func New(cfg config.Config) (*App, error) {
 	// Chứng chỉ mới chỉ có tác dụng sau khi máy chủ web đọc lại tệp.
 	certificates.SetReloader(websites.Reload)
 
+	alerts := service.NewAlertService(db, sealer, monitor, audit)
+	apiKeys := service.NewAPIKeyService(db, audit)
+
 	databases := service.NewDatabaseService(db, sealer, audit)
 	backups := service.NewBackupService(
 		db, databases, sealer, cfg.Backup.WorkDir, cfg.Backup.Root, audit,
 	)
+
+	// Sao lưu hỏng và gia hạn chứng chỉ hỏng là hai sự cố im lặng nguy hiểm nhất:
+	// người dùng chỉ phát hiện khi cần khôi phục, hoặc khi website mất HTTPS.
+	backups.SetAlerts(alerts)
+	certificates.SetAlerts(alerts)
 
 	// Dò công cụ tường lửa một lần lúc khởi động: việc dò phải chạy vài lệnh, và
 	// công cụ trên máy không đổi giữa chừng.
@@ -159,6 +167,8 @@ func New(cfg config.Config) (*App, error) {
 		Apps:      apps,
 		Databases: databases,
 		Backups:   backups,
+		Alerts:    alerts,
+		APIKeys:   apiKeys,
 		Websites:  websites,
 		Certs:     certificates,
 		Firewall:  firewallSvc,
@@ -209,6 +219,7 @@ func (a *App) Run() error {
 	defer a.svc.Backups.Stop()
 
 	go a.svc.Certs.RunRenewal(ctx)
+	go a.svc.Alerts.Run(ctx)
 
 	go a.runSessionCleanup(ctx)
 

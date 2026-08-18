@@ -40,6 +40,8 @@ type Services struct {
 	Firewall  *service.FirewallService
 	Docker    *service.DockerService
 	Tokens    *service.TokenIssuer
+	APIKeys   *service.APIKeyService
+	Alerts    *service.AlertService
 }
 
 // New dựng handler HTTP hoàn chỉnh của panel.
@@ -93,6 +95,8 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	appHandler := v1.NewAppStoreHandler(svc.Apps, svc.Audit)
 	dbHandler := v1.NewDatabaseHandler(svc.Databases, svc.Audit)
 	backupHandler := v1.NewBackupHandler(svc.Backups, svc.Audit)
+	alertHandler := v1.NewAlertHandler(svc.Alerts, svc.Audit)
+	apiKeyHandler := v1.NewAPIKeyHandler(svc.APIKeys, svc.Audit)
 	firewallHandler := v1.NewFirewallHandler(svc.Firewall)
 	dockerHandler := v1.NewDockerHandler(svc.Docker)
 
@@ -115,7 +119,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	// gửi được header khi điều hướng tới một URL tải tệp.
 	api.GET("/files/download", fileHandler.Download)
 
-	authenticated := api.Group("", middleware.Auth(svc.Tokens, svc.Auth))
+	authenticated := api.Group("", middleware.Auth(svc.Tokens, svc.Auth, svc.APIKeys))
 	{
 		me := authenticated.Group("/auth")
 		{
@@ -287,6 +291,35 @@ func registerAPI(engine *gin.Engine, svc Services) {
 				backupWrite.POST("/:id/restore", backupHandler.Restore)
 				backupWrite.DELETE("/:id/objects/:object", backupHandler.DeleteObject)
 			}
+		}
+
+		// Cảnh báo: xem thì ai đăng nhập cũng được, còn sửa kênh và quy tắc thì phải
+		// có quyền vận hành — cấu hình kênh chứa mật khẩu SMTP và token bot.
+		alerts := authenticated.Group("/alerts")
+		{
+			alerts.GET("/channels", alertHandler.ListChannels)
+			alerts.GET("/rules", alertHandler.ListRules)
+			alerts.GET("/events", alertHandler.Events)
+
+			alertWrite := alerts.Group("", middleware.RequireWrite())
+			{
+				alertWrite.POST("/channels", alertHandler.CreateChannel)
+				alertWrite.PUT("/channels/:id", alertHandler.UpdateChannel)
+				alertWrite.DELETE("/channels/:id", alertHandler.DeleteChannel)
+				alertWrite.POST("/channels/:id/test", alertHandler.TestChannel)
+				alertWrite.POST("/rules", alertHandler.CreateRule)
+				alertWrite.PUT("/rules/:id", alertHandler.UpdateRule)
+				alertWrite.DELETE("/rules/:id", alertHandler.DeleteRule)
+			}
+		}
+
+		// Khóa API: ai cũng quản lý được khóa của chính mình.
+		apiKeys := authenticated.Group("/apikeys")
+		{
+			apiKeys.GET("", apiKeyHandler.List)
+			apiKeys.POST("", apiKeyHandler.Create)
+			apiKeys.POST("/:id/enabled", apiKeyHandler.SetEnabled)
+			apiKeys.DELETE("/:id", apiKeyHandler.Delete)
 		}
 
 		// Xem trạng thái dịch vụ thì ai đăng nhập cũng được; điều khiển thì không.

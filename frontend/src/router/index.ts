@@ -74,6 +74,11 @@ const router = createRouter({
           meta: { writeOnly: true },
         },
         {
+          path: 'alerts',
+          name: 'alerts',
+          component: () => import('@/views/AlertsView.vue'),
+        },
+        {
           path: 'profile',
           name: 'profile',
           component: () => import('@/views/ProfileView.vue'),

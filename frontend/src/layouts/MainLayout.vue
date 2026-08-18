@@ -32,6 +32,7 @@ import IconSite from '@/components/icons/IconSite.vue'
 import IconApps from '@/components/icons/IconApps.vue'
 import IconDatabase from '@/components/icons/IconDatabase.vue'
 import IconBackup from '@/components/icons/IconBackup.vue'
+import IconBell from '@/components/icons/IconBell.vue'
 import IconMenu from '@/components/icons/IconMenu.vue'
 import IconSearch from '@/components/icons/IconSearch.vue'
 import CommandPalette from '@/components/CommandPalette.vue'
@@ -110,6 +111,11 @@ const menuOptions = computed<MenuOption[]>(() => {
       label: renderLink('cron', t('nav.cron')),
       key: 'cron',
       icon: renderIcon(IconClock),
+    },
+    {
+      label: renderLink('alerts', t('nav.alerts')),
+      key: 'alerts',
+      icon: renderIcon(IconBell),
     },
     {
       label: renderLink('firewall', t('nav.firewall')),

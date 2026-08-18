@@ -1,30 +1,35 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, h, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NAlert,
   NButton,
   NCard,
+  NDataTable,
   NDescriptions,
   NDescriptionsItem,
   NForm,
   NFormItem,
   NGi,
   NGrid,
+  NEmpty,
   NInput,
+  NInputNumber,
   NList,
   NListItem,
   NModal,
   NPopconfirm,
   NSelect,
   NSpace,
+  NSwitch,
   NTag,
   NText,
   NThing,
   useMessage,
+  type DataTableColumns,
 } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
-import { ApiError, authApi, type Session } from '@/api'
+import { ApiError, apiKeyApi, authApi, type ApiKey, type Session } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import { SUPPORTED_LOCALES, setLocale, translateError, type Locale } from '@/locales'
@@ -161,6 +166,132 @@ async function copySecret(): Promise<void> {
   await navigator.clipboard.writeText(totpSecret.value)
   message.success(t('common.copied'))
 }
+
+// ---- Khóa API ----
+
+const apiKeys = ref<ApiKey[]>([])
+const keysLoading = ref(false)
+const keyForm = ref({ show: false, saving: false, name: '', expiresInDays: 0 })
+/** Khóa vừa tạo; chỉ hiện đúng một lần vì máy chủ chỉ lưu băm của nó. */
+const newKey = ref({ show: false, value: '' })
+
+onMounted(loadKeys)
+
+async function loadKeys(): Promise<void> {
+  keysLoading.value = true
+  try {
+    apiKeys.value = await apiKeyApi.list()
+  } catch (err) {
+    reportError(err)
+  } finally {
+    keysLoading.value = false
+  }
+}
+
+async function createKey(): Promise<void> {
+  keyForm.value.saving = true
+  try {
+    const created = await apiKeyApi.create({
+      name: keyForm.value.name.trim(),
+      expiresInDays: keyForm.value.expiresInDays,
+    })
+    keyForm.value.show = false
+    keyForm.value.name = ''
+    newKey.value = { show: true, value: created.key }
+    await loadKeys()
+  } catch (err) {
+    reportError(err)
+  } finally {
+    keyForm.value.saving = false
+  }
+}
+
+async function toggleKey(key: ApiKey, enabled: boolean): Promise<void> {
+  try {
+    await apiKeyApi.setEnabled(key.id, enabled)
+    await loadKeys()
+  } catch (err) {
+    reportError(err)
+    await loadKeys()
+  }
+}
+
+async function removeKey(key: ApiKey): Promise<void> {
+  try {
+    await apiKeyApi.remove(key.id)
+    message.success(t('apikey.deleted'))
+    await loadKeys()
+  } catch (err) {
+    reportError(err)
+  }
+}
+
+async function copyKey(): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(newKey.value.value)
+    message.success(t('common.copied'))
+  } catch {
+    message.error(t('apikey.copyFailed'))
+  }
+}
+
+const keyColumns = computed<DataTableColumns<ApiKey>>(() => [
+  { title: t('apikey.name'), key: 'name', minWidth: 150 },
+  {
+    title: t('apikey.prefix'),
+    key: 'prefix',
+    width: 160,
+    render: (row) => h('code', { style: 'font-size:12px' }, row.prefix + '…'),
+  },
+  {
+    title: t('apikey.lastUsed'),
+    key: 'lastUsedAt',
+    minWidth: 180,
+    render: (row) =>
+      row.lastUsedAt
+        ? `${formatDateTime(row.lastUsedAt)}${row.lastIp ? ' · ' + row.lastIp : ''}`
+        : h(NText, { depth: 3 }, { default: () => t('common.never') }),
+  },
+  {
+    title: t('apikey.expires'),
+    key: 'expiresAt',
+    width: 160,
+    render: (row) =>
+      row.expiresAt
+        ? formatDateTime(row.expiresAt)
+        : h(NText, { depth: 3 }, { default: () => t('apikey.noExpiry') }),
+  },
+  {
+    title: t('apikey.enabled'),
+    key: 'enabled',
+    width: 90,
+    render: (row) =>
+      h(NSwitch, {
+        value: row.enabled,
+        size: 'small',
+        'onUpdate:value': (value: boolean) => toggleKey(row, value),
+      }),
+  },
+  {
+    title: t('common.actions'),
+    key: 'actions',
+    width: 90,
+    render: (row) =>
+      h(
+        NPopconfirm,
+        { onPositiveClick: () => removeKey(row) },
+        {
+          trigger: () =>
+            h(
+              NButton,
+              { size: 'tiny', quaternary: true, type: 'error' },
+              { default: () => t('apikey.revoke') },
+            ),
+          default: () => t('apikey.revokeConfirm', { name: row.name }),
+        },
+      ),
+  },
+])
 </script>
 
 <template>
@@ -353,6 +484,69 @@ async function copySecret(): Promise<void> {
           {{ t('profile.disable2fa') }}
         </NButton>
       </NSpace>
+    </NModal>
+    <NCard :title="t('apikey.title')" size="small">
+      <template #header-extra>
+        <NButton size="small" type="primary" @click="keyForm.show = true">
+          {{ t('apikey.create') }}
+        </NButton>
+      </template>
+
+      <NAlert type="info" :bordered="false" style="margin-bottom: 12px">
+        {{ t('apikey.hint') }}
+      </NAlert>
+
+      <NDataTable
+        :columns="keyColumns"
+        :data="apiKeys"
+        :loading="keysLoading"
+        :row-key="(row: ApiKey) => row.id"
+        size="small"
+      >
+        <template #empty>
+          <NEmpty :description="t('apikey.none')" />
+        </template>
+      </NDataTable>
+    </NCard>
+
+    <NModal
+      v-model:show="keyForm.show"
+      preset="card"
+      :title="t('apikey.create')"
+      style="width: 92vw; max-width: 440px"
+    >
+      <NForm @submit.prevent="createKey">
+        <NFormItem :label="t('apikey.name')" :feedback="t('apikey.nameHelp')">
+          <NInput v-model:value="keyForm.name" autofocus />
+        </NFormItem>
+        <NFormItem :label="t('apikey.expiresInDays')" :feedback="t('apikey.expiresHelp')">
+          <NInputNumber v-model:value="keyForm.expiresInDays" :min="0" style="width: 100%" />
+        </NFormItem>
+        <NButton
+          type="primary"
+          block
+          attr-type="submit"
+          :loading="keyForm.saving"
+          :disabled="!keyForm.name.trim()"
+        >
+          {{ t('common.create') }}
+        </NButton>
+      </NForm>
+    </NModal>
+
+    <NModal
+      v-model:show="newKey.show"
+      preset="card"
+      :title="t('apikey.created')"
+      style="width: 92vw; max-width: 560px"
+    >
+      <NAlert type="warning" :bordered="false" style="margin-bottom: 14px">
+        {{ t('apikey.showOnce') }}
+      </NAlert>
+      <NInput :value="newKey.value" readonly class="sp-metric" />
+      <NButton type="primary" block style="margin-top: 14px" @click="copyKey">
+        {{ t('common.copy') }}
+      </NButton>
     </NModal>
   </NSpace>
 </template>

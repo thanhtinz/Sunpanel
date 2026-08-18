@@ -1,5 +1,10 @@
 import { baseUrl, request } from './client'
 import type {
+  AlertEvent,
+  AlertRule,
+  AlertRulePayload,
+  ApiKey,
+  ApiKeyPayload,
   AppAction,
   BackupObject,
   BackupPlan,
@@ -9,6 +14,7 @@ import type {
   AuditLog,
   CatalogResult,
   ComposeStatus,
+  CreatedApiKey,
   DatabaseInfo,
   DatabaseServer,
   DatabaseServerPayload,
@@ -38,6 +44,8 @@ import type {
   HistorySample,
   LoginLog,
   Overview,
+  NotifyChannel,
+  NotifyChannelPayload,
   PageResult,
   QueryResult,
   Role,
@@ -213,6 +221,48 @@ export const cronApi = {
 
   validate: (schedule: string) =>
     request<{ next: string[] }>('/api/v1/cron/validate', { method: 'POST', body: { schedule } }),
+}
+
+/** Các endpoint cảnh báo. */
+export const alertApi = {
+  channels: () => request<NotifyChannel[]>('/api/v1/alerts/channels'),
+
+  createChannel: (payload: NotifyChannelPayload) =>
+    request<NotifyChannel>('/api/v1/alerts/channels', { method: 'POST', body: payload }),
+
+  updateChannel: (id: number, payload: NotifyChannelPayload) =>
+    request<NotifyChannel>(`/api/v1/alerts/channels/${id}`, { method: 'PUT', body: payload }),
+
+  deleteChannel: (id: number) =>
+    request<void>(`/api/v1/alerts/channels/${id}`, { method: 'DELETE' }),
+
+  testChannel: (id: number) =>
+    request<{ sent: boolean }>(`/api/v1/alerts/channels/${id}/test`, { method: 'POST' }),
+
+  rules: () => request<AlertRule[]>('/api/v1/alerts/rules'),
+
+  createRule: (payload: AlertRulePayload) =>
+    request<AlertRule>('/api/v1/alerts/rules', { method: 'POST', body: payload }),
+
+  updateRule: (id: number, payload: AlertRulePayload) =>
+    request<AlertRule>(`/api/v1/alerts/rules/${id}`, { method: 'PUT', body: payload }),
+
+  deleteRule: (id: number) => request<void>(`/api/v1/alerts/rules/${id}`, { method: 'DELETE' }),
+
+  events: (limit = 50) => request<AlertEvent[]>(`/api/v1/alerts/events?limit=${limit}`),
+}
+
+/** Các endpoint khóa API. */
+export const apiKeyApi = {
+  list: () => request<ApiKey[]>('/api/v1/apikeys'),
+
+  create: (payload: ApiKeyPayload) =>
+    request<CreatedApiKey>('/api/v1/apikeys', { method: 'POST', body: payload }),
+
+  setEnabled: (id: number, enabled: boolean) =>
+    request<ApiKey>(`/api/v1/apikeys/${id}/enabled`, { method: 'POST', body: { enabled } }),
+
+  remove: (id: number) => request<void>(`/api/v1/apikeys/${id}`, { method: 'DELETE' }),
 }
 
 /** Các endpoint sao lưu. */

@@ -68,11 +68,15 @@ sunpanel reset-password -user admin
   hoặc WebDAV, có chính sách giữ bản sao và khôi phục một chạm.
 - **SSL**: chứng chỉ tự ký, tải lên, hoặc xin từ Let's Encrypt qua HTTP-01 và tự
   gia hạn khi còn dưới 30 ngày.
+- **Cảnh báo**: quy tắc theo ngưỡng CPU/RAM/đĩa/tải, gửi qua Telegram, email hoặc
+  webhook; tự báo khi sao lưu thất bại hoặc gia hạn chứng chỉ hỏng.
+- **Khóa API**: gọi API từ script mà không nhúng mật khẩu tài khoản, giới hạn
+  quyền và thu hồi được riêng lẻ.
 - **Giao diện**: chế độ sáng/tối, chuyển ngôn ngữ tức thời, bảng lệnh nhanh Ctrl+K
   (tìm được cả khi gõ không dấu), bố cục riêng cho điện thoại.
 
-Xem [lộ trình phát triển](docs/ROADMAP.md) cho các tính năng đang tới: cảnh báo,
-API công khai, hệ thống plugin và quản lý nhiều máy chủ.
+Xem [lộ trình phát triển](docs/ROADMAP.md) cho các tính năng đang tới: hệ thống
+plugin và quản lý nhiều máy chủ.
 
 ### Bảo mật
 
@@ -197,11 +201,15 @@ sunpanel reset-password -user admin
   or WebDAV, with a retention policy and one-click restore.
 - **SSL**: self-signed, uploaded, or Let's Encrypt certificates over HTTP-01, renewed
   automatically once fewer than 30 days remain.
+- **Alerting**: threshold rules on CPU/RAM/disk/load delivered over Telegram, email
+  or webhooks, plus automatic alerts when a backup fails or a certificate renewal breaks.
+- **API keys**: call the API from scripts without embedding an account password,
+  with scoped privileges and per-key revocation.
 - **UI**: light/dark theme, instant language switching, Ctrl+K command palette
   (matches Vietnamese text typed without diacritics), dedicated mobile layout.
 
-See the [roadmap](docs/ROADMAP.md) for what's next: alerting, a public API, a plugin
-system and multi-server management.
+See the [roadmap](docs/ROADMAP.md) for what's next: a plugin system and multi-server
+management.
 
 ### Security
 

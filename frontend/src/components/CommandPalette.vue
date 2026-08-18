@@ -40,6 +40,7 @@ const navigationCommands = computed<Command[]>(() => {
     { name: 'docker', keywords: 'container image volume' },
     { name: 'services', keywords: 'dich vu systemd service' },
     { name: 'cron', keywords: 'tac vu dinh ky schedule job' },
+    { name: 'alerts', keywords: 'canh bao alert thong bao telegram email webhook nguong' },
     { name: 'firewall', keywords: 'tuong lua port cong' },
     { name: 'terminal', writeOnly: true, keywords: 'shell console bash' },
     { name: 'users', adminOnly: true, keywords: 'nguoi dung user account' },

@@ -293,6 +293,34 @@ var (
 	BackupObjectNotFound = New(http.StatusNotFound, "backup.object_not_found")
 )
 
+// Các lỗi của cảnh báo.
+var (
+	// AlertChannelNotFound là không tìm thấy kênh thông báo.
+	AlertChannelNotFound = New(http.StatusNotFound, "alert.channel_not_found")
+	// AlertChannelNameExists là tên kênh đã được dùng.
+	AlertChannelNameExists = New(http.StatusConflict, "alert.channel_name_exists")
+	// AlertInvalidKind là loại kênh không được hỗ trợ.
+	AlertInvalidKind = New(http.StatusBadRequest, "alert.invalid_kind")
+	// AlertInvalidConfig là cấu hình kênh hoặc quy tắc không hợp lệ.
+	AlertInvalidConfig = New(http.StatusBadRequest, "alert.invalid_config")
+	// AlertSendFailed là gửi thông báo thất bại.
+	AlertSendFailed = New(http.StatusBadGateway, "alert.send_failed")
+	// AlertRuleNotFound là không tìm thấy quy tắc cảnh báo.
+	AlertRuleNotFound = New(http.StatusNotFound, "alert.rule_not_found")
+	// AlertRuleNameExists là tên quy tắc đã được dùng.
+	AlertRuleNameExists = New(http.StatusConflict, "alert.rule_name_exists")
+)
+
+// Các lỗi của khóa API.
+var (
+	// APIKeyNotFound là không tìm thấy khóa.
+	APIKeyNotFound = New(http.StatusNotFound, "apikey.not_found")
+	// APIKeyInvalid là khóa không hợp lệ, đã tắt hoặc đã hết hạn.
+	APIKeyInvalid = New(http.StatusUnauthorized, "apikey.invalid")
+	// APIKeyInvalidRole là vai trò yêu cầu cao hơn quyền của chủ sở hữu.
+	APIKeyInvalidRole = New(http.StatusForbidden, "apikey.invalid_role")
+)
+
 // Các lỗi của Docker.
 var (
 	// DockerUnavailable là không kết nối được tới Docker.

@@ -21,6 +21,7 @@ import (
 	"github.com/thanhtinz/sunpanel/pkg/backup"
 	"github.com/thanhtinz/sunpanel/pkg/crypto"
 	"github.com/thanhtinz/sunpanel/pkg/dbx"
+	"github.com/thanhtinz/sunpanel/pkg/notify"
 )
 
 // Các loại nguồn sao lưu.
@@ -64,10 +65,22 @@ type BackupService struct {
 	// localRoot là thư mục mặc định cho nơi lưu trữ dạng local.
 	localRoot string
 
+	// alerts nhận thông báo khi sao lưu thất bại; có thể nil khi chưa cấu hình.
+	//
+	// Một kế hoạch sao lưu hỏng âm thầm là trường hợp tệ nhất: người dùng tin
+	// rằng dữ liệu đang được bảo vệ cho tới ngày cần khôi phục.
+	alerts *AlertService
+
 	scheduler *cron.Cron
 	entries   map[uint]cron.EntryID
 	mu        sync.Mutex
 }
+
+// SetAlerts gắn dịch vụ cảnh báo.
+//
+// Gắn sau khi khởi tạo thay vì truyền vào hàm dựng: dịch vụ cảnh báo cần bộ giám
+// sát, còn dịch vụ sao lưu cần cảnh báo, nên truyền thẳng sẽ tạo phụ thuộc vòng.
+func (s *BackupService) SetAlerts(alerts *AlertService) { s.alerts = alerts }
 
 // NewBackupService tạo dịch vụ sao lưu.
 func NewBackupService(
@@ -464,9 +477,34 @@ func (s *BackupService) Run(ctx context.Context, id uint, triggeredBy string) (m
 	}
 
 	if err != nil {
+		s.alertFailure(ctx, plan, run)
 		return run, apperr.BackupFailed.WithParam("message", run.Error)
 	}
 	return run, nil
+}
+
+// alertFailure phát cảnh báo khi một lần sao lưu thất bại.
+func (s *BackupService) alertFailure(ctx context.Context, plan model.BackupPlan, run model.BackupRun) {
+	if s.alerts == nil {
+		return
+	}
+
+	source := plan.Database
+	if plan.Source == BackupSourceDirectory {
+		source = plan.Path
+	}
+
+	s.alerts.Notify(ctx, "backup", notify.Message{
+		Title: "Sao lưu thất bại: " + plan.Name,
+		Body:  run.Error,
+		Level: notify.LevelCritical,
+		At:    run.StartedAt,
+		Fields: map[string]string{
+			"Kế hoạch": plan.Name,
+			"Nguồn":    source,
+			"Nơi lưu":  plan.Destination,
+		},
+	})
 }
 
 // perform thực hiện một lần sao lưu và trả về tên tệp cùng dung lượng.

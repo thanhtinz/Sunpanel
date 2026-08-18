@@ -13,7 +13,21 @@ const (
 	ctxClaims    = "sunpanel.claims"
 	ctxRequestID = "sunpanel.requestID"
 	ctxLanguage  = "sunpanel.language"
+	ctxAPIKey    = "sunpanel.apiKey"
 )
+
+// IsAPIKey cho biết yêu cầu được xác thực bằng khóa API thay vì phiên đăng nhập.
+//
+// Dùng để chặn các thao tác chỉ nên làm từ giao diện — đổi mật khẩu, quản lý
+// chính các khóa API — khỏi bị thực hiện bằng một khóa bị lộ.
+func IsAPIKey(c *gin.Context) bool {
+	value, ok := c.Get(ctxAPIKey)
+	if !ok {
+		return false
+	}
+	flag, _ := value.(bool)
+	return flag
+}
 
 // Claims lấy thông tin người dùng đã xác thực từ context.
 // Trả về nil nếu yêu cầu chưa qua lớp xác thực.

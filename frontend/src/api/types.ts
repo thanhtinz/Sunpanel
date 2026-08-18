@@ -617,3 +617,90 @@ export interface BackupObject {
   sizeBytes: number
   modTime: string
 }
+
+export type NotifyKind = 'email' | 'telegram' | 'webhook'
+export type AlertLevel = 'info' | 'warning' | 'critical'
+export type AlertMetric = 'cpu' | 'memory' | 'disk' | 'load'
+
+export interface NotifyChannel {
+  id: number
+  name: string
+  kind: NotifyKind
+  enabled: boolean
+  lastError?: string
+  lastSentAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface NotifyChannelPayload {
+  name: string
+  kind: NotifyKind
+  config?: Record<string, string>
+  enabled: boolean
+}
+
+export interface AlertRule {
+  id: number
+  name: string
+  metric: AlertMetric
+  threshold: number
+  durationMinutes: number
+  cooldownMinutes: number
+  level: AlertLevel
+  channels: string
+  enabled: boolean
+  lastFiredAt?: string
+  breachedSince?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AlertRulePayload {
+  name: string
+  metric: AlertMetric
+  threshold: number
+  durationMinutes: number
+  cooldownMinutes: number
+  level: AlertLevel
+  channels?: string
+  enabled: boolean
+}
+
+export interface AlertEvent {
+  id: number
+  source: string
+  ruleId: number
+  title: string
+  body: string
+  level: AlertLevel
+  delivered: number
+  failed: number
+  error?: string
+  createdAt: string
+}
+
+export interface ApiKey {
+  id: number
+  name: string
+  prefix: string
+  userId: number
+  role: Role
+  expiresAt?: string
+  lastUsedAt?: string
+  lastIp?: string
+  enabled: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreatedApiKey extends ApiKey {
+  /** Giá trị đầy đủ, chỉ trả về đúng một lần lúc tạo. */
+  key: string
+}
+
+export interface ApiKeyPayload {
+  name: string
+  role?: Role
+  expiresInDays?: number
+}

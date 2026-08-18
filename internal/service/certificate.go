@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"log/slog"
 	"strings"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/thanhtinz/sunpanel/internal/apperr"
 	"github.com/thanhtinz/sunpanel/internal/model"
 	"github.com/thanhtinz/sunpanel/pkg/certs"
+	"github.com/thanhtinz/sunpanel/pkg/notify"
 	"github.com/thanhtinz/sunpanel/pkg/webserver"
 )
 
@@ -61,7 +63,12 @@ type CertificateService struct {
 	audit          *AuditService
 	// reload được gọi sau khi chứng chỉ đổi, để máy chủ web nạp lại chứng chỉ mới.
 	reload func(ctx context.Context) error
+	// alerts nhận thông báo khi gia hạn thất bại; có thể nil.
+	alerts *AlertService
 }
+
+// SetAlerts gắn dịch vụ cảnh báo.
+func (s *CertificateService) SetAlerts(alerts *AlertService) { s.alerts = alerts }
 
 // NewCertificateService tạo dịch vụ chứng chỉ.
 func NewCertificateService(
@@ -376,10 +383,40 @@ func (s *CertificateService) renewDue(ctx context.Context) {
 		slog.Info("gia hạn chứng chỉ", "cert", record.Name, "daysRemaining", info.DaysRemaining)
 		if _, err := s.Renew(ctx, record.Name); err != nil {
 			slog.Error("gia hạn chứng chỉ thất bại", "cert", record.Name, "error", err)
+			// Gia hạn hỏng phải báo ra ngoài: nếu không, website sẽ ngừng phục vụ
+			// HTTPS vào đúng ngày chứng chỉ hết hạn mà không ai được báo trước.
+			s.alertRenewalFailure(ctx, record, info, err)
 			continue
 		}
 		slog.Info("đã gia hạn chứng chỉ", "cert", record.Name)
 	}
+}
+
+// alertRenewalFailure phát cảnh báo khi việc gia hạn chứng chỉ thất bại.
+func (s *CertificateService) alertRenewalFailure(
+	ctx context.Context, record model.Certificate, info CertificateInfo, cause error,
+) {
+	if s.alerts == nil {
+		return
+	}
+
+	// Còn ít ngày thì đây là sự cố, còn nhiều ngày thì mới chỉ là cảnh báo — vẫn
+	// còn thời gian để thử lại ở các lần quét sau.
+	level := notify.LevelWarning
+	if info.DaysRemaining < 7 {
+		level = notify.LevelCritical
+	}
+
+	s.alerts.Notify(ctx, "cert", notify.Message{
+		Title: "Gia hạn chứng chỉ thất bại: " + record.Name,
+		Body:  cause.Error(),
+		Level: level,
+		Fields: map[string]string{
+			"Chứng chỉ": record.Name,
+			"Tên miền":  record.Domains,
+			"Còn lại":   fmt.Sprintf("%d ngày", info.DaysRemaining),
+		},
+	})
 }
 
 // normalizeDomains chuẩn hóa và kiểm tra danh sách tên miền.
