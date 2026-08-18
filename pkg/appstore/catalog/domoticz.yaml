@@ -1,0 +1,47 @@
+key: domoticz
+name:
+  vi: Domoticz
+  en: Domoticz
+description:
+  vi: "Trung tâm nhà thông minh gọn nhẹ, mạnh ở cảm biến và thiết bị điện dùng sóng 433 MHz."
+  en: "A light smart-home hub, strong on sensors and 433 MHz electrical devices."
+category: automation
+website: https://domoticz.com
+portField: HTTP_PORT
+versions:
+  - name: "2026.3"
+    images:
+      - domoticz/domoticz:2026.3
+    values:
+      IMAGE: "domoticz/domoticz:2026.3"
+  - name: "2025.2"
+    images:
+      - domoticz/domoticz:2025.2
+    values:
+      IMAGE: "domoticz/domoticz:2025.2"
+  - name: "2024.7"
+    images:
+      - domoticz/domoticz:2024.7
+    values:
+      IMAGE: "domoticz/domoticz:2024.7"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8644"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - config:/opt/domoticz/userdata
+
+  volumes:
+    config:

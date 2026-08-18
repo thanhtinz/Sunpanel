@@ -1,0 +1,51 @@
+key: gogs
+name:
+  vi: Gogs
+  en: Gogs
+description:
+  vi: "Máy chủ Git siêu nhẹ, chạy được cả trên máy tính bảng một nhân."
+  en: "An extremely light Git server that even runs on a single-core board."
+category: development
+website: https://gogs.io
+portField: HTTP_PORT
+versions:
+  - name: "0.14.3"
+    images:
+      - gogs/gogs:0.14.3
+    values:
+      IMAGE: "gogs/gogs:0.14.3"
+  - name: "0.13.4"
+    images:
+      - gogs/gogs:0.13.4
+    values:
+      IMAGE: "gogs/gogs:0.13.4"
+  - name: "0.12.11"
+    images:
+      - gogs/gogs:0.12.11
+    values:
+      IMAGE: "gogs/gogs:0.12.11"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3622"
+    required: true
+  - key: SSH_PORT
+    label: {vi: Cổng SSH, en: SSH port}
+    type: port
+    default: "2224"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:3000"
+        - "${SSH_PORT}:22"
+      volumes:
+        - data:/data
+
+  volumes:
+    data:

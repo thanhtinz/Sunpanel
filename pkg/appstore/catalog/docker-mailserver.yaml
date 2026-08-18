@@ -1,0 +1,75 @@
+key: docker-mailserver
+name:
+  vi: Docker Mailserver
+  en: Docker Mailserver
+description:
+  vi: "Máy chủ thư đầy đủ trong một container: SMTP, IMAP, lọc rác và chống virus."
+  en: "A complete mail server in one container: SMTP, IMAP, spam filtering and antivirus."
+category: productivity
+website: https://docker-mailserver.github.io
+portField: SMTP_PORT
+versions:
+  - name: "15.1.0"
+    images:
+      - mailserver/docker-mailserver:15.1.0
+    values:
+      IMAGE: "mailserver/docker-mailserver:15.1.0"
+  - name: "14.0.0"
+    images:
+      - mailserver/docker-mailserver:14.0.0
+    values:
+      IMAGE: "mailserver/docker-mailserver:14.0.0"
+  - name: "13.3.1"
+    images:
+      - mailserver/docker-mailserver:13.3.1
+    values:
+      IMAGE: "mailserver/docker-mailserver:13.3.1"
+fields:
+  - key: SMTP_PORT
+    label: {vi: Cổng SMTP, en: SMTP port}
+    help:
+      vi: "Nhiều nhà cung cấp VPS chặn sẵn cổng 25; hỏi họ mở trước khi cài."
+      en: "Many VPS providers block port 25 by default; ask them to open it before installing."
+    type: port
+    default: "25"
+    required: true
+  - key: SUBMISSION_PORT
+    label: {vi: Cổng gửi thư, en: Submission port}
+    type: port
+    default: "587"
+    required: true
+  - key: IMAP_PORT
+    label: {vi: Cổng IMAP, en: IMAP port}
+    type: port
+    default: "993"
+    required: true
+  - key: MAIL_DOMAIN
+    label: {vi: Tên miền thư, en: Mail domain}
+    type: text
+    default: "mail.example.com"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        OVERRIDE_HOSTNAME: "${MAIL_DOMAIN}"
+        ENABLE_SPAMASSASSIN: "1"
+        ENABLE_CLAMAV: "0"
+        ENABLE_FAIL2BAN: "0"
+        SSL_TYPE: ""
+      ports:
+        - "${SMTP_PORT}:25"
+        - "${IMAP_PORT}:993"
+        - "${SUBMISSION_PORT}:587"
+      volumes:
+        - maildata:/var/mail
+        - mailstate:/var/mail-state
+        - config:/tmp/docker-mailserver
+
+  volumes:
+    maildata:
+    mailstate:
+    config:

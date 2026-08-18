@@ -1,0 +1,45 @@
+key: fluidd
+name:
+  vi: Fluidd
+  en: Fluidd
+description:
+  vi: "Giao diện web khác cho Klipper, gọn và hợp với màn hình cảm ứng nhỏ."
+  en: "Another web UI for Klipper — compact and good on small touchscreens."
+category: automation
+website: https://docs.fluidd.xyz
+portField: HTTP_PORT
+versions:
+  - name: "1.37.4"
+    images:
+      - ghcr.io/fluidd-core/fluidd:v1.37.4
+    values:
+      IMAGE: "ghcr.io/fluidd-core/fluidd:v1.37.4"
+  - name: "1.36.4"
+    images:
+      - ghcr.io/fluidd-core/fluidd:v1.36.4
+    values:
+      IMAGE: "ghcr.io/fluidd-core/fluidd:v1.36.4"
+  - name: "1.35.1"
+    images:
+      - ghcr.io/fluidd-core/fluidd:v1.35.1
+    values:
+      IMAGE: "ghcr.io/fluidd-core/fluidd:v1.35.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8642"
+    required: true
+  - key: MOONRAKER_URL
+    label: {vi: Địa chỉ Moonraker, en: Moonraker URL}
+    type: text
+    default: "http://localhost:7125"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:80"

@@ -1,0 +1,44 @@
+key: grav
+name:
+  vi: Grav
+  en: Grav
+description:
+  vi: "Nền tảng nội dung không cần cơ sở dữ liệu — mỗi trang là một tệp, sao lưu chỉ là chép thư mục."
+  en: "A database-free CMS: every page is a file, so backing up means copying a folder."
+category: website
+website: https://getgrav.org
+portField: HTTP_PORT
+versions:
+  - name: "2.0.19"
+    images:
+      - linuxserver/grav:2.0.19
+    values:
+      IMAGE: "linuxserver/grav:2.0.19"
+  - name: "1.8.0"
+    images:
+      - linuxserver/grav:1.8.0
+    values:
+      IMAGE: "linuxserver/grav:1.8.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8621"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - config:/config
+
+  volumes:
+    config:

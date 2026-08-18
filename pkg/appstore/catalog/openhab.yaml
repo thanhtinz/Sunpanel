@@ -1,0 +1,52 @@
+key: openhab
+name:
+  vi: openHAB
+  en: openHAB
+description:
+  vi: "Trung tâm nhà thông minh hỗ trợ hơn hai nghìn loại thiết bị, chạy được hoàn toàn ngoại tuyến."
+  en: "A smart-home hub supporting over two thousand device types, fully offline capable."
+category: automation
+website: https://openhab.org
+portField: HTTP_PORT
+versions:
+  - name: "5.2.1"
+    images:
+      - openhab/openhab:5.2.1-alpine
+    values:
+      IMAGE: "openhab/openhab:5.2.1-alpine"
+  - name: "4.3.10"
+    images:
+      - openhab/openhab:4.3.10-alpine
+    values:
+      IMAGE: "openhab/openhab:4.3.10-alpine"
+  - name: "3.4.5"
+    images:
+      - openhab/openhab:3.4.5-alpine
+    values:
+      IMAGE: "openhab/openhab:3.4.5-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8643"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        OPENHAB_HTTP_PORT: "8080"
+        EXTRA_JAVA_OPTS: "-Duser.timezone=Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - conf:/openhab/conf
+        - userdata:/openhab/userdata
+        - addons:/openhab/addons
+
+  volumes:
+    conf:
+    userdata:
+    addons:

@@ -1,0 +1,49 @@
+key: threadfin
+name:
+  vi: Threadfin
+  en: Threadfin
+description:
+  vi: "Gom nhiều nguồn truyền hình IPTV thành một danh sách kênh sạch cho Plex hay Jellyfin."
+  en: "Merges several IPTV sources into one clean channel list for Plex or Jellyfin."
+category: media
+website: https://github.com/Threadfin/Threadfin
+portField: HTTP_PORT
+versions:
+  - name: "1.2.37"
+    images:
+      - fyb3roptik/threadfin:1.2.37
+    values:
+      IMAGE: "fyb3roptik/threadfin:1.2.37"
+  - name: "1.1.20"
+    images:
+      - fyb3roptik/threadfin:1.1.20
+    values:
+      IMAGE: "fyb3roptik/threadfin:1.1.20"
+  - name: "1.0.27"
+    images:
+      - fyb3roptik/threadfin:1.0.27
+    values:
+      IMAGE: "fyb3roptik/threadfin:1.0.27"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "34400"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:34400"
+      volumes:
+        - conf:/home/threadfin/conf
+
+  volumes:
+    conf:

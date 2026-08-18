@@ -1,0 +1,53 @@
+key: satisfactory
+name:
+  vi: Satisfactory Server
+  en: Satisfactory Server
+description:
+  vi: "Máy chủ Satisfactory chạy nền, giữ nhà máy tiếp tục hoạt động khi bạn thoát game."
+  en: "A dedicated Satisfactory server that keeps the factory running after you log off."
+category: tool
+website: https://github.com/wolveix/satisfactory-server
+portField: GAME_PORT
+versions:
+  - name: "1.9.10"
+    images:
+      - wolveix/satisfactory-server:v1.9.10
+    values:
+      IMAGE: "wolveix/satisfactory-server:v1.9.10"
+  - name: "1.8.10"
+    images:
+      - wolveix/satisfactory-server:v1.8.10
+    values:
+      IMAGE: "wolveix/satisfactory-server:v1.8.10"
+  - name: "1.7.4"
+    images:
+      - wolveix/satisfactory-server:v1.7.4
+    values:
+      IMAGE: "wolveix/satisfactory-server:v1.7.4"
+fields:
+  - key: GAME_PORT
+    label: {vi: Cổng trò chơi, en: Game port}
+    help:
+      vi: "Satisfactory cần ít nhất 8 GB RAM và bốn nhân để chạy mượt."
+      en: "Satisfactory wants at least 8 GB of RAM and four cores to run smoothly."
+    type: port
+    default: "7778"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        MAXPLAYERS: "4"
+        PGID: "1000"
+        PUID: "1000"
+        STEAMBETA: "false"
+      ports:
+        - "${GAME_PORT}:7777"
+      volumes:
+        - config:/config
+
+  volumes:
+    config:

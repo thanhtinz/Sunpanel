@@ -1,0 +1,87 @@
+key: unifi
+name:
+  vi: UniFi Network
+  en: UniFi Network
+description:
+  vi: "Bộ điều khiển thiết bị mạng UniFi: cấu hình WiFi, VLAN và xem khách đang kết nối."
+  en: "The UniFi network controller: configure WiFi and VLANs and see who is connected."
+category: tool
+website: https://ui.com
+portField: HTTP_PORT
+versions:
+  - name: "10.5.67"
+    images:
+      - linuxserver/unifi-network-application:10.5.67
+      - mongo:7
+    values:
+      IMAGE: "linuxserver/unifi-network-application:10.5.67"
+      DB_IMAGE: "mongo:7"
+  - name: "9.5.21"
+    images:
+      - linuxserver/unifi-network-application:9.5.21
+      - mongo:7
+    values:
+      IMAGE: "linuxserver/unifi-network-application:9.5.21"
+      DB_IMAGE: "mongo:7"
+  - name: "8.6.9"
+    images:
+      - linuxserver/unifi-network-application:8.6.9
+      - mongo:7
+    values:
+      IMAGE: "linuxserver/unifi-network-application:8.6.9"
+      DB_IMAGE: "mongo:7"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8645"
+    required: true
+  - key: INFORM_PORT
+    label: {vi: Cổng thiết bị báo về, en: Device inform port}
+    help:
+      vi: "Thiết bị UniFi kết nối về cổng này; đổi thì phải khai lại trên thiết bị."
+      en: "UniFi devices call home on this port; changing it means reconfiguring them."
+    type: port
+    default: "8080"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: Asia/Ho_Chi_Minh
+        MONGO_HOST: db
+        MONGO_PORT: "27017"
+        MONGO_DBNAME: unifi
+        MONGO_USER: unifi
+        MONGO_PASS: ${DB_PASSWORD}
+        MONGO_AUTHSOURCE: admin
+      ports:
+        - "${HTTP_PORT}:8443"
+        - "${INFORM_PORT}:8080"
+      volumes:
+        - config:/config
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        MONGO_INITDB_ROOT_USERNAME: unifi
+        MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/data/db
+
+  volumes:
+    config:
+    db:

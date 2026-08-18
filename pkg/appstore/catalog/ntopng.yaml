@@ -1,0 +1,41 @@
+key: ntopng
+name:
+  vi: ntopng
+  en: ntopng
+description:
+  vi: "Phân tích lưu lượng mạng theo thời gian thực: máy nào đang chiếm băng thông và nói chuyện với đâu."
+  en: "Real-time network traffic analysis: which host is eating bandwidth and who it talks to."
+category: monitoring
+website: https://ntop.org
+portField: HTTP_PORT
+versions:
+  - name: "latest"
+    note:
+      vi: "Dự án chỉ phát hành thẻ latest, nên mỗi lần cài lại sẽ lấy bản mới nhất lúc đó."
+      en: "The project only publishes a latest tag, so each install pulls whatever is newest then."
+    images:
+      - ntop/ntopng:latest
+    values:
+      IMAGE: "ntop/ntopng:latest"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    help:
+      vi: "Ở mạng riêng của container, ntopng chỉ thấy lưu lượng của chính nó. Muốn thấy toàn bộ mạng máy chủ thì sửa tệp compose sang network_mode: host."
+      en: "On the container network ntopng only sees its own traffic. To watch the whole host network, edit the compose file to network_mode: host."
+    type: port
+    default: "3630"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - data:/var/lib/ntopng
+
+  volumes:
+    data:

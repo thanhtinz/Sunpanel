@@ -1,0 +1,57 @@
+key: stalwart
+name:
+  vi: Stalwart Mail
+  en: Stalwart Mail
+description:
+  vi: "Máy chủ thư viết bằng Rust, gộp SMTP, IMAP và JMAP với giao diện quản trị sẵn."
+  en: "A Rust mail server combining SMTP, IMAP and JMAP with a built-in admin UI."
+category: productivity
+website: https://stalw.art
+portField: HTTP_PORT
+versions:
+  - name: "0.11.8"
+    images:
+      - stalwartlabs/mail-server:v0.11.8
+    values:
+      IMAGE: "stalwartlabs/mail-server:v0.11.8"
+  - name: "0.10.7"
+    images:
+      - stalwartlabs/mail-server:v0.10.7
+    values:
+      IMAGE: "stalwartlabs/mail-server:v0.10.7"
+  - name: "0.9.4"
+    images:
+      - stalwartlabs/mail-server:v0.9.4
+    values:
+      IMAGE: "stalwartlabs/mail-server:v0.9.4"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng quản trị, en: Admin port}
+    type: port
+    default: "8627"
+    required: true
+  - key: SMTP_PORT
+    label: {vi: Cổng SMTP, en: SMTP port}
+    type: port
+    default: "2525"
+    required: true
+  - key: IMAP_PORT
+    label: {vi: Cổng IMAP, en: IMAP port}
+    type: port
+    default: "9930"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8080"
+        - "${SMTP_PORT}:25"
+        - "${IMAP_PORT}:993"
+      volumes:
+        - data:/opt/stalwart-mail
+
+  volumes:
+    data:

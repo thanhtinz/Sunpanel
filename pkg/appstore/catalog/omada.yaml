@@ -1,0 +1,58 @@
+key: omada
+name:
+  vi: Omada Controller
+  en: Omada Controller
+description:
+  vi: "Bộ điều khiển thiết bị mạng TP-Link Omada: quản lý điểm phát WiFi và switch."
+  en: "The TP-Link Omada controller: manages access points and switches."
+category: tool
+website: https://tp-link.com/omada
+portField: HTTP_PORT
+versions:
+  - name: "6.2.14.11"
+    images:
+      - mbentley/omada-controller:6.2.14.11
+    values:
+      IMAGE: "mbentley/omada-controller:6.2.14.11"
+  - name: "6.1.0.19"
+    images:
+      - mbentley/omada-controller:6.1.0.19
+    values:
+      IMAGE: "mbentley/omada-controller:6.1.0.19"
+  - name: "5.15.24.19"
+    images:
+      - mbentley/omada-controller:5.15.24.19
+    values:
+      IMAGE: "mbentley/omada-controller:5.15.24.19"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8646"
+    required: true
+  - key: INFORM_PORT
+    label: {vi: Cổng thiết bị báo về, en: Device inform port}
+    type: port
+    default: "29814"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        MANAGE_HTTPS_PORT: "8043"
+        PORTAL_HTTP_PORT: "8088"
+        SHOW_SERVER_LOGS: "true"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:8043"
+        - "${INFORM_PORT}:29814"
+      volumes:
+        - data:/opt/tplink/EAPController/data
+        - logs:/opt/tplink/EAPController/logs
+
+  volumes:
+    data:
+    logs:

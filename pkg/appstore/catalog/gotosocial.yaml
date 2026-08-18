@@ -1,0 +1,58 @@
+key: gotosocial
+name:
+  vi: GoToSocial
+  en: GoToSocial
+description:
+  vi: "Máy chủ mạng xã hội liên kết viết bằng Go, nhẹ hơn Mastodon rất nhiều."
+  en: "A federated social server written in Go — far lighter than Mastodon."
+category: website
+website: https://gotosocial.org
+portField: HTTP_PORT
+versions:
+  - name: "0.22.1"
+    images:
+      - superseriousbusiness/gotosocial:0.22.1
+    values:
+      IMAGE: "superseriousbusiness/gotosocial:0.22.1"
+  - name: "0.21.3"
+    images:
+      - superseriousbusiness/gotosocial:0.21.3
+    values:
+      IMAGE: "superseriousbusiness/gotosocial:0.21.3"
+  - name: "0.20.3"
+    images:
+      - superseriousbusiness/gotosocial:0.20.3
+    values:
+      IMAGE: "superseriousbusiness/gotosocial:0.20.3"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8622"
+    required: true
+  - key: HOST_NAME
+    label: {vi: Tên miền, en: Host name}
+    help:
+      vi: "Tên miền đi vào định danh của mọi tài khoản; đổi sau là hỏng liên kết."
+      en: "The domain becomes part of every account's identity; changing it later breaks federation."
+    type: text
+    default: "social.example.com"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        GTS_HOST: "${HOST_NAME}"
+        GTS_DB_TYPE: "sqlite"
+        GTS_DB_ADDRESS: "/gotosocial/storage/sqlite.db"
+        GTS_LETSENCRYPT_ENABLED: "false"
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - data:/gotosocial/storage
+
+  volumes:
+    data:

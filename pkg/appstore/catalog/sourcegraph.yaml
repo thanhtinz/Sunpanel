@@ -1,0 +1,50 @@
+key: sourcegraph
+name:
+  vi: Sourcegraph
+  en: Sourcegraph
+description:
+  vi: "Tìm kiếm mã nguồn trên toàn bộ kho của bạn, hiểu cả định nghĩa và nơi gọi hàm."
+  en: "Code search across all your repositories that understands definitions and call sites."
+category: development
+website: https://sourcegraph.com
+portField: HTTP_PORT
+versions:
+  - name: "6.12.5040"
+    images:
+      - sourcegraph/server:6.12.5040
+    values:
+      IMAGE: "sourcegraph/server:6.12.5040"
+  - name: "6.11.5639"
+    images:
+      - sourcegraph/server:6.11.5639
+    values:
+      IMAGE: "sourcegraph/server:6.11.5639"
+  - name: "6.10.3349"
+    images:
+      - sourcegraph/server:6.10.3349
+    values:
+      IMAGE: "sourcegraph/server:6.10.3349"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    help:
+      vi: "Sourcegraph cần ít nhất 4 GB RAM và vài phút cho lần khởi động đầu."
+      en: "Sourcegraph needs at least 4 GB of RAM and a few minutes on first boot."
+    type: port
+    default: "7080"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:7080"
+      volumes:
+        - etc:/etc/sourcegraph
+        - data:/var/opt/sourcegraph
+
+  volumes:
+    etc:
+    data:

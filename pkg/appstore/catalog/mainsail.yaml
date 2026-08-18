@@ -1,0 +1,48 @@
+key: mainsail
+name:
+  vi: Mainsail
+  en: Mainsail
+description:
+  vi: "Giao diện web cho máy in 3D chạy Klipper, hiện nhiệt độ và đường in theo thời gian thực."
+  en: "A web UI for Klipper-based 3D printers showing live temperatures and toolpaths."
+category: automation
+website: https://docs.mainsail.xyz
+portField: HTTP_PORT
+versions:
+  - name: "2.18.2"
+    images:
+      - ghcr.io/mainsail-crew/mainsail:v2.18.2
+    values:
+      IMAGE: "ghcr.io/mainsail-crew/mainsail:v2.18.2"
+  - name: "2.14"
+    images:
+      - ghcr.io/mainsail-crew/mainsail:v2.14
+    values:
+      IMAGE: "ghcr.io/mainsail-crew/mainsail:v2.14"
+  - name: "2.13.2"
+    images:
+      - ghcr.io/mainsail-crew/mainsail:v2.13.2
+    values:
+      IMAGE: "ghcr.io/mainsail-crew/mainsail:v2.13.2"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8641"
+    required: true
+  - key: MOONRAKER_URL
+    label: {vi: Địa chỉ Moonraker, en: Moonraker URL}
+    help:
+      vi: "Mainsail chỉ là phần giao diện; nó cần một Moonraker đang chạy cạnh máy in."
+      en: "Mainsail is only the front end; it needs a Moonraker running next to the printer."
+    type: text
+    default: "http://localhost:7125"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:80"

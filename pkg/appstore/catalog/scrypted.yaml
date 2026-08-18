@@ -1,0 +1,45 @@
+key: scrypted
+name:
+  vi: Scrypted
+  en: Scrypted
+description:
+  vi: "Trung tâm camera nối được với HomeKit, Google Home và Alexa, chuyển mã ngay trên máy."
+  en: "A camera hub that bridges to HomeKit, Google Home and Alexa, transcoding on the box."
+category: automation
+website: https://scrypted.app
+portField: HTTP_PORT
+versions:
+  - name: "0.144.1"
+    images:
+      - koush/scrypted:v0.144.1-noble-full
+    values:
+      IMAGE: "koush/scrypted:v0.144.1-noble-full"
+  - name: "0.143.0"
+    images:
+      - koush/scrypted:v0.143.0-noble-full
+    values:
+      IMAGE: "koush/scrypted:v0.143.0-noble-full"
+  - name: "0.142.9"
+    images:
+      - koush/scrypted:v0.142.9-noble-full
+    values:
+      IMAGE: "koush/scrypted:v0.142.9-noble-full"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "11080"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:11080"
+      volumes:
+        - data:/server/volume
+
+  volumes:
+    data:

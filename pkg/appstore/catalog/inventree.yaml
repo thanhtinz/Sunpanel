@@ -1,0 +1,82 @@
+key: inventree
+name:
+  vi: InvenTree
+  en: InvenTree
+description:
+  vi: "Quản lý kho linh kiện cho xưởng và phòng lab: tồn kho, nhà cung cấp và định mức vật tư."
+  en: "Parts inventory for workshops and labs: stock levels, suppliers and bills of materials."
+category: productivity
+website: https://inventree.org
+portField: HTTP_PORT
+versions:
+  - name: "1.5.0"
+    images:
+      - inventree/inventree:1.5.0
+      - postgres:16-alpine
+    values:
+      IMAGE: "inventree/inventree:1.5.0"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "1.4.3"
+    images:
+      - inventree/inventree:1.4.3
+      - postgres:16-alpine
+    values:
+      IMAGE: "inventree/inventree:1.4.3"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "0.17.14"
+    images:
+      - inventree/inventree:0.17.14
+      - postgres:16-alpine
+    values:
+      IMAGE: "inventree/inventree:0.17.14"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8629"
+    required: true
+  - key: SECRET_KEY
+    label: {vi: Khóa bí mật, en: Secret key}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        INVENTREE_DB_ENGINE: postgresql
+        INVENTREE_DB_NAME: inventree
+        INVENTREE_DB_HOST: db
+        INVENTREE_DB_PORT: "5432"
+        INVENTREE_DB_USER: inventree
+        INVENTREE_DB_PASSWORD: ${DB_PASSWORD}
+        INVENTREE_SECRET_KEY: ${SECRET_KEY}
+        INVENTREE_AUTO_UPDATE: "true"
+      ports:
+        - "${HTTP_PORT}:8000"
+      volumes:
+        - data:/home/inventree/data
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: inventree
+        POSTGRES_USER: inventree
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    data:
+    db:

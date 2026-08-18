@@ -1,0 +1,47 @@
+key: terraria
+name:
+  vi: Terraria Server
+  en: Terraria Server
+description:
+  vi: "Máy chủ Terraria cho nhóm bạn, giữ thế giới chung để ai vào lúc nào cũng được."
+  en: "A Terraria server for a group of friends, keeping one shared world always available."
+category: tool
+website: https://terraria.org
+portField: GAME_PORT
+versions:
+  - name: "1.4.5.6"
+    images:
+      - ryshe/terraria:vanilla-1.4.5.6
+    values:
+      IMAGE: "ryshe/terraria:vanilla-1.4.5.6"
+fields:
+  - key: GAME_PORT
+    label: {vi: Cổng trò chơi, en: Game port}
+    type: port
+    default: "7777"
+    required: true
+  - key: WORLD_NAME
+    label: {vi: Tên thế giới, en: World name}
+    type: text
+    default: "world"
+    required: true
+  - key: SERVER_PASSWORD
+    label: {vi: Mật khẩu vào máy chủ, en: Server password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        WORLD_FILENAME: "${WORLD_NAME}.wld"
+        TERRARIA_PASS: "${SERVER_PASSWORD}"
+      ports:
+        - "${GAME_PORT}:7777"
+      volumes:
+        - world:/root/.local/share/Terraria/Worlds
+
+  volumes:
+    world:

@@ -1,0 +1,48 @@
+key: octoprint
+name:
+  vi: OctoPrint
+  en: OctoPrint
+description:
+  vi: "Điều khiển máy in 3D qua web: tải tệp in, theo dõi tiến độ và xem camera."
+  en: "Drives a 3D printer over the web: upload prints, watch progress and check the camera."
+category: automation
+website: https://octoprint.org
+portField: HTTP_PORT
+versions:
+  - name: "1.11.8"
+    images:
+      - octoprint/octoprint:1.11.8
+    values:
+      IMAGE: "octoprint/octoprint:1.11.8"
+  - name: "1.10.3"
+    images:
+      - octoprint/octoprint:1.10.3
+    values:
+      IMAGE: "octoprint/octoprint:1.10.3"
+  - name: "1.9.3"
+    images:
+      - octoprint/octoprint:1.9.3
+    values:
+      IMAGE: "octoprint/octoprint:1.9.3"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    help:
+      vi: "Muốn nối tới máy in qua USB thì phải cấp thiết bị cho container; xem tài liệu dự án."
+      en: "To reach a printer over USB the device must be passed into the container; see the project docs."
+    type: port
+    default: "8640"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - data:/octoprint
+
+  volumes:
+    data:

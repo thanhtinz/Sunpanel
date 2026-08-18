@@ -1,0 +1,72 @@
+key: wekan
+name:
+  vi: Wekan
+  en: Wekan
+description:
+  vi: "Bảng Kanban nguồn mở kiểu Trello, có phân quyền theo bảng và bình luận."
+  en: "An open-source Trello-style Kanban board with per-board permissions and comments."
+category: productivity
+website: https://wekan.github.io
+portField: HTTP_PORT
+versions:
+  - name: "11.02"
+    images:
+      - wekanteam/wekan:v11.02
+      - mongo:6
+    values:
+      IMAGE: "wekanteam/wekan:v11.02"
+      DB_IMAGE: "mongo:6"
+  - name: "10.99"
+    images:
+      - wekanteam/wekan:v10.99
+      - mongo:6
+    values:
+      IMAGE: "wekanteam/wekan:v10.99"
+      DB_IMAGE: "mongo:6"
+  - name: "9.99"
+    images:
+      - wekanteam/wekan:v9.99
+      - mongo:6
+    values:
+      IMAGE: "wekanteam/wekan:v9.99"
+      DB_IMAGE: "mongo:6"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8625"
+    required: true
+  - key: ROOT_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:8625"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        MONGO_URL: mongodb://db:27017/wekan
+        ROOT_URL: ${ROOT_URL}
+        WITH_API: "true"
+        WRITABLE_PATH: /data
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - data:/data
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      command: mongod --logpath /dev/null --oplogSize 128 --quiet
+      volumes:
+        - db:/data/db
+
+  volumes:
+    data:
+    db:

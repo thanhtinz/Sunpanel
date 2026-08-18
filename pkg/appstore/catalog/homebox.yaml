@@ -1,0 +1,48 @@
+key: homebox
+name:
+  vi: Homebox
+  en: Homebox
+description:
+  vi: "Sổ kiểm kê đồ đạc trong nhà: món gì để đâu, mua bao giờ, còn bảo hành không."
+  en: "A home inventory: what you own, where it lives, when you bought it, warranty status."
+category: productivity
+website: https://homebox.software
+portField: HTTP_PORT
+versions:
+  - name: "0.26.2"
+    images:
+      - ghcr.io/sysadminsmedia/homebox:0.26.2
+    values:
+      IMAGE: "ghcr.io/sysadminsmedia/homebox:0.26.2"
+  - name: "0.25.0"
+    images:
+      - ghcr.io/sysadminsmedia/homebox:0.25.0
+    values:
+      IMAGE: "ghcr.io/sysadminsmedia/homebox:0.25.0"
+  - name: "0.24.2"
+    images:
+      - ghcr.io/sysadminsmedia/homebox:0.24.2
+    values:
+      IMAGE: "ghcr.io/sysadminsmedia/homebox:0.24.2"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "7745"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        HBOX_LOG_LEVEL: "info"
+        HBOX_OPTIONS_ALLOW_REGISTRATION: "false"
+      ports:
+        - "${HTTP_PORT}:7745"
+      volumes:
+        - data:/data
+
+  volumes:
+    data:

@@ -1,0 +1,66 @@
+key: poste
+name:
+  vi: Poste.io
+  en: Poste.io
+description:
+  vi: "Máy chủ thư trọn gói có giao diện quản trị và webmail, cài xong là gửi nhận được."
+  en: "An all-in-one mail server with an admin UI and webmail that works right after install."
+category: productivity
+website: https://poste.io
+portField: HTTP_PORT
+versions:
+  - name: "2.5.14"
+    images:
+      - analogic/poste.io:2.5.14
+    values:
+      IMAGE: "analogic/poste.io:2.5.14"
+  - name: "2.4.11"
+    images:
+      - analogic/poste.io:2.4.11
+    values:
+      IMAGE: "analogic/poste.io:2.4.11"
+  - name: "2.3.21"
+    images:
+      - analogic/poste.io:2.3.21
+    values:
+      IMAGE: "analogic/poste.io:2.3.21"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8628"
+    required: true
+  - key: SMTP_PORT
+    label: {vi: Cổng SMTP, en: SMTP port}
+    type: port
+    default: "2526"
+    required: true
+  - key: IMAP_PORT
+    label: {vi: Cổng IMAP, en: IMAP port}
+    type: port
+    default: "9931"
+    required: true
+  - key: MAIL_HOSTNAME
+    label: {vi: Tên miền thư, en: Mail hostname}
+    type: text
+    default: "mail.example.com"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        HTTPS: "OFF"
+        h_name: "${MAIL_HOSTNAME}"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:80"
+        - "${SMTP_PORT}:25"
+        - "${IMAP_PORT}:993"
+      volumes:
+        - data:/data
+
+  volumes:
+    data:

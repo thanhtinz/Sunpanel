@@ -1,0 +1,106 @@
+key: glitchtip
+name:
+  vi: GlitchTip
+  en: GlitchTip
+description:
+  vi: "Thu thập lỗi từ ứng dụng của bạn, tương thích Sentry mà nhẹ hơn nhiều."
+  en: "Collects errors from your apps — Sentry-compatible but far lighter."
+category: monitoring
+website: https://glitchtip.com
+portField: HTTP_PORT
+versions:
+  - name: "6.2.6"
+    images:
+      - glitchtip/glitchtip:6.2.6
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "glitchtip/glitchtip:6.2.6"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "5.2.1"
+    images:
+      - glitchtip/glitchtip:v5.2.1
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "glitchtip/glitchtip:v5.2.1"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "4.2.10"
+    images:
+      - glitchtip/glitchtip:v4.2.10
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "glitchtip/glitchtip:v4.2.10"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8626"
+    required: true
+  - key: SECRET_KEY
+    label: {vi: Khóa bí mật, en: Secret key}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+        - redis
+      environment:
+        DATABASE_URL: postgres://glitchtip:${DB_PASSWORD}@db:5432/glitchtip
+        SECRET_KEY: ${SECRET_KEY}
+        REDIS_URL: redis://redis:6379/0
+        PORT: "8000"
+        ENABLE_OPEN_USER_REGISTRATION: "false"
+      ports:
+        - "${HTTP_PORT}:8000"
+      volumes:
+        - uploads:/code/uploads
+
+    worker:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}-worker
+      restart: unless-stopped
+      command: ./bin/run-celery-with-beat.sh
+      depends_on:
+        - db
+        - redis
+      environment:
+        DATABASE_URL: postgres://glitchtip:${DB_PASSWORD}@db:5432/glitchtip
+        SECRET_KEY: ${SECRET_KEY}
+        REDIS_URL: redis://redis:6379/0
+      volumes:
+        - uploads:/code/uploads
+
+    redis:
+      image: ${REDIS_IMAGE}
+      container_name: ${CONTAINER_NAME}-redis
+      restart: unless-stopped
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: glitchtip
+        POSTGRES_USER: glitchtip
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    uploads:
+    db:
