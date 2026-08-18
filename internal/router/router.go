@@ -45,6 +45,7 @@ type Services struct {
 	Nodes     *service.NodeService
 	Plugins   *service.PluginService
 	Alerts    *service.AlertService
+	Settings  *service.SettingsService
 }
 
 // New dựng handler HTTP hoàn chỉnh của panel.
@@ -104,6 +105,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	nodeHandler := v1.NewNodeHandler(svc.Nodes, svc.Audit)
 	pluginHandler := v1.NewPluginHandler(svc.Plugins, svc.Tokens, svc.Audit)
 	firewallHandler := v1.NewFirewallHandler(svc.Firewall)
+	settingsHandler := v1.NewSettingsHandler(svc.Settings)
 	dockerHandler := v1.NewDockerHandler(svc.Docker)
 
 	api := engine.Group("/api/v1")
@@ -408,6 +410,16 @@ func registerAPI(engine *gin.Engine, svc Services) {
 				write.POST("/compress", fileHandler.Compress)
 				write.POST("/extract", fileHandler.Extract)
 			}
+		}
+
+		// Cấu hình của chính panel: cổng, đường dẫn bí mật, HTTPS, danh sách IP.
+		// Chỉ quản trị viên, vì mọi trường ở đây đều đủ sức khóa người khác ra ngoài.
+		settings := authenticated.Group("/settings", middleware.RequireAdmin())
+		{
+			settings.GET("", settingsHandler.Get)
+			settings.PUT("", settingsHandler.Update)
+			settings.POST("/entry-path", settingsHandler.EntryPath)
+			settings.POST("/restart", settingsHandler.Restart)
 		}
 
 		// Quản lý người dùng và nhật ký kiểm toán chỉ dành cho quản trị viên.

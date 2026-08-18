@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -98,7 +99,18 @@ func runServe(args []string) error {
 		printCredentials(creds, instance.URL())
 	}
 
-	return instance.Run()
+	// Khởi động lại theo yêu cầu từ trang cài đặt: tiến trình tự thay chính mình
+	// bằng một bản mới, nên bộ giám sát dịch vụ vẫn thấy đúng một số hiệu tiến
+	// trình và cấu hình mới được đọc lại từ đầu.
+	if err := instance.Run(); err != nil {
+		if errors.Is(err, app.ErrRestart) {
+			_ = instance.Close()
+			cleanup()
+			return app.ExecSelf()
+		}
+		return err
+	}
+	return nil
 }
 
 func runResetPassword(args []string) error {

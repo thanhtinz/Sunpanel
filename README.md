@@ -47,6 +47,9 @@ sunpanel reset-password -user admin
   tự động khóa tài khoản sau nhiều lần sai mật khẩu, xoay vòng refresh token.
 - **Giám sát**: CPU (tổng và từng nhân), RAM, swap, ổ đĩa, tải trung bình, tốc độ mạng
   và đĩa — cập nhật trực tiếp qua WebSocket, kèm biểu đồ lịch sử tới 7 ngày.
+- **Cài đặt panel**: đổi cổng, đường dẫn bí mật, chứng chỉ HTTPS, danh sách IP được
+  phép và thời hạn phiên ngay trên giao diện; panel tự khởi động lại rồi đưa trình
+  duyệt sang địa chỉ mới.
 - **Người dùng**: ba vai trò (quản trị viên / vận hành / chỉ xem), tạo, sửa, vô hiệu hóa,
   đặt lại mật khẩu.
 - **Nhật ký**: nhật ký thao tác và nhật ký đăng nhập, có phân trang.
@@ -191,6 +194,9 @@ sunpanel reset-password -user admin
   sessions), account lockout after repeated failures, refresh-token rotation.
 - **Monitoring**: CPU (total and per core), memory, swap, disks, load average, network and disk
   throughput — streamed live over WebSocket, with history charts up to 7 days.
+- **Panel settings**: change the port, secret path, HTTPS certificate, allowed IPs and
+  session lifetimes from the UI; the panel restarts itself and sends the browser to the
+  new address.
 - **Users**: three roles (admin / operator / read-only), create, edit, disable, reset password.
 - **Logs**: activity log and sign-in log, paginated.
 - **File manager**: browse, edit with Monaco, upload/download, compress and extract.

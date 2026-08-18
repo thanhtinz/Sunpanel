@@ -52,10 +52,11 @@ var allowedCommands = []string{
 
 // App là một thể hiện của panel đã được lắp ráp đầy đủ.
 type App struct {
-	cfg    config.Config
-	db     *gorm.DB
-	server *http.Server
-	svc    router.Services
+	cfg     config.Config
+	db      *gorm.DB
+	server  *http.Server
+	svc     router.Services
+	restart *restartSignal
 }
 
 // New lắp ráp toàn bộ ứng dụng từ cấu hình.
@@ -168,6 +169,10 @@ func New(cfg config.Config) (*App, error) {
 		cfg.AppStore.Root, audit,
 	)
 
+	// Tín hiệu khởi động lại được dựng trước các dịch vụ vì trang cài đặt cầm nó:
+	// đổi cổng hay đường dẫn bí mật xong thì phải có đường yêu cầu panel lên lại.
+	restart := newRestartSignal()
+
 	svc := router.Services{
 		Auth:      auth,
 		Users:     users,
@@ -190,6 +195,7 @@ func New(cfg config.Config) (*App, error) {
 		Firewall:  firewallSvc,
 		Docker:    dockerSvc,
 		Tokens:    tokens,
+		Settings:  service.NewSettingsService(cfg, cfg.ConfigPath(), restart, audit),
 	}
 
 	handler, err := router.New(cfg, svc)
@@ -205,7 +211,7 @@ func New(cfg config.Config) (*App, error) {
 		IdleTimeout:  2 * time.Minute,
 	}
 
-	return &App{cfg: cfg, db: db, server: server, svc: svc}, nil
+	return &App{cfg: cfg, db: db, server: server, svc: svc, restart: restart}, nil
 }
 
 // DB trả về kết nối cơ sở dữ liệu, dùng cho các lệnh phụ trợ trên dòng lệnh.
@@ -254,11 +260,15 @@ func (a *App) Run() error {
 
 	slog.Info("SunPanel đã khởi động", "address", a.URL())
 
+	restarting := false
 	select {
 	case err := <-errCh:
 		return fmt.Errorf("máy chủ HTTP dừng bất thường: %w", err)
 	case <-ctx.Done():
 		slog.Info("nhận tín hiệu dừng, đang tắt máy chủ")
+	case <-a.restart.ch:
+		restarting = true
+		slog.Info("đang tắt máy chủ để khởi động lại")
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), a.cfg.Server.ShutdownTimeout)
@@ -266,6 +276,11 @@ func (a *App) Run() error {
 
 	if err := a.server.Shutdown(shutdownCtx); err != nil {
 		return fmt.Errorf("tắt máy chủ: %w", err)
+	}
+
+	if restarting {
+		slog.Info("SunPanel đã dừng, đang chạy lại")
+		return ErrRestart
 	}
 	slog.Info("SunPanel đã dừng")
 	return nil

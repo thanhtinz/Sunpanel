@@ -179,6 +179,24 @@ var (
 	ProcessListFailed = New(http.StatusInternalServerError, "process.list_failed")
 )
 
+// Các lỗi của trang cài đặt panel.
+var (
+	// SettingsInvalid là giá trị cấu hình không hợp lệ.
+	SettingsInvalid = New(http.StatusBadRequest, "settings.invalid")
+	// SettingsInvalidEntryPath là đường dẫn bí mật không hợp lệ.
+	SettingsInvalidEntryPath = New(http.StatusBadRequest, "settings.invalid_entry_path")
+	// SettingsInvalidDuration là chuỗi thời lượng không đọc được.
+	SettingsInvalidDuration = New(http.StatusBadRequest, "settings.invalid_duration")
+	// SettingsInvalidIP là địa chỉ IP hoặc dải CIDR không hợp lệ.
+	SettingsInvalidIP = New(http.StatusBadRequest, "settings.invalid_ip")
+	// SettingsPortInUse là cổng mới đang bị tiến trình khác chiếm.
+	SettingsPortInUse = New(http.StatusConflict, "settings.port_in_use")
+	// SettingsSaveFailed là không ghi được tệp cấu hình.
+	SettingsSaveFailed = New(http.StatusInternalServerError, "settings.save_failed")
+	// SettingsRestartUnsupported là nền tảng không tự khởi động lại panel được.
+	SettingsRestartUnsupported = New(http.StatusNotImplemented, "settings.restart_unsupported")
+)
+
 // Các lỗi của tác vụ định kỳ.
 var (
 	// CronJobNotFound là không tìm thấy tác vụ.

@@ -56,6 +56,9 @@ import type {
   PortListener,
   ProcessList,
   PageResult,
+  PanelSettingsInfo,
+  PanelSettings,
+  PanelSettingsUpdate,
   QueryResult,
   Role,
   ServiceAction,
@@ -480,6 +483,19 @@ export const websiteApi = {
       body: form,
     })
   },
+}
+
+/** Các endpoint cấu hình của chính panel. */
+export const settingsApi = {
+  get: () => request<PanelSettingsInfo>('/api/v1/settings'),
+
+  update: (payload: PanelSettings) =>
+    request<PanelSettingsUpdate>('/api/v1/settings', { method: 'PUT', body: payload }),
+
+  entryPath: () =>
+    request<{ entryPath: string }>('/api/v1/settings/entry-path', { method: 'POST' }),
+
+  restart: () => request<{ url: string }>('/api/v1/settings/restart', { method: 'POST' }),
 }
 
 /** Các endpoint chứng chỉ TLS. */

@@ -830,3 +830,34 @@ export interface PluginList {
   plugins: PluginManifest[]
   dir: string
 }
+
+/** Cấu hình của chính panel, sửa được ở trang Cài đặt. */
+export interface PanelSettings {
+  host: string
+  port: number
+  entryPath: string
+  tlsEnabled: boolean
+  tlsCertFile: string
+  tlsKeyFile: string
+  accessTokenTtl: string
+  refreshTokenTtl: string
+  maxLoginAttempts: number
+  lockoutDuration: string
+  allowedIps: string[]
+  trustedProxies: string[]
+  monitorInterval: string
+  monitorRetention: string
+  logLevel: string
+}
+
+export interface PanelSettingsInfo extends PanelSettings {
+  dataDir: string
+  fileRoot: string
+  configPath: string
+  restartSupported: boolean
+  pendingRestart: boolean
+}
+
+export interface PanelSettingsUpdate extends PanelSettingsInfo {
+  url: string
+}
