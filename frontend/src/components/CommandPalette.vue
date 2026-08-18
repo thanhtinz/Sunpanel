@@ -39,6 +39,7 @@ const navigationCommands = computed<Command[]>(() => {
     { name: 'backups', keywords: 'sao luu backup khoi phuc restore s3 webdav lich' },
     { name: 'docker', keywords: 'container image volume' },
     { name: 'services', keywords: 'dich vu systemd service' },
+    { name: 'processes', keywords: 'tien trinh process top htop cpu ram kill cong dang mo port listen' },
     { name: 'cron', keywords: 'tac vu dinh ky schedule job' },
     { name: 'alerts', keywords: 'canh bao alert thong bao telegram email webhook nguong' },
     { name: 'firewall', keywords: 'tuong lua port cong' },

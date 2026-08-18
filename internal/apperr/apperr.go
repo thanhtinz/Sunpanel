@@ -165,6 +165,18 @@ var (
 	ServiceProtected = New(http.StatusForbidden, "service.protected")
 )
 
+// Các lỗi của bảng tiến trình.
+var (
+	// ProcessNotFound là tiến trình đã kết thúc trước khi thao tác kịp chạy.
+	ProcessNotFound = New(http.StatusNotFound, "process.not_found")
+	// ProcessProtected là tiến trình panel từ chối kết thúc.
+	ProcessProtected = New(http.StatusForbidden, "process.protected")
+	// ProcessKillFailed là gửi tín hiệu kết thúc thất bại.
+	ProcessKillFailed = New(http.StatusInternalServerError, "process.kill_failed")
+	// ProcessListFailed là không đọc được bảng tiến trình của hệ điều hành.
+	ProcessListFailed = New(http.StatusInternalServerError, "process.list_failed")
+)
+
 // Các lỗi của tác vụ định kỳ.
 var (
 	// CronJobNotFound là không tìm thấy tác vụ.

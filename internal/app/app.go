@@ -176,6 +176,7 @@ func New(cfg config.Config) (*App, error) {
 		Files:     files,
 		Terminal:  terminal,
 		Services:  sysServices,
+		Processes: service.NewProcessService(audit),
 		Cron:      cronJobs,
 		Apps:      apps,
 		Databases: databases,

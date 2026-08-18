@@ -50,6 +50,8 @@ import type {
   Node,
   NodePayload,
   PluginList,
+  PortListener,
+  ProcessList,
   PageResult,
   QueryResult,
   Role,
@@ -202,6 +204,17 @@ export const serviceApi = {
     request<{ logs: string }>(
       `/api/v1/services/${encodeURIComponent(name)}/logs?lines=${lines}`,
     ),
+}
+
+/** Các endpoint bảng tiến trình. */
+export const processApi = {
+  list: (keyword = '') =>
+    request<ProcessList>(`/api/v1/processes?keyword=${encodeURIComponent(keyword)}`),
+
+  listeners: () => request<PortListener[]>('/api/v1/processes/listeners'),
+
+  kill: (pid: number, force = false) =>
+    request<void>(`/api/v1/processes/${pid}?force=${force}`, { method: 'DELETE' }),
 }
 
 /** Các endpoint tác vụ định kỳ. */

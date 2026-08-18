@@ -192,6 +192,35 @@ export interface SystemService {
   protected: boolean
 }
 
+export interface ProcessInfo {
+  pid: number
+  ppid: number
+  name: string
+  username: string
+  command: string
+  status: string
+  cpu: number
+  memoryPercent: number
+  memoryRss: number
+  threads: number
+  started: number
+  protected: boolean
+}
+
+export interface ProcessList {
+  items: ProcessInfo[]
+  total: number
+  truncated: boolean
+}
+
+export interface PortListener {
+  protocol: string
+  address: string
+  port: number
+  pid: number
+  process: string
+}
+
 export interface ServiceManagerStatus {
   available: boolean
   manager: string

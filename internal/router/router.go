@@ -31,6 +31,7 @@ type Services struct {
 	Files     *service.FileService
 	Terminal  *service.TerminalService
 	Services  *service.SystemServiceManager
+	Processes *service.ProcessService
 	Cron      *service.CronService
 	Apps      *service.AppStoreService
 	Databases *service.DatabaseService
@@ -92,6 +93,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	fileHandler := v1.NewFileHandler(svc.Files, svc.Audit, svc.Tokens)
 	terminalHandler := v1.NewTerminalHandler(svc.Terminal)
 	sysServiceHandler := v1.NewSysServiceHandler(svc.Services)
+	processHandler := v1.NewProcessHandler(svc.Processes)
 	cronHandler := v1.NewCronHandler(svc.Cron, svc.Audit)
 	websiteHandler := v1.NewWebsiteHandler(svc.Websites, svc.Certs, svc.Audit)
 	appHandler := v1.NewAppStoreHandler(svc.Apps, svc.Audit)
@@ -366,6 +368,15 @@ func registerAPI(engine *gin.Engine, svc Services) {
 			services.GET("/:name", sysServiceHandler.Get)
 			services.GET("/:name/logs", sysServiceHandler.Logs)
 			services.POST("/:name/:action", middleware.RequireWrite(), sysServiceHandler.Control)
+		}
+
+		// Bảng tiến trình: xem thì ai đăng nhập cũng được, còn kết thúc một tiến
+		// trình là thao tác phá hủy nên đòi quyền vận hành.
+		processes := authenticated.Group("/processes")
+		{
+			processes.GET("", processHandler.List)
+			processes.GET("/listeners", processHandler.Listeners)
+			processes.DELETE("/:pid", middleware.RequireWrite(), processHandler.Kill)
 		}
 
 		// Terminal là shell đầy đủ trên máy chủ, nên chỉ dành cho quyền vận hành
