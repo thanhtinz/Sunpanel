@@ -27,6 +27,7 @@ import IconTerminal from '@/components/icons/IconTerminal.vue'
 import IconServices from '@/components/icons/IconServices.vue'
 import IconPulse from '@/components/icons/IconPulse.vue'
 import IconSliders from '@/components/icons/IconSliders.vue'
+import IconKey from '@/components/icons/IconKey.vue'
 import IconClock from '@/components/icons/IconClock.vue'
 import IconShield from '@/components/icons/IconShield.vue'
 import IconDocker from '@/components/icons/IconDocker.vue'
@@ -132,6 +133,7 @@ const menuOptions = computed<MenuOption[]>(() => {
         item('nodes', IconNodes),
         item('plugins', IconPlugin),
         item('users', IconUsers),
+        item('accounts', IconKey),
         item('audit', IconLogs),
         item('settings', IconSliders),
       ],

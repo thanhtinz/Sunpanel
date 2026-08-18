@@ -46,6 +46,7 @@ type Services struct {
 	Plugins   *service.PluginService
 	Alerts    *service.AlertService
 	Settings  *service.SettingsService
+	SysUsers  *service.SystemUserService
 }
 
 // New dựng handler HTTP hoàn chỉnh của panel.
@@ -106,6 +107,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	pluginHandler := v1.NewPluginHandler(svc.Plugins, svc.Tokens, svc.Audit)
 	firewallHandler := v1.NewFirewallHandler(svc.Firewall)
 	settingsHandler := v1.NewSettingsHandler(svc.Settings)
+	sysUserHandler := v1.NewSystemUserHandler(svc.SysUsers)
 	dockerHandler := v1.NewDockerHandler(svc.Docker)
 
 	api := engine.Group("/api/v1")
@@ -410,6 +412,22 @@ func registerAPI(engine *gin.Engine, svc Services) {
 				write.POST("/compress", fileHandler.Compress)
 				write.POST("/extract", fileHandler.Extract)
 			}
+		}
+
+		// Tài khoản đăng nhập của máy chủ: tạo được tài khoản có sudo nghĩa là tạo
+		// được một người ngang quyền mình, nên chỉ quản trị viên panel được vào.
+		sysUsers := authenticated.Group("/system-users", middleware.RequireAdmin())
+		{
+			sysUsers.GET("/status", sysUserHandler.Status)
+			sysUsers.GET("", sysUserHandler.List)
+			sysUsers.POST("", sysUserHandler.Create)
+			sysUsers.POST("/:name/password", sysUserHandler.Password)
+			sysUsers.POST("/:name/locked", sysUserHandler.Locked)
+			sysUsers.POST("/:name/sudo", sysUserHandler.Sudo)
+			sysUsers.DELETE("/:name", sysUserHandler.Delete)
+			sysUsers.GET("/:name/keys", sysUserHandler.Keys)
+			sysUsers.POST("/:name/keys", sysUserHandler.AddKey)
+			sysUsers.DELETE("/:name/keys", sysUserHandler.RemoveKey)
 		}
 
 		// Cấu hình của chính panel: cổng, đường dẫn bí mật, HTTPS, danh sách IP.

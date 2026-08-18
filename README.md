@@ -47,6 +47,8 @@ sunpanel reset-password -user admin
   tự động khóa tài khoản sau nhiều lần sai mật khẩu, xoay vòng refresh token.
 - **Giám sát**: CPU (tổng và từng nhân), RAM, swap, ổ đĩa, tải trung bình, tốc độ mạng
   và đĩa — cập nhật trực tiếp qua WebSocket, kèm biểu đồ lịch sử tới 7 ngày.
+- **Tài khoản máy chủ**: tạo, khóa, cấp sudo và xóa tài khoản đăng nhập của hệ điều
+  hành; gắn khóa SSH công khai với đúng quyền tệp mà sshd đòi hỏi.
 - **Cài đặt panel**: đổi cổng, đường dẫn bí mật, chứng chỉ HTTPS, danh sách IP được
   phép và thời hạn phiên ngay trên giao diện; panel tự khởi động lại rồi đưa trình
   duyệt sang địa chỉ mới.
@@ -194,6 +196,8 @@ sunpanel reset-password -user admin
   sessions), account lockout after repeated failures, refresh-token rotation.
 - **Monitoring**: CPU (total and per core), memory, swap, disks, load average, network and disk
   throughput — streamed live over WebSocket, with history charts up to 7 days.
+- **Server accounts**: create, lock, grant sudo and delete operating system logins;
+  attach SSH public keys with exactly the file permissions sshd insists on.
 - **Panel settings**: change the port, secret path, HTTPS certificate, allowed IPs and
   session lifetimes from the UI; the panel restarts itself and sends the browser to the
   new address.

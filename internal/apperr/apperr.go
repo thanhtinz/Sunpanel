@@ -179,6 +179,28 @@ var (
 	ProcessListFailed = New(http.StatusInternalServerError, "process.list_failed")
 )
 
+// Các lỗi của quản lý tài khoản máy chủ.
+var (
+	// SysUserUnavailable là máy không quản lý được tài khoản hệ điều hành.
+	SysUserUnavailable = New(http.StatusServiceUnavailable, "sysuser.unavailable")
+	// SysUserInvalidName là tên tài khoản không hợp lệ.
+	SysUserInvalidName = New(http.StatusBadRequest, "sysuser.invalid_name")
+	// SysUserNotFound là không tìm thấy tài khoản.
+	SysUserNotFound = New(http.StatusNotFound, "sysuser.not_found")
+	// SysUserExists là tên tài khoản đã có người dùng.
+	SysUserExists = New(http.StatusConflict, "sysuser.exists")
+	// SysUserProtected là tài khoản panel từ chối khóa hoặc xóa.
+	SysUserProtected = New(http.StatusForbidden, "sysuser.protected")
+	// SysUserInvalidKey là chuỗi không phải khóa công khai SSH hợp lệ.
+	SysUserInvalidKey = New(http.StatusBadRequest, "sysuser.invalid_key")
+	// SysUserKeyExists là khóa đã có trong danh sách của tài khoản.
+	SysUserKeyExists = New(http.StatusConflict, "sysuser.key_exists")
+	// SysUserKeyNotFound là không tìm thấy khóa cần gỡ.
+	SysUserKeyNotFound = New(http.StatusNotFound, "sysuser.key_not_found")
+	// SysUserActionFailed là lệnh quản lý tài khoản thất bại.
+	SysUserActionFailed = New(http.StatusInternalServerError, "sysuser.action_failed")
+)
+
 // Các lỗi của trang cài đặt panel.
 var (
 	// SettingsInvalid là giá trị cấu hình không hợp lệ.

@@ -48,6 +48,7 @@ const navigationCommands = computed<Command[]>(() => {
     { name: 'nodes', adminOnly: true, keywords: 'node may chu da node agent tu xa remote cluster' },
     { name: 'users', adminOnly: true, keywords: 'nguoi dung user account' },
     { name: 'audit', adminOnly: true, keywords: 'nhat ky log audit' },
+    { name: 'accounts', adminOnly: true, keywords: 'tai khoan may chu linux user ssh key khoa cong khai useradd sudo' },
     { name: 'settings', adminOnly: true, keywords: 'cai dat setting cau hinh cong port duong dan bi mat https ssl ip khoi dong lai' },
     { name: 'profile', keywords: 'tai khoan account 2fa mat khau' },
   ]

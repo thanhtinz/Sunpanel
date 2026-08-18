@@ -20,9 +20,10 @@ const { connected, latest } = useMonitorStream()
 
 type Meter = { key: string; label: string; value: number }
 
+// Chỉ CPU và ổ đĩa: ba vạch ở đáy menu là để liếc qua, còn phần bộ nhớ đã có
+// thẻ riêng đầy đủ ở trang Tổng quan.
 const meters = computed<Meter[]>(() => [
   { key: 'cpu', label: t('dashboard.cpu'), value: latest.value?.cpu ?? 0 },
-  { key: 'memory', label: t('dashboard.memory'), value: latest.value?.memory ?? 0 },
   { key: 'disk', label: t('dashboard.disk'), value: latest.value?.disk ?? 0 },
 ])
 

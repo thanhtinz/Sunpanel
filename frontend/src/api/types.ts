@@ -861,3 +861,35 @@ export interface PanelSettingsInfo extends PanelSettings {
 export interface PanelSettingsUpdate extends PanelSettingsInfo {
   url: string
 }
+
+/** Tài khoản đăng nhập của chính máy chủ. */
+export interface SystemAccount {
+  name: string
+  uid: number
+  gid: number
+  comment: string
+  home: string
+  shell: string
+  locked: boolean
+  noPassword: boolean
+  system: boolean
+  groups: string[]
+  sudo: boolean
+  keys: number
+}
+
+export interface SshKey {
+  type: string
+  comment: string
+  fingerprint: string
+  line: string
+}
+
+export interface SystemAccountPayload {
+  name: string
+  comment: string
+  shell: string
+  password: string
+  createHome: boolean
+  sudo: boolean
+}

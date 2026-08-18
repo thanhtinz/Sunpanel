@@ -28,6 +28,7 @@ import (
 	"github.com/thanhtinz/sunpanel/pkg/host"
 	"github.com/thanhtinz/sunpanel/pkg/plugin"
 	"github.com/thanhtinz/sunpanel/pkg/sysservice"
+	"github.com/thanhtinz/sunpanel/pkg/sysuser"
 	"github.com/thanhtinz/sunpanel/pkg/webserver"
 )
 
@@ -169,6 +170,13 @@ func New(cfg config.Config) (*App, error) {
 		cfg.AppStore.Root, audit,
 	)
 
+	// Tài khoản hệ điều hành nằm ngoài phạm vi trình quản lý tệp, và các lệnh
+	// dưới đây không có ở host chung, nên phần này dùng host riêng của mình.
+	userHost := host.NewLocalHost("/", []string{
+		"useradd", "usermod", "userdel", "gpasswd", "chpasswd", "chown",
+	})
+	sysUsers := service.NewSystemUserService(sysuser.New(userHost), audit)
+
 	// Tín hiệu khởi động lại được dựng trước các dịch vụ vì trang cài đặt cầm nó:
 	// đổi cổng hay đường dẫn bí mật xong thì phải có đường yêu cầu panel lên lại.
 	restart := newRestartSignal()
@@ -196,6 +204,7 @@ func New(cfg config.Config) (*App, error) {
 		Docker:    dockerSvc,
 		Tokens:    tokens,
 		Settings:  service.NewSettingsService(cfg, cfg.ConfigPath(), restart, audit),
+		SysUsers:  sysUsers,
 	}
 
 	handler, err := router.New(cfg, svc)

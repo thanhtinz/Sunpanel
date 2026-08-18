@@ -65,6 +65,9 @@ import type {
   ServiceManagerStatus,
   Session,
   Snapshot,
+  SshKey,
+  SystemAccount,
+  SystemAccountPayload,
   SystemService,
   TokenPair,
   TotpSetup,
@@ -483,6 +486,54 @@ export const websiteApi = {
       body: form,
     })
   },
+}
+
+/** Các endpoint tài khoản đăng nhập của máy chủ. */
+export const systemAccountApi = {
+  status: () => request<{ available: boolean }>('/api/v1/system-users/status'),
+
+  list: () => request<SystemAccount[]>('/api/v1/system-users'),
+
+  create: (payload: SystemAccountPayload) =>
+    request<void>('/api/v1/system-users', { method: 'POST', body: payload }),
+
+  setPassword: (name: string, password: string) =>
+    request<void>(`/api/v1/system-users/${encodeURIComponent(name)}/password`, {
+      method: 'POST',
+      body: { password },
+    }),
+
+  setLocked: (name: string, locked: boolean) =>
+    request<void>(`/api/v1/system-users/${encodeURIComponent(name)}/locked`, {
+      method: 'POST',
+      body: { locked },
+    }),
+
+  setSudo: (name: string, sudo: boolean) =>
+    request<void>(`/api/v1/system-users/${encodeURIComponent(name)}/sudo`, {
+      method: 'POST',
+      body: { sudo },
+    }),
+
+  remove: (name: string, removeHome: boolean) =>
+    request<void>(
+      `/api/v1/system-users/${encodeURIComponent(name)}?removeHome=${removeHome}`,
+      { method: 'DELETE' },
+    ),
+
+  keys: (name: string) => request<SshKey[]>(`/api/v1/system-users/${encodeURIComponent(name)}/keys`),
+
+  addKey: (name: string, key: string) =>
+    request<SshKey>(`/api/v1/system-users/${encodeURIComponent(name)}/keys`, {
+      method: 'POST',
+      body: { key },
+    }),
+
+  removeKey: (name: string, fingerprint: string) =>
+    request<void>(
+      `/api/v1/system-users/${encodeURIComponent(name)}/keys?fingerprint=${encodeURIComponent(fingerprint)}`,
+      { method: 'DELETE' },
+    ),
 }
 
 /** Các endpoint cấu hình của chính panel. */
