@@ -19,7 +19,7 @@ func newTestFileService(t *testing.T) (*FileService, string) {
 
 	root := t.TempDir()
 	h := host.NewLocalHost(root, nil)
-	return NewFileService(h, NewAuditService(nil)), root
+	return NewFileService(h, NewAuditService(newMemoryDB(t))), root
 }
 
 func writeFile(t *testing.T, path, content string) {

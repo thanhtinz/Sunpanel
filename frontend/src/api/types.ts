@@ -172,3 +172,29 @@ export interface FileContent {
 }
 
 export type ArchiveFormat = 'zip' | 'tar.gz'
+
+export type ServiceState =
+  | 'active'
+  | 'inactive'
+  | 'failed'
+  | 'activating'
+  | 'deactivating'
+  | 'unknown'
+
+export interface SystemService {
+  name: string
+  description: string
+  state: ServiceState
+  subState: string
+  enabled: boolean
+  enabledState: string
+  loaded: boolean
+  protected: boolean
+}
+
+export interface ServiceManagerStatus {
+  available: boolean
+  manager: string
+}
+
+export type ServiceAction = 'start' | 'stop' | 'restart' | 'reload' | 'enable' | 'disable'

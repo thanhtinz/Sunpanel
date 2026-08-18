@@ -21,10 +21,27 @@ import (
 	"github.com/thanhtinz/sunpanel/internal/service"
 	"github.com/thanhtinz/sunpanel/pkg/crypto"
 	"github.com/thanhtinz/sunpanel/pkg/host"
+	"github.com/thanhtinz/sunpanel/pkg/sysservice"
 )
 
 // sessionCleanupInterval là chu kỳ dọn các phiên đăng nhập đã hết hạn.
 const sessionCleanupInterval = 6 * time.Hour
+
+// allowedCommands là danh sách trắng các chương trình mà panel được phép chạy.
+//
+// Đây là hàng rào cuối cùng: kể cả khi một lỗi ở tầng trên cho phép kẻ tấn công
+// điều khiển tên chương trình, họ cũng chỉ chạy được đúng những gì trong danh
+// sách này. Terminal không đi qua đây — nó mở PTY riêng và được chặn bằng phân
+// quyền, vì bản chất terminal là chạy lệnh tùy ý.
+var allowedCommands = []string{
+	"systemctl",  // quản lý dịch vụ
+	"journalctl", // đọc nhật ký dịch vụ
+	"ufw",        // tường lửa trên Debian/Ubuntu
+	"firewall-cmd",
+	"nft",
+	"iptables",
+	"ip6tables",
+}
 
 // App là một thể hiện của panel đã được lắp ráp đầy đủ.
 type App struct {
@@ -54,9 +71,7 @@ func New(cfg config.Config) (*App, error) {
 		return nil, fmt.Errorf("khởi tạo bộ mã hóa bí mật: %w", err)
 	}
 
-	// Danh sách lệnh cho phép để rỗng ở phiên bản này: các module cần chạy lệnh hệ
-	// thống (dịch vụ, tường lửa) sẽ khai báo allowlist riêng khi được thêm vào.
-	localHost := host.NewLocalHost(cfg.Server.FileRoot, nil)
+	localHost := host.NewLocalHost(cfg.Server.FileRoot, allowedCommands)
 
 	tokens := service.NewTokenIssuer(cfg.Security.JWTSecret, cfg.Security.AccessTokenTTL)
 	audit := service.NewAuditService(db)
@@ -65,6 +80,7 @@ func New(cfg config.Config) (*App, error) {
 	monitor := service.NewMonitorService(db, localHost, cfg.Monitor)
 	files := service.NewFileService(localHost, audit)
 	terminal := service.NewTerminalService(localHost, cfg.Server.FileRoot, audit)
+	sysServices := service.NewSystemServiceManager(sysservice.NewSystemd(localHost), audit)
 
 	svc := router.Services{
 		Auth:     auth,
@@ -73,6 +89,7 @@ func New(cfg config.Config) (*App, error) {
 		Monitor:  monitor,
 		Files:    files,
 		Terminal: terminal,
+		Services: sysServices,
 		Tokens:   tokens,
 	}
 

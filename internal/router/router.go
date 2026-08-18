@@ -30,6 +30,7 @@ type Services struct {
 	Monitor  *service.MonitorService
 	Files    *service.FileService
 	Terminal *service.TerminalService
+	Services *service.SystemServiceManager
 	Tokens   *service.TokenIssuer
 }
 
@@ -78,6 +79,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	monitorHandler := v1.NewMonitorHandler(svc.Monitor)
 	fileHandler := v1.NewFileHandler(svc.Files, svc.Audit, svc.Tokens)
 	terminalHandler := v1.NewTerminalHandler(svc.Terminal)
+	sysServiceHandler := v1.NewSysServiceHandler(svc.Services)
 
 	api := engine.Group("/api/v1")
 
@@ -120,6 +122,16 @@ func registerAPI(engine *gin.Engine, svc Services) {
 		}
 
 		authenticated.PATCH("/users/me/preferences", userHandler.UpdatePreferences)
+
+		// Xem trạng thái dịch vụ thì ai đăng nhập cũng được; điều khiển thì không.
+		services := authenticated.Group("/services")
+		{
+			services.GET("/status", sysServiceHandler.Status)
+			services.GET("", sysServiceHandler.List)
+			services.GET("/:name", sysServiceHandler.Get)
+			services.GET("/:name/logs", sysServiceHandler.Logs)
+			services.POST("/:name/:action", middleware.RequireWrite(), sysServiceHandler.Control)
+		}
 
 		// Terminal là shell đầy đủ trên máy chủ, nên chỉ dành cho quyền vận hành
 		// trở lên — tài khoản chỉ xem không được chạm vào.

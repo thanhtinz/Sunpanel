@@ -45,7 +45,8 @@
     "profile": "Account",
     "logout": "Sign out",
     "files": "Files",
-    "terminal": "Terminal"
+    "terminal": "Terminal",
+    "services": "Services"
   },
   "dashboard": {
     "title": "System overview",
@@ -258,5 +259,40 @@
     "not_supported": "This platform does not support the terminal yet.",
     "clear": "Clear screen",
     "startPath": "Starting folder"
+  },
+  "services": {
+    "title": "System services",
+    "name": "Service",
+    "description": "Description",
+    "state": "State",
+    "autostart": "Autostart",
+    "running": "Running",
+    "stopped": "Stopped",
+    "failed": "Failed",
+    "starting": "Starting",
+    "stopping": "Stopping",
+    "unknown": "Unknown",
+    "start": "Start",
+    "stop": "Stop",
+    "restart": "Restart",
+    "reload": "Reload config",
+    "enable": "Enable autostart",
+    "disable": "Disable autostart",
+    "logs": "View logs",
+    "logsOf": "Logs — {name}",
+    "protected": "Protected",
+    "protectedHint": "The panel refuses to stop this service so you cannot lock yourself out of the server.",
+    "done": "Done",
+    "search": "Search services…",
+    "onlyRunning": "Running only",
+    "managerUnavailable": "This server has no usable service manager ({manager}).",
+    "noLogs": "No log lines yet."
+  },
+  "service": {
+    "manager_unavailable": "The server has no usable service manager.",
+    "not_found": "Service not found.",
+    "invalid_name": "Invalid service name.",
+    "action_failed": "The service action failed.",
+    "protected": "Service {name} is protected by the panel and cannot be stopped or disabled."
   }
 }

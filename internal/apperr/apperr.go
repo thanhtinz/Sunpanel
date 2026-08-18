@@ -150,3 +150,17 @@ var (
 	// TerminalNotSupported là nền tảng hiện tại chưa mở được phiên terminal.
 	TerminalNotSupported = New(http.StatusNotImplemented, "terminal.not_supported")
 )
+
+// Các lỗi của quản lý dịch vụ hệ thống.
+var (
+	// ServiceManagerUnavailable là máy chủ không có trình quản lý dịch vụ dùng được.
+	ServiceManagerUnavailable = New(http.StatusServiceUnavailable, "service.manager_unavailable")
+	// ServiceNotFound là không tìm thấy dịch vụ.
+	ServiceNotFound = New(http.StatusNotFound, "service.not_found")
+	// ServiceInvalidName là tên dịch vụ không hợp lệ.
+	ServiceInvalidName = New(http.StatusBadRequest, "service.invalid_name")
+	// ServiceActionFailed là thao tác điều khiển dịch vụ thất bại.
+	ServiceActionFailed = New(http.StatusInternalServerError, "service.action_failed")
+	// ServiceProtected là dịch vụ được panel bảo vệ, không cho dừng hoặc tắt.
+	ServiceProtected = New(http.StatusForbidden, "service.protected")
+)

@@ -10,8 +10,11 @@ import type {
   Overview,
   PageResult,
   Role,
+  ServiceAction,
+  ServiceManagerStatus,
   Session,
   Snapshot,
+  SystemService,
   TokenPair,
   TotpSetup,
   User,
@@ -138,6 +141,21 @@ export const fileApi = {
   },
 
   uploadUrl: () => `${baseUrl()}/api/v1/files/upload`,
+}
+
+/** Các endpoint quản lý dịch vụ hệ thống. */
+export const serviceApi = {
+  status: () => request<ServiceManagerStatus>('/api/v1/services/status'),
+
+  list: () => request<SystemService[]>('/api/v1/services'),
+
+  control: (name: string, action: ServiceAction) =>
+    request<void>(`/api/v1/services/${encodeURIComponent(name)}/${action}`, { method: 'POST' }),
+
+  logs: (name: string, lines = 200) =>
+    request<{ logs: string }>(
+      `/api/v1/services/${encodeURIComponent(name)}/logs?lines=${lines}`,
+    ),
 }
 
 /** Các endpoint nhật ký kiểm toán. */

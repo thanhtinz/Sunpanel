@@ -45,7 +45,8 @@
     "profile": "Tài khoản",
     "logout": "Đăng xuất",
     "files": "Tệp",
-    "terminal": "Terminal"
+    "terminal": "Terminal",
+    "services": "Dịch vụ"
   },
   "dashboard": {
     "title": "Tổng quan hệ thống",
@@ -258,5 +259,40 @@
     "not_supported": "Nền tảng này chưa hỗ trợ terminal.",
     "clear": "Xóa màn hình",
     "startPath": "Thư mục bắt đầu"
+  },
+  "services": {
+    "title": "Dịch vụ hệ thống",
+    "name": "Tên dịch vụ",
+    "description": "Mô tả",
+    "state": "Trạng thái",
+    "autostart": "Tự khởi động",
+    "running": "Đang chạy",
+    "stopped": "Đã dừng",
+    "failed": "Lỗi",
+    "starting": "Đang khởi động",
+    "stopping": "Đang dừng",
+    "unknown": "Không rõ",
+    "start": "Khởi động",
+    "stop": "Dừng",
+    "restart": "Khởi động lại",
+    "reload": "Nạp lại cấu hình",
+    "enable": "Bật tự khởi động",
+    "disable": "Tắt tự khởi động",
+    "logs": "Xem nhật ký",
+    "logsOf": "Nhật ký — {name}",
+    "protected": "Được bảo vệ",
+    "protectedHint": "Panel không cho dừng dịch vụ này để bạn không tự khóa mình khỏi máy chủ.",
+    "done": "Đã thực hiện",
+    "search": "Tìm dịch vụ…",
+    "onlyRunning": "Chỉ dịch vụ đang chạy",
+    "managerUnavailable": "Máy chủ này không có trình quản lý dịch vụ khả dụng ({manager}).",
+    "noLogs": "Chưa có dòng nhật ký nào."
+  },
+  "service": {
+    "manager_unavailable": "Máy chủ không có trình quản lý dịch vụ khả dụng.",
+    "not_found": "Không tìm thấy dịch vụ.",
+    "invalid_name": "Tên dịch vụ không hợp lệ.",
+    "action_failed": "Thao tác với dịch vụ thất bại.",
+    "protected": "Dịch vụ {name} được panel bảo vệ, không thể dừng hoặc tắt."
   }
 }

@@ -21,6 +21,7 @@ import { SUPPORTED_LOCALES, setLocale, type Locale } from '@/locales'
 import IconGauge from '@/components/icons/IconGauge.vue'
 import IconFolder from '@/components/icons/IconFolder.vue'
 import IconTerminal from '@/components/icons/IconTerminal.vue'
+import IconServices from '@/components/icons/IconServices.vue'
 import IconUsers from '@/components/icons/IconUsers.vue'
 import IconLogs from '@/components/icons/IconLogs.vue'
 import IconMoon from '@/components/icons/IconMoon.vue'
@@ -54,6 +55,11 @@ const menuOptions = computed<MenuOption[]>(() => {
       label: renderLink('files', t('nav.files')),
       key: 'files',
       icon: renderIcon(IconFolder),
+    },
+    {
+      label: renderLink('services', t('nav.services')),
+      key: 'services',
+      icon: renderIcon(IconServices),
     },
   ]
 

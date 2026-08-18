@@ -186,7 +186,7 @@ func TestClampSize(t *testing.T) {
 func TestTerminalServiceUnavailableOnUnsupportedHost(t *testing.T) {
 	// Host không hiện thực TerminalHost thì service phải báo không hỗ trợ thay vì
 	// gây panic khi có người mở terminal.
-	svc := &TerminalService{audit: NewAuditService(nil)}
+	svc := &TerminalService{audit: NewAuditService(newMemoryDB(t))}
 
 	if svc.Available() {
 		t.Fatal("service phải báo không khả dụng khi host không mở được PTY")
