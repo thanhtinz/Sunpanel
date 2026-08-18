@@ -1,21 +1,60 @@
 :root {
   color-scheme: light;
+
   /* DejaVu Sans Mono — phông đẳng khoảng mặc định trên phần lớn bản Linux —
      dựng sai dấu tiếng Việt: "để" hiện thành "đê`". Liệt kê trước các phông
      dựng đúng rồi mới rơi về monospace chung. */
   --sp-font-mono: 'Cascadia Mono', Consolas, Menlo, 'Liberation Mono', 'Courier New', monospace;
-  --sp-bg: #f5f6f8;
-  --sp-bg-elevated: #ffffff;
-  --sp-border: #e5e7eb;
-  --sp-text-muted: #6b7280;
+
+  /* Phông giao diện là phông hệ thống, có chủ đích: binary chạy được trên VPS
+     không có Internet và chính sách nội dung chặn mọi host phông bên ngoài, nên
+     một phông tải về sẽ là lời hứa hỏng đúng lúc cần nhất. Cá tính của chữ đến
+     từ thang cỡ và khoảng cách bên dưới, không từ mặt chữ. */
+  --sp-font-ui:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans',
+    sans-serif;
+
+  /* Nền trung tính ám xanh lá rất nhạt, không phải xám lạnh: xám lạnh là mặc
+     định của mọi khung quản trị. */
+  --sp-bg: #f4f6f3;
+  --sp-surface: #ffffff;
+  --sp-surface-sunken: #eef1ed;
+  --sp-border: #e0e4dd;
+  --sp-border-strong: #cdd3c8;
+  --sp-text: #161917;
+  --sp-text-muted: #6a706c;
+  --sp-text-faint: #949a95;
+
+  /* Xanh lá là màu hành động, hổ phách là màu nhận diện. Tách vai trò để màu
+     mang thông tin chứ không trang trí. */
+  --sp-action: #15a34a;
+  --sp-sun: #e8930c;
+  --sp-warn: #d97706;
+  --sp-danger: #dc2626;
+
+  --sp-shadow: 0 1px 2px rgba(22, 25, 23, 0.04), 0 1px 3px rgba(22, 25, 23, 0.06);
+  --sp-radius-card: 10px;
+  --sp-radius-control: 7px;
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --sp-bg: #101014;
-  --sp-bg-elevated: #18181c;
-  --sp-border: #2d2d31;
-  --sp-text-muted: #9ca3af;
+
+  --sp-bg: #0e100f;
+  --sp-surface: #171a18;
+  --sp-surface-sunken: #101312;
+  --sp-border: #262a27;
+  --sp-border-strong: #343a36;
+  --sp-text: #e8ebe8;
+  --sp-text-muted: #9aa19c;
+  --sp-text-faint: #6d746f;
+
+  --sp-action: #31b866;
+  --sp-sun: #f2a93b;
+  --sp-warn: #e08a2b;
+  --sp-danger: #ef4444;
+
+  --sp-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 
 * {
@@ -30,9 +69,7 @@ body,
 }
 
 body {
-  font-family:
-    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
-    'Noto Sans', sans-serif;
+  font-family: var(--sp-font-ui);
   background: var(--sp-bg);
   /* Panel hiển thị nhiều số liệu tiếng Việt có dấu; -webkit-font-smoothing giúp
      chữ có dấu không bị dày và nhòe trên màn hình thường. */
@@ -48,14 +85,64 @@ samp {
   font-family: var(--sp-font-mono);
 }
 
+/* ---- Thang chữ ----
+   Cá tính của bảng điều khiển nằm ở đây: nhãn nhỏ viết hoa giãn rộng làm mốc
+   phân đoạn, và mọi con số đều cân cột để cột số không nhảy khi giá trị đổi. */
+
+/* Nhãn phân đoạn: nhỏ, viết hoa, giãn chữ — đọc như nhãn khắc trên thiết bị đo. */
+.sp-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sp-text-faint);
+}
+
 /* Số liệu đo lường dùng chữ đẳng khoảng để cột số không nhảy khi giá trị đổi. */
 .sp-metric {
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
 }
 
+/* Con số lớn của thẻ chỉ số: siết khoảng chữ để dãy số đọc thành một khối. */
+.sp-figure {
+  font-size: 27px;
+  font-weight: 650;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  color: var(--sp-text);
+}
+
 .sp-muted {
   color: var(--sp-text-muted);
+}
+
+/* ---- Chuyển động ----
+   Chỉ ở nơi mang nghĩa: đổi trang và các thay đổi trạng thái. */
+
+.sp-fade-enter-active,
+.sp-fade-leave-active {
+  transition: opacity 0.14s ease, transform 0.14s ease;
+}
+
+.sp-fade-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.sp-fade-leave-to {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Bảng dữ liệu có nhiều cột không thể co vừa màn hình điện thoại. Cho phép cuộn
@@ -91,4 +178,15 @@ samp {
     width: calc(100vw - 24px) !important;
     max-width: calc(100vw - 24px) !important;
   }
+}
+
+/* Nhãn nhóm trong menu: cùng ngữ điệu với nhãn phân đoạn ở nội dung.
+   Không dùng được lớp .sp-eyebrow vì Naive UI dựng nhãn nhóm ngoài phạm vi
+   scoped của MainLayout. */
+.nav-group {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sp-text-faint);
 }

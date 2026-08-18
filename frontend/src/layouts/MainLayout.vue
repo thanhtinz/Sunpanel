@@ -38,6 +38,7 @@ import IconPlugin from '@/components/icons/IconPlugin.vue'
 import IconMenu from '@/components/icons/IconMenu.vue'
 import IconSearch from '@/components/icons/IconSearch.vue'
 import CommandPalette from '@/components/CommandPalette.vue'
+import StatusRail from '@/components/StatusRail.vue'
 import IconUsers from '@/components/icons/IconUsers.vue'
 import IconLogs from '@/components/icons/IconLogs.vue'
 import IconMoon from '@/components/icons/IconMoon.vue'
@@ -67,84 +68,92 @@ function renderLink(name: string, label: string) {
   return () => h(RouterLink, { to: { name } }, { default: () => label })
 }
 
+/** Nhãn nhóm trong menu.
+ *
+ * Mười lăm mục xếp phẳng là một bức tường chữ; chia nhóm cho biết mục nào thuộc
+ * loại việc nào, nên tìm bằng mắt nhanh hơn hẳn. */
+function renderGroupLabel(label: string) {
+  return () => h('span', { class: 'nav-group' }, label)
+}
+
 const menuOptions = computed<MenuOption[]>(() => {
+  const item = (name: string, icon: Component): MenuOption => ({
+    label: renderLink(name, t(`nav.${name}`)),
+    key: name,
+    icon: renderIcon(icon),
+  })
+
   const options: MenuOption[] = [
+    item('dashboard', IconGauge),
+
     {
-      label: renderLink('dashboard', t('nav.dashboard')),
-      key: 'dashboard',
-      icon: renderIcon(IconGauge),
+      type: 'group',
+      key: 'group-workload',
+      label: renderGroupLabel(t('nav.groupWorkload')),
+      children: [
+        item('apps', IconApps),
+        item('websites', IconSite),
+        item('databases', IconDatabase),
+        item('docker', IconDocker),
+      ],
     },
+
     {
-      label: renderLink('files', t('nav.files')),
-      key: 'files',
-      icon: renderIcon(IconFolder),
+      type: 'group',
+      key: 'group-system',
+      label: renderGroupLabel(t('nav.groupSystem')),
+      children: [
+        item('files', IconFolder),
+        item('services', IconServices),
+        item('cron', IconClock),
+        item('firewall', IconShield),
+        ...(auth.canWrite ? [item('terminal', IconTerminal)] : []),
+      ],
     },
+
     {
-      label: renderLink('apps', t('nav.apps')),
-      key: 'apps',
-      icon: renderIcon(IconApps),
-    },
-    {
-      label: renderLink('websites', t('nav.websites')),
-      key: 'websites',
-      icon: renderIcon(IconSite),
-    },
-    {
-      label: renderLink('databases', t('nav.databases')),
-      key: 'databases',
-      icon: renderIcon(IconDatabase),
-    },
-    {
-      label: renderLink('backups', t('nav.backups')),
-      key: 'backups',
-      icon: renderIcon(IconBackup),
-    },
-    {
-      label: renderLink('docker', t('nav.docker')),
-      key: 'docker',
-      icon: renderIcon(IconDocker),
-    },
-    {
-      label: renderLink('services', t('nav.services')),
-      key: 'services',
-      icon: renderIcon(IconServices),
-    },
-    {
-      label: renderLink('cron', t('nav.cron')),
-      key: 'cron',
-      icon: renderIcon(IconClock),
-    },
-    {
-      label: renderLink('alerts', t('nav.alerts')),
-      key: 'alerts',
-      icon: renderIcon(IconBell),
-    },
-    {
-      label: renderLink('firewall', t('nav.firewall')),
-      key: 'firewall',
-      icon: renderIcon(IconShield),
+      type: 'group',
+      key: 'group-operations',
+      label: renderGroupLabel(t('nav.groupOperations')),
+      children: [item('backups', IconBackup), item('alerts', IconBell)],
     },
   ]
 
-  if (auth.canWrite) {
+  // Người dùng không phải quản trị viên không nên thấy các mục họ không vào được.
+  if (auth.isAdmin) {
     options.push({
-      label: renderLink('terminal', t('nav.terminal')),
-      key: 'terminal',
-      icon: renderIcon(IconTerminal),
+      type: 'group',
+      key: 'group-admin',
+      label: renderGroupLabel(t('nav.groupAdmin')),
+      children: [
+        item('nodes', IconNodes),
+        item('plugins', IconPlugin),
+        item('users', IconUsers),
+        item('audit', IconLogs),
+      ],
     })
   }
 
-  // Người dùng không phải quản trị viên không nên thấy các mục họ không vào được.
-  if (auth.isAdmin) {
-    options.push(
-      { label: renderLink('nodes', t('nav.nodes')), key: 'nodes', icon: renderIcon(IconNodes) },
-      { label: renderLink('plugins', t('nav.plugins')), key: 'plugins', icon: renderIcon(IconPlugin) },
-      { label: renderLink('users', t('nav.users')), key: 'users', icon: renderIcon(IconUsers) },
-      { label: renderLink('audit', t('nav.audit')), key: 'audit', icon: renderIcon(IconLogs) },
-    )
-  }
-
   return options
+})
+
+/** Trang con của plugin vẫn phải làm sáng mục Plugin ở menu. */
+const activeMenuKey = computed(() => {
+  const name = String(route.name ?? '')
+  return name === 'plugin-detail' ? 'plugins' : name
+})
+
+/** Một dòng nói trang này dùng để làm gì.
+ *
+ * Panel có nhiều trang mà tên gọi không tự giải thích ("Node", "Plugin"), và
+ * dòng này là chỗ rẻ nhất để trả lời trước khi người dùng phải đoán. */
+const pageKey = computed(() => String(route.name ?? 'dashboard'))
+const pageTitle = computed(() => t(`nav.${pageKey.value}`))
+const pageLead = computed(() => {
+  const key = `lead.${pageKey.value}`
+  const text = t(key)
+  // vue-i18n trả về chính khóa khi chưa có bản dịch; đừng hiện khóa ra màn hình.
+  return text === key ? '' : text
 })
 
 const userMenuOptions = computed(() => [
@@ -195,18 +204,25 @@ function toggleTheme(): void {
       @collapse="collapsed = true"
       @expand="collapsed = false"
     >
-      <div class="brand">
-        <div class="brand-mark">☀</div>
-        <NText v-if="!collapsed" strong class="brand-name">{{ t('app.name') }}</NText>
-      </div>
+      <div class="sider-inner">
+        <RouterLink :to="{ name: 'dashboard' }" class="brand">
+          <span class="brand-mark">☀</span>
+          <span v-if="!collapsed" class="brand-name">{{ t('app.name') }}</span>
+        </RouterLink>
 
-      <NMenu
-        :options="menuOptions"
-        :value="String(route.name ?? '')"
-        :collapsed="collapsed"
-        :collapsed-width="64"
-        :collapsed-icon-size="20"
-      />
+        <div class="sider-nav">
+          <NMenu
+            :options="menuOptions"
+            :value="activeMenuKey"
+            :collapsed="collapsed"
+            :collapsed-width="64"
+            :collapsed-icon-size="20"
+            :indent="18"
+          />
+        </div>
+
+        <StatusRail :compact="collapsed" />
+      </div>
     </NLayoutSider>
 
     <NLayout>
@@ -221,9 +237,10 @@ function toggleTheme(): void {
           >
             <template #icon><NIcon><IconMenu /></NIcon></template>
           </NButton>
-          <NText strong class="page-title">
-            {{ t(`nav.${String(route.name ?? 'dashboard')}`) }}
-          </NText>
+          <div class="page-heading">
+            <div class="page-title">{{ pageTitle }}</div>
+            <div v-if="pageLead && !isMobile" class="page-lead">{{ pageLead }}</div>
+          </div>
         </NSpace>
 
         <NSpace align="center" :size="8" class="header-right">
@@ -256,7 +273,11 @@ function toggleTheme(): void {
 
       <NLayout :native-scrollbar="false" class="content">
         <div class="content-inner">
-          <RouterView />
+          <RouterView v-slot="{ Component }">
+            <Transition name="sp-fade" mode="out-in">
+              <component :is="Component" />
+            </Transition>
+          </RouterView>
         </div>
       </NLayout>
     </NLayout>
@@ -266,35 +287,61 @@ function toggleTheme(): void {
 
   <NDrawer v-model:show="drawerOpen" :width="260" placement="left">
     <NDrawerContent :native-scrollbar="false" body-content-style="padding: 0">
-      <div class="brand">
-        <div class="brand-mark">☀</div>
-        <NText strong class="brand-name">{{ t('app.name') }}</NText>
+      <div class="sider-inner">
+        <div class="brand">
+          <span class="brand-mark">☀</span>
+          <span class="brand-name">{{ t('app.name') }}</span>
+        </div>
+        <div class="sider-nav">
+          <NMenu :options="menuOptions" :value="activeMenuKey" :indent="18" />
+        </div>
+        <StatusRail />
       </div>
-      <NMenu :options="menuOptions" :value="String(route.name ?? '')" />
     </NDrawerContent>
   </NDrawer>
 </template>
 
 <style scoped>
+/* Cột menu chia ba phần theo chiều dọc: thương hiệu, danh sách cuộn được, và
+   thanh trạng thái luôn dính đáy. Thiếu bố cục này thì thanh trạng thái trôi
+   theo danh sách và biến mất khi menu dài. */
+.sider-inner {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
+.sider-nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 8px 8px;
+}
+
 .brand {
   display: flex;
   align-items: center;
   gap: 10px;
   height: 56px;
-  padding: 0 20px;
+  padding: 0 18px;
   overflow: hidden;
+  color: inherit;
+  text-decoration: none;
 }
 
 .brand-mark {
   flex: none;
-  font-size: 22px;
+  font-size: 20px;
   line-height: 1;
-  color: #f0a500;
+  color: var(--sp-sun);
 }
 
 .brand-name {
-  font-size: 17px;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
   white-space: nowrap;
+  color: var(--sp-text);
 }
 
 .header {
@@ -302,7 +349,7 @@ function toggleTheme(): void {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  height: 56px;
+  height: 60px;
   padding: 0 20px;
 }
 
@@ -317,19 +364,43 @@ function toggleTheme(): void {
   flex: none;
 }
 
+.page-heading {
+  min-width: 0;
+}
+
 .page-title {
   overflow: hidden;
   font-size: 16px;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--sp-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page-lead {
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--sp-text-muted);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .user-chip {
+  padding: 3px 8px 3px 3px;
+  border-radius: 999px;
   cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.user-chip:hover {
+  background: var(--sp-surface-sunken);
 }
 
 .content {
-  height: calc(100vh - 56px);
+  height: calc(100vh - 60px);
 }
 
 /* Padding phải nằm ở lớp trong: đặt trên NLayout thì vùng cuộn vẫn rộng 100%
@@ -340,7 +411,12 @@ function toggleTheme(): void {
 
 @media (max-width: 900px) {
   .header {
+    height: 56px;
     padding: 0 12px;
+  }
+
+  .content {
+    height: calc(100vh - 56px);
   }
 
   .content-inner {
