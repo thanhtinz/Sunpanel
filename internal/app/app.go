@@ -82,6 +82,12 @@ func New(cfg config.Config) (*App, error) {
 	terminal := service.NewTerminalService(localHost, cfg.Server.FileRoot, audit)
 	sysServices := service.NewSystemServiceManager(sysservice.NewSystemd(localHost), audit)
 
+	// Tác vụ định kỳ chạy lệnh do chính quản trị viên soạn, cùng mức tin cậy với
+	// terminal, nên chúng cần một host KHÔNG bị giới hạn bởi allowlist. Tách
+	// thành host riêng thay vì nới allowlist chung của panel.
+	cronHost := host.NewLocalHost(cfg.Server.FileRoot, nil)
+	cronJobs := service.NewCronService(db, cronHost, cfg.Server.FileRoot, audit)
+
 	svc := router.Services{
 		Auth:     auth,
 		Users:    users,
@@ -90,6 +96,7 @@ func New(cfg config.Config) (*App, error) {
 		Files:    files,
 		Terminal: terminal,
 		Services: sysServices,
+		Cron:     cronJobs,
 		Tokens:   tokens,
 	}
 
@@ -124,6 +131,12 @@ func (a *App) Run() error {
 	defer stop()
 
 	go a.svc.Monitor.Run(ctx)
+
+	if err := a.svc.Cron.Start(ctx); err != nil {
+		return fmt.Errorf("khởi động bộ lập lịch: %w", err)
+	}
+	defer a.svc.Cron.Stop()
+
 	go a.runSessionCleanup(ctx)
 
 	errCh := make(chan error, 1)

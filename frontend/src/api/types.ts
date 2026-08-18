@@ -198,3 +198,42 @@ export interface ServiceManagerStatus {
 }
 
 export type ServiceAction = 'start' | 'stop' | 'restart' | 'reload' | 'enable' | 'disable'
+
+export interface CronJob {
+  id: number
+  name: string
+  schedule: string
+  command: string
+  workDir: string
+  timeoutSeconds: number
+  enabled: boolean
+  lastRunAt?: string
+  lastSuccess?: boolean
+  lastExitCode: number
+  nextRunAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CronRun {
+  id: number
+  jobId: number
+  jobName: string
+  startedAt: string
+  finishedAt?: string
+  durationMs: number
+  exitCode: number
+  success: boolean
+  output: string
+  error?: string
+  triggeredBy: string
+}
+
+export interface CronJobPayload {
+  name: string
+  schedule: string
+  command: string
+  workDir?: string
+  timeoutSeconds?: number
+  enabled?: boolean
+}

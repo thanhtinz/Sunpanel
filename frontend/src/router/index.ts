@@ -28,6 +28,11 @@ const router = createRouter({
           component: () => import('@/views/FilesView.vue'),
         },
         {
+          path: 'cron',
+          name: 'cron',
+          component: () => import('@/views/CronView.vue'),
+        },
+        {
           path: 'services',
           name: 'services',
           component: () => import('@/views/ServicesView.vue'),

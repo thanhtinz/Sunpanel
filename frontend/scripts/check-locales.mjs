@@ -8,6 +8,16 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const localesDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'locales')
+
+/**
+ * Các ký tự mang ý nghĩa cú pháp với trình biên dịch thông điệp của vue-i18n.
+ *
+ * "@" mở một liên kết thông điệp và "|" tách các dạng số nhiều. Một chuỗi chứa
+ * chúng ở dạng thô sẽ ném SyntaxError lúc dựng giao diện và làm trống cả vùng
+ * chứa nó — lỗi chỉ lộ ra khi mở đúng màn hình đó, nên phải chặn ngay ở CI.
+ * Muốn hiển thị ký tự thật thì bọc trong dấu ngoặc nhọn: {'@'}daily.
+ */
+const SYNTAX_CHARS = /(?<!\{')@|\|(?![^{]*\})/
 const files = readdirSync(localesDir).filter((f) => f.endsWith('.json'))
 
 function collectKeys(obj, prefix = '') {
@@ -23,14 +33,45 @@ function collectKeys(obj, prefix = '') {
   return keys
 }
 
-const locales = files.map((file) => ({
-  name: file.replace('.json', ''),
-  keys: collectKeys(JSON.parse(readFileSync(join(localesDir, file), 'utf8'))),
-}))
+/** collectValues trả về danh sách cặp (khóa đầy đủ, giá trị) để kiểm tra nội dung. */
+function collectValues(obj, prefix = '') {
+  const values = []
+  for (const [key, value] of Object.entries(obj)) {
+    const path = prefix ? `${prefix}.${key}` : key
+    if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+      values.push(...collectValues(value, path))
+    } else {
+      values.push([path, value])
+    }
+  }
+  return values
+}
+
+const locales = files.map((file) => {
+  const parsed = JSON.parse(readFileSync(join(localesDir, file), 'utf8'))
+  return {
+    name: file.replace('.json', ''),
+    keys: collectKeys(parsed),
+    values: collectValues(parsed),
+  }
+})
 
 // So mọi ngôn ngữ với hợp của tất cả các khóa, để báo được cả khóa thừa lẫn thiếu.
 const allKeys = new Set(locales.flatMap((l) => [...l.keys]))
 let failed = false
+
+for (const locale of locales) {
+  for (const [key, value] of locale.values) {
+    if (typeof value === 'string' && SYNTAX_CHARS.test(value)) {
+      failed = true
+      console.error(
+        `\n${locale.name}.json: khóa "${key}" chứa ký tự cú pháp chưa escape của vue-i18n:`,
+      )
+      console.error(`  ${value}`)
+      console.error(`  Hãy bọc lại, ví dụ: {'@'}daily`)
+    }
+  }
+}
 
 for (const locale of locales) {
   const missing = [...allKeys].filter((k) => !locale.keys.has(k)).sort()
@@ -42,4 +83,6 @@ for (const locale of locales) {
 }
 
 if (failed) process.exit(1)
-console.log(`Đã kiểm tra ${locales.length} ngôn ngữ, ${allKeys.size} khóa — tất cả đều khớp.`)
+console.log(
+  `Đã kiểm tra ${locales.length} ngôn ngữ, ${allKeys.size} khóa — khớp nhau và không có ký tự cú pháp chưa escape.`,
+)

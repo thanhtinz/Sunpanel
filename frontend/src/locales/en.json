@@ -46,7 +46,8 @@
     "logout": "Sign out",
     "files": "Files",
     "terminal": "Terminal",
-    "services": "Services"
+    "services": "Services",
+    "cron": "Scheduled tasks"
   },
   "dashboard": {
     "title": "System overview",
@@ -294,5 +295,47 @@
     "invalid_name": "Invalid service name.",
     "action_failed": "The service action failed.",
     "protected": "Service {name} is protected by the panel and cannot be stopped or disabled."
+  },
+  "cron": {
+    "title": "Scheduled tasks",
+    "name": "Task name",
+    "schedule": "Schedule",
+    "command": "Command",
+    "workDir": "Working folder",
+    "timeout": "Timeout (seconds)",
+    "enabled": "Enabled",
+    "lastRun": "Last run",
+    "nextRun": "Next run",
+    "create": "Create task",
+    "edit": "Edit task",
+    "runNow": "Run now",
+    "history": "Run history",
+    "historyOf": "History — {name}",
+    "deleteConfirm": "Delete task {name} and all of its run history?",
+    "started": "Started",
+    "duration": "Duration",
+    "exitCode": "Exit code",
+    "result": "Result",
+    "output": "Output",
+    "triggeredBy": "Triggered by",
+    "bySchedule": "Schedule",
+    "byManual": "Manual",
+    "succeeded": "Success",
+    "failed": "Failed",
+    "never": "Never run",
+    "noRuns": "No runs yet.",
+    "noOutput": "(no output)",
+    "nextRuns": "Upcoming runs",
+    "scheduleHelp": "Five-field cron expression, e.g. 0 3 * * * — or {'@'}daily, {'@'}hourly, {'@'}every 30m.",
+    "commandHelp": "Runs through the server shell with the panel's own privileges.",
+    "workDirHelp": "Leave empty to use the file manager root.",
+    "created": "Task created",
+    "updated": "Task updated",
+    "deleted": "Task deleted",
+    "ran": "Run finished"
+  },
+  "cronErr": {
+    "not_found": "Task not found.",
+    "invalid_schedule": "Invalid schedule expression."
   }
 }

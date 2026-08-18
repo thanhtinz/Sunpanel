@@ -46,7 +46,8 @@
     "logout": "Đăng xuất",
     "files": "Tệp",
     "terminal": "Terminal",
-    "services": "Dịch vụ"
+    "services": "Dịch vụ",
+    "cron": "Tác vụ định kỳ"
   },
   "dashboard": {
     "title": "Tổng quan hệ thống",
@@ -294,5 +295,47 @@
     "invalid_name": "Tên dịch vụ không hợp lệ.",
     "action_failed": "Thao tác với dịch vụ thất bại.",
     "protected": "Dịch vụ {name} được panel bảo vệ, không thể dừng hoặc tắt."
+  },
+  "cron": {
+    "title": "Tác vụ định kỳ",
+    "name": "Tên tác vụ",
+    "schedule": "Lịch chạy",
+    "command": "Lệnh",
+    "workDir": "Thư mục làm việc",
+    "timeout": "Giới hạn thời gian (giây)",
+    "enabled": "Đang bật",
+    "lastRun": "Chạy gần nhất",
+    "nextRun": "Chạy kế tiếp",
+    "create": "Tạo tác vụ",
+    "edit": "Sửa tác vụ",
+    "runNow": "Chạy ngay",
+    "history": "Lịch sử chạy",
+    "historyOf": "Lịch sử — {name}",
+    "deleteConfirm": "Xóa tác vụ {name} cùng toàn bộ lịch sử chạy?",
+    "started": "Bắt đầu",
+    "duration": "Thời gian",
+    "exitCode": "Mã thoát",
+    "result": "Kết quả",
+    "output": "Đầu ra",
+    "triggeredBy": "Kích hoạt bởi",
+    "bySchedule": "Theo lịch",
+    "byManual": "Chạy tay",
+    "succeeded": "Thành công",
+    "failed": "Thất bại",
+    "never": "Chưa chạy lần nào",
+    "noRuns": "Chưa có lần chạy nào.",
+    "noOutput": "(không có đầu ra)",
+    "nextRuns": "Các lần chạy kế tiếp",
+    "scheduleHelp": "Biểu thức cron 5 trường, ví dụ 0 3 * * * — hoặc {'@'}daily, {'@'}hourly, {'@'}every 30m.",
+    "commandHelp": "Lệnh chạy bằng shell của máy chủ, với quyền của chính panel.",
+    "workDirHelp": "Để trống thì dùng thư mục gốc của trình quản lý tệp.",
+    "created": "Đã tạo tác vụ",
+    "updated": "Đã cập nhật",
+    "deleted": "Đã xóa tác vụ",
+    "ran": "Đã chạy xong"
+  },
+  "cronErr": {
+    "not_found": "Không tìm thấy tác vụ.",
+    "invalid_schedule": "Biểu thức lịch không hợp lệ."
   }
 }

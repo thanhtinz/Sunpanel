@@ -164,3 +164,11 @@ var (
 	// ServiceProtected là dịch vụ được panel bảo vệ, không cho dừng hoặc tắt.
 	ServiceProtected = New(http.StatusForbidden, "service.protected")
 )
+
+// Các lỗi của tác vụ định kỳ.
+var (
+	// CronJobNotFound là không tìm thấy tác vụ.
+	CronJobNotFound = New(http.StatusNotFound, "cron.not_found")
+	// CronInvalidSchedule là biểu thức lịch không hợp lệ.
+	CronInvalidSchedule = New(http.StatusBadRequest, "cron.invalid_schedule")
+)

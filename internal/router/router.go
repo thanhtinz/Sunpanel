@@ -31,6 +31,7 @@ type Services struct {
 	Files    *service.FileService
 	Terminal *service.TerminalService
 	Services *service.SystemServiceManager
+	Cron     *service.CronService
 	Tokens   *service.TokenIssuer
 }
 
@@ -80,6 +81,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	fileHandler := v1.NewFileHandler(svc.Files, svc.Audit, svc.Tokens)
 	terminalHandler := v1.NewTerminalHandler(svc.Terminal)
 	sysServiceHandler := v1.NewSysServiceHandler(svc.Services)
+	cronHandler := v1.NewCronHandler(svc.Cron, svc.Audit)
 
 	api := engine.Group("/api/v1")
 
@@ -122,6 +124,25 @@ func registerAPI(engine *gin.Engine, svc Services) {
 		}
 
 		authenticated.PATCH("/users/me/preferences", userHandler.UpdatePreferences)
+
+		// Tác vụ định kỳ chạy lệnh tùy ý trên máy chủ, nên xem thì ai cũng được
+		// nhưng tạo và sửa thì phải có quyền vận hành.
+		cronGroup := authenticated.Group("/cron")
+		{
+			cronGroup.GET("", cronHandler.List)
+			cronGroup.GET("/:id", cronHandler.Get)
+			cronGroup.GET("/:id/runs", cronHandler.Runs)
+
+			cronWrite := cronGroup.Group("", middleware.RequireWrite())
+			{
+				cronWrite.POST("", cronHandler.Create)
+				cronWrite.POST("/validate", cronHandler.Validate)
+				cronWrite.PUT("/:id", cronHandler.Update)
+				cronWrite.DELETE("/:id", cronHandler.Delete)
+				cronWrite.POST("/:id/enabled", cronHandler.SetEnabled)
+				cronWrite.POST("/:id/run", cronHandler.RunNow)
+			}
+		}
 
 		// Xem trạng thái dịch vụ thì ai đăng nhập cũng được; điều khiển thì không.
 		services := authenticated.Group("/services")

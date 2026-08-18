@@ -33,6 +33,7 @@ func newMemoryDB(t *testing.T) *gorm.DB {
 	err = db.AutoMigrate(
 		&model.User{}, &model.Session{}, &model.AuditLog{},
 		&model.LoginLog{}, &model.MonitorSample{}, &model.Setting{},
+		&model.CronJob{}, &model.CronRun{},
 	)
 	if err != nil {
 		t.Fatalf("chạy migration: %v", err)

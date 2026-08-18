@@ -2,6 +2,9 @@ import { baseUrl, request } from './client'
 import type {
   ArchiveFormat,
   AuditLog,
+  CronJob,
+  CronJobPayload,
+  CronRun,
   FileContent,
   FileInfo,
   FileList,
@@ -156,6 +159,29 @@ export const serviceApi = {
     request<{ logs: string }>(
       `/api/v1/services/${encodeURIComponent(name)}/logs?lines=${lines}`,
     ),
+}
+
+/** Các endpoint tác vụ định kỳ. */
+export const cronApi = {
+  list: () => request<CronJob[]>('/api/v1/cron'),
+
+  create: (payload: CronJobPayload) =>
+    request<CronJob>('/api/v1/cron', { method: 'POST', body: payload }),
+
+  update: (id: number, payload: CronJobPayload) =>
+    request<CronJob>(`/api/v1/cron/${id}`, { method: 'PUT', body: payload }),
+
+  remove: (id: number) => request<void>(`/api/v1/cron/${id}`, { method: 'DELETE' }),
+
+  setEnabled: (id: number, enabled: boolean) =>
+    request<CronJob>(`/api/v1/cron/${id}/enabled`, { method: 'POST', body: { enabled } }),
+
+  runNow: (id: number) => request<CronRun>(`/api/v1/cron/${id}/run`, { method: 'POST' }),
+
+  runs: (id: number, limit = 50) => request<CronRun[]>(`/api/v1/cron/${id}/runs?limit=${limit}`),
+
+  validate: (schedule: string) =>
+    request<{ next: string[] }>('/api/v1/cron/validate', { method: 'POST', body: { schedule } }),
 }
 
 /** Các endpoint nhật ký kiểm toán. */
