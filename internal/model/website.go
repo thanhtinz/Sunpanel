@@ -34,6 +34,23 @@ type Website struct {
 	// CertName là tên chứng chỉ trong kho; để trống nghĩa là chưa gắn chứng chỉ.
 	CertName string `gorm:"size:64" json:"certName"`
 
+	// AuthEnabled bật lớp hỏi mật khẩu trước khi vào website.
+	//
+	// Không đặt "not null" lẫn "default": SQLite từ chối thêm một cột NOT NULL
+	// không có mặc định vào bảng đã có dữ liệu, còn đặt mặc định thì GORM sẽ bỏ
+	// qua giá trị false khi ghi — nghĩa là tắt bảo vệ sẽ lặng lẽ không có tác dụng.
+	AuthEnabled bool `json:"authEnabled"`
+	// AuthUser là tài khoản được phép vào khi bật bảo vệ.
+	AuthUser string `gorm:"size:64" json:"authUser"`
+	// AuthHash là dòng htpasswd đã băm; không bao giờ gửi xuống giao diện.
+	AuthHash string `gorm:"size:255" json:"-"`
+	// DenyIPs là danh sách địa chỉ bị chặn, mỗi dòng một mục.
+	DenyIPs string `gorm:"type:text" json:"denyIps"`
+	// Redirects là các quy tắc chuyển hướng, lưu dạng JSON.
+	//
+	// Lưu JSON trong một cột thay vì bảng riêng: danh sách luôn ngắn, luôn được
+	// đọc và ghi trọn vẹn cùng website, nên một bảng riêng chỉ thêm việc.
+	Redirects string `gorm:"type:text" json:"redirects"`
 	// ExtraConfig là cấu hình bổ sung do quản trị viên tự thêm.
 	ExtraConfig string `gorm:"type:text" json:"extraConfig"`
 	// Enabled quyết định tệp cấu hình có được ghi ra đĩa hay không.

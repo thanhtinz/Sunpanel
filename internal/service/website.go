@@ -30,6 +30,21 @@ type WebsiteRequest struct {
 	ExtraConfig string   `json:"extraConfig"`
 	Enabled     bool     `json:"enabled"`
 	Remark      string   `json:"remark"`
+
+	// AuthEnabled bật lớp hỏi mật khẩu; AuthPassword để trống nghĩa là giữ mật
+	// khẩu cũ, vì giao diện không bao giờ nhận lại được mật khẩu đã lưu.
+	AuthEnabled  bool           `json:"authEnabled"`
+	AuthUser     string         `json:"authUser"`
+	AuthPassword string         `json:"authPassword"`
+	DenyIPs      []string       `json:"denyIps"`
+	Redirects    []RedirectRule `json:"redirects"`
+}
+
+// RedirectRule là một quy tắc chuyển hướng do người dùng đặt.
+type RedirectRule struct {
+	From      string `json:"from"`
+	To        string `json:"to"`
+	Permanent bool   `json:"permanent"`
 }
 
 // WebsiteService quản lý website và cấu hình máy chủ web tương ứng.
@@ -45,16 +60,18 @@ type WebsiteService struct {
 	host host.Host
 	// acmeWebroot là thư mục dùng chung phục vụ tệp xác thực ACME.
 	acmeWebroot string
-	audit       *AuditService
+	// authDir là nơi panel ghi tệp tài khoản của lớp bảo vệ mật khẩu.
+	authDir string
+	audit   *AuditService
 }
 
 // NewWebsiteService tạo dịch vụ website.
 func NewWebsiteService(
 	db *gorm.DB, manager webserver.Manager, certificates *CertificateService,
-	h host.Host, acmeWebroot string, audit *AuditService,
+	h host.Host, acmeWebroot, authDir string, audit *AuditService,
 ) *WebsiteService {
 	return &WebsiteService{
-		db: db, manager: manager, certs: certificates, host: h,
+		db: db, manager: manager, certs: certificates, host: h, authDir: authDir,
 		acmeWebroot: acmeWebroot, audit: audit,
 	}
 }
@@ -253,6 +270,10 @@ func (s *WebsiteService) build(
 	site.Enabled = req.Enabled
 	site.Remark = strings.TrimSpace(req.Remark)
 
+	if err := s.applyProtection(&site, req); err != nil {
+		return model.Website{}, err
+	}
+
 	if site.SSLEnabled && site.CertName == "" {
 		return model.Website{}, apperr.WebsiteInvalidConfig.WithParam("field", "certName")
 	}
@@ -323,6 +344,16 @@ func (s *WebsiteService) toSite(ctx context.Context, site model.Website) (webser
 			ForceHTTPS: site.ForceHTTPS,
 			Port:       site.SSLPort,
 		},
+		DenyIPs:   splitLines(site.DenyIPs),
+		Redirects: toWebserverRedirects(decodeRedirects(site.Redirects)),
+	}
+
+	if site.AuthEnabled {
+		config.Auth = webserver.AuthConfig{
+			Enabled: true,
+			Realm:   "SunPanel",
+			File:    s.authFile(site.Name),
+		}
 	}
 
 	if site.SSLEnabled {
@@ -357,6 +388,12 @@ func (s *WebsiteService) apply(ctx context.Context, site model.Website) error {
 
 	config, err := s.toSite(ctx, site)
 	if err != nil {
+		return err
+	}
+
+	// Tệp tài khoản phải có mặt trước khi nginx nạp cấu hình trỏ tới nó, nếu
+	// không nginx từ chối nạp và kéo theo mọi website khác cùng sập.
+	if err := s.writeAuthFile(ctx, site); err != nil {
 		return err
 	}
 

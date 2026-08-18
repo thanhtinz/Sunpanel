@@ -76,7 +76,8 @@ sunpanel reset-password -user admin
 - **Website**: sinh vhost nginx cho website tĩnh, PHP và reverse proxy; cấu hình
   được nginx kiểm tra trước khi nạp và tự khôi phục bản cũ nếu sai. Triển khai mã
   nguồn bằng cách tải thẳng tệp nén lên — panel tự bóc lớp thư mục bọc mà bản tải
-  từ GitHub nào cũng có.
+  từ GitHub nào cũng có. Bảo vệ trang bằng mật khẩu, chặn theo địa chỉ IP và đặt
+  quy tắc chuyển hướng ngay trong biểu mẫu website.
 - **Cơ sở dữ liệu**: quản lý MySQL/MariaDB và PostgreSQL — tạo cơ sở dữ liệu,
   tài khoản và phân quyền, kèm cửa sổ chạy SQL có bảng kết quả.
 - **Sao lưu**: sao lưu cơ sở dữ liệu và thư mục theo lịch, đẩy lên máy chủ, S3
@@ -228,7 +229,8 @@ sunpanel reset-password -user admin
 - **Websites**: generate nginx vhosts for static, PHP and reverse-proxy sites; every
   config is checked by nginx before reload and rolled back if it fails. Deploy source
   by uploading an archive — the panel strips the wrapper folder every GitHub download
-  comes with.
+  comes with. Password-protect a site, block addresses and add redirect rules right in
+  the website form.
 - **Databases**: manage MySQL/MariaDB and PostgreSQL — create databases, users and
   grants, with an SQL console that renders results as a table.
 - **Backups**: scheduled database and directory backups shipped to this server, S3

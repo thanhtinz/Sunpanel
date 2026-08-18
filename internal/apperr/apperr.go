@@ -249,6 +249,14 @@ var (
 	WebsiteNameExists = New(http.StatusConflict, "website.name_exists")
 	// WebsiteInvalidName là tên website không hợp lệ.
 	WebsiteInvalidName = New(http.StatusBadRequest, "website.invalid_name")
+	// WebsiteInvalidDenyIP là một dòng trong danh sách chặn không hợp lệ.
+	WebsiteInvalidDenyIP = New(http.StatusBadRequest, "website.invalid_deny_ip")
+	// WebsiteInvalidRedirect là quy tắc chuyển hướng không hợp lệ.
+	WebsiteInvalidRedirect = New(http.StatusBadRequest, "website.invalid_redirect")
+	// WebsiteInvalidAuthUser là tên tài khoản bảo vệ không hợp lệ.
+	WebsiteInvalidAuthUser = New(http.StatusBadRequest, "website.invalid_auth_user")
+	// WebsiteAuthPasswordRequired là bật bảo vệ mà chưa từng đặt mật khẩu.
+	WebsiteAuthPasswordRequired = New(http.StatusBadRequest, "website.auth_password_required")
 	// WebsiteNoRoot là website không có thư mục gốc để triển khai mã nguồn.
 	WebsiteNoRoot = New(http.StatusBadRequest, "website.no_root")
 	// WebsiteInvalidDomain là tên miền không hợp lệ.

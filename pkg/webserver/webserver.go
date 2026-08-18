@@ -73,11 +73,48 @@ type Site struct {
 	// phản hồi của ứng dụng phía sau thay vì tệp xác thực, và việc gia hạn chứng
 	// chỉ thất bại lặng lẽ cho tới ngày website hết hạn HTTPS.
 	ACMEWebroot string
+	// Auth bật lớp hỏi mật khẩu trước khi vào website.
+	Auth AuthConfig
+	// DenyIPs là các địa chỉ hoặc dải bị chặn.
+	DenyIPs []string
+	// Redirects là các quy tắc chuyển hướng đặt trước mọi xử lý khác.
+	Redirects []Redirect
 	// IPv6 quyết định có sinh các chỉ thị lắng nghe IPv6 hay không.
 	//
 	// Không phải máy chủ nào cũng bật IPv6. Trên máy không có, nginx không chỉ bỏ
 	// qua chỉ thị đó mà từ chối khởi động hẳn, kéo theo mọi website khác cùng sập.
 	IPv6 bool
+}
+
+// AuthConfig là lớp bảo vệ bằng mật khẩu của máy chủ web.
+type AuthConfig struct {
+	Enabled bool
+	// Realm là dòng chữ trình duyệt hiện trong hộp hỏi mật khẩu.
+	Realm string
+	// File là tệp kiểu htpasswd chứa tài khoản được vào.
+	File string
+}
+
+// Redirect là một quy tắc chuyển hướng.
+type Redirect struct {
+	// From là đường dẫn bắt đầu bằng "/"; "/" nghĩa là toàn bộ website.
+	From string
+	// To là địa chỉ đích.
+	To string
+	// Permanent chọn mã 301 thay vì 302.
+	Permanent bool
+}
+
+// Code là mã trạng thái tương ứng với quy tắc.
+//
+// 301 nói với trình duyệt và công cụ tìm kiếm rằng địa chỉ cũ không quay lại
+// nữa, và trình duyệt sẽ nhớ nó rất lâu — nên nó phải là lựa chọn có ý thức
+// chứ không phải mặc định.
+func (r Redirect) Code() int {
+	if r.Permanent {
+		return 301
+	}
+	return 302
 }
 
 // SSLConfig là cấu hình HTTPS của một website.
@@ -179,6 +216,69 @@ func ValidateSite(site Site) error {
 		}
 	}
 
+	if site.Auth.Enabled {
+		if strings.TrimSpace(site.Auth.File) == "" {
+			return fmt.Errorf("%w: bật bảo vệ mật khẩu thì phải có tệp tài khoản", ErrInvalidConfig)
+		}
+		if err := validateConfigValue(site.Auth.File); err != nil {
+			return err
+		}
+		if err := validateConfigValue(site.Auth.Realm); err != nil {
+			return err
+		}
+	}
+
+	for _, ip := range site.DenyIPs {
+		if err := ValidateIPRule(ip); err != nil {
+			return err
+		}
+	}
+
+	for _, redirect := range site.Redirects {
+		if err := ValidateRedirect(redirect); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// validIPRule khớp một địa chỉ IPv4/IPv6 hoặc dải CIDR.
+//
+// Không dùng netip để phân tích vì chuỗi này đi thẳng vào chỉ thị deny của máy
+// chủ web: thứ cần kiểm là "chuỗi có đúng hình dạng một địa chỉ" chứ không phải
+// "chuỗi có phân tích được thành địa chỉ", và biểu thức chặt hơn ở đây loại luôn
+// mọi ký tự có thể thoát khỏi chỉ thị.
+var validIPRule = regexp.MustCompile(`^[0-9a-fA-F.:]+(/[0-9]{1,3})?$`)
+
+// ValidateIPRule kiểm tra một dòng trong danh sách chặn.
+func ValidateIPRule(value string) error {
+	if !validIPRule.MatchString(strings.TrimSpace(value)) {
+		return fmt.Errorf("%w: địa chỉ chặn %q", ErrInvalidConfig, value)
+	}
+	return nil
+}
+
+// validRedirectPath khớp đường dẫn nguồn của một quy tắc chuyển hướng.
+var validRedirectPath = regexp.MustCompile(`^/[a-zA-Z0-9._~/%+-]*$`)
+
+// validRedirectTarget khớp địa chỉ đích: một URL đầy đủ hoặc một đường dẫn.
+var validRedirectTarget = regexp.MustCompile(`^(https?://[a-zA-Z0-9._-]+(:[0-9]{1,5})?)?/?[a-zA-Z0-9._~/%?&=+-]*$`)
+
+// ValidateRedirect kiểm tra một quy tắc chuyển hướng.
+func ValidateRedirect(redirect Redirect) error {
+	from := strings.TrimSpace(redirect.From)
+	to := strings.TrimSpace(redirect.To)
+
+	if !validRedirectPath.MatchString(from) {
+		return fmt.Errorf("%w: đường dẫn nguồn %q", ErrInvalidConfig, redirect.From)
+	}
+	if to == "" || !validRedirectTarget.MatchString(to) {
+		return fmt.Errorf("%w: địa chỉ đích %q", ErrInvalidConfig, redirect.To)
+	}
+	if err := validateConfigValue(to); err != nil {
+		return err
+	}
 	return nil
 }
 

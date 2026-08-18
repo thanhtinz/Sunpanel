@@ -35,6 +35,9 @@ func defaultWebRoot() string { return filepath.Join(defaultDataDir(), "www") }
 // defaultACMEWebroot là thư mục phục vụ tệp xác thực ACME trên Windows.
 func defaultACMEWebroot() string { return filepath.Join(defaultDataDir(), "acme-webroot") }
 
+// defaultAuthDir là nơi ghi tệp tài khoản bảo vệ website trên Windows.
+func defaultAuthDir() string { return filepath.Join(defaultDataDir(), "auth") }
+
 // defaultSystemLogDir là thư mục nhật ký panel cho phép xem trên Windows.
 //
 // Windows ghi nhật ký hệ thống vào Event Log chứ không phải tệp văn bản, nên

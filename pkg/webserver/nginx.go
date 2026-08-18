@@ -360,11 +360,37 @@ server {
 
     client_max_body_size 128m;
 
+{{- range .Redirects }}
+
+    # Chuyển hướng do người dùng đặt
+    location {{ if eq .From "/" }}= /{{ else }}{{ .From }}{{ end }} {
+        return {{ .Code }} {{ .To }};
+    }
+{{- end }}
+
+{{- if .DenyIPs }}
+
+    # Danh sách chặn theo địa chỉ
+{{- range .DenyIPs }}
+    deny {{ . }};
+{{- end }}
+    allow all;
+{{- end }}
+
+{{- if .Auth.Enabled }}
+
+    # Hỏi mật khẩu trước khi vào website
+    auth_basic "{{ .Auth.Realm }}";
+    auth_basic_user_file {{ .Auth.File }};
+{{- end }}
+
 {{- if .ACMEWebroot }}
 
     # Đặt trước mọi location khác để website dạng chuyển tiếp không đẩy yêu cầu
-    # xác thực sang ứng dụng phía sau.
+    # xác thực sang ứng dụng phía sau. auth_basic off để việc gia hạn chứng chỉ
+    # không chết ngay khi người dùng bật lớp bảo vệ bằng mật khẩu.
     location ^~ /.well-known/acme-challenge/ {
+        auth_basic off;
         root {{ .ACMEWebroot }};
         default_type "text/plain";
     }

@@ -70,7 +70,7 @@ func newWebsiteFixtureAt(t *testing.T) (*WebsiteService, *CertificateService, *f
 	server := newFakeWebServer()
 	websites := NewWebsiteService(
 		db, server, certificates,
-		host.NewLocalHost(root, nil), filepath.Join(root, "acme"), audit,
+		host.NewLocalHost(root, nil), filepath.Join(root, "acme"), "/htpasswd", audit,
 	)
 	return websites, certificates, server, root
 }

@@ -25,5 +25,12 @@ func defaultWebRoot() string { return "/www/wwwroot" }
 // chạy dưới người dùng khác và phải đọc được thư mục này.
 func defaultACMEWebroot() string { return "/var/www/sunpanel-acme" }
 
+// defaultAuthDir là nơi ghi tệp tài khoản bảo vệ website.
+//
+// Cùng chỗ với thư mục xác thực ACME và cùng lý do: máy chủ web chạy dưới người
+// dùng khác và phải đọc được, nên nó không thể nằm trong thư mục dữ liệu 0700
+// của panel.
+func defaultAuthDir() string { return "/var/www/sunpanel-auth" }
+
 // defaultSystemLogDir là thư mục nhật ký của hệ điều hành.
 func defaultSystemLogDir() string { return "/var/log" }

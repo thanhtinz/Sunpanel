@@ -98,6 +98,13 @@ type WebsiteConfig struct {
 	NginxConfDir string `yaml:"nginxConfDir"`
 	// Root là thư mục mặc định chứa mã nguồn các website.
 	Root string `yaml:"root"`
+	// AuthDir là nơi panel ghi tệp tài khoản của lớp bảo vệ bằng mật khẩu.
+	//
+	// Cùng lý do với ACMEWebroot: phải nằm NGOÀI thư mục dữ liệu của panel, vì
+	// thư mục đó để quyền 0700 còn tiến trình máy chủ web chạy dưới người dùng
+	// khác — đặt tệp vào trong đó thì mọi yêu cầu tới website được bảo vệ sẽ
+	// nhận lỗi 500 thay vì hộp hỏi mật khẩu.
+	AuthDir string `yaml:"authDir"`
 	// ACMEWebroot là thư mục dùng chung phục vụ tệp xác thực ACME.
 	//
 	// Phải nằm NGOÀI thư mục dữ liệu của panel: thư mục đó để quyền 0700 vì chứa
@@ -191,6 +198,7 @@ func Default() Config {
 			NginxConfDir: defaultNginxConfDir(),
 			Root:         defaultWebRoot(),
 			ACMEWebroot:  defaultACMEWebroot(),
+			AuthDir:      defaultAuthDir(),
 		},
 		Log: LogConfig{
 			Level:     "info",

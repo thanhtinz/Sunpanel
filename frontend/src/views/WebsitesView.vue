@@ -6,6 +6,7 @@ import {
   NCard,
   NCheckbox,
   NDataTable,
+  NDivider,
   NForm,
   NFormItem,
   NInput,
@@ -33,6 +34,7 @@ import {
   type Certificate,
   type WebServerStatus,
   type Website,
+  type RedirectRule,
   type WebsiteType,
 } from '@/api'
 import { useAuthStore } from '@/stores/auth'
@@ -63,6 +65,11 @@ const emptySite = () => ({
   certName: '',
   extraConfig: '',
   remark: '',
+  authEnabled: false,
+  authUser: '',
+  authPassword: '',
+  denyIps: '',
+  redirects: [] as RedirectRule[],
 })
 
 const emptyCert = () => ({
@@ -75,6 +82,17 @@ const emptyCert = () => ({
   certPem: '',
   keyPem: '',
 })
+
+/** Đọc cột JSON quy tắc chuyển hướng; dữ liệu hỏng cho ra danh sách rỗng. */
+function parseRedirects(raw: string): RedirectRule[] {
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
 
 const editor = ref({ show: false, saving: false, form: emptySite() })
 const certEditor = ref({ show: false, saving: false, form: emptyCert() })
@@ -184,6 +202,13 @@ function openEdit(site: Website): void {
       certName: site.certName,
       extraConfig: site.extraConfig,
       remark: site.remark,
+      authEnabled: site.authEnabled,
+      authUser: site.authUser,
+      // Mật khẩu không bao giờ được gửi ngược về giao diện; để trống nghĩa là
+      // giữ nguyên cái đã lưu.
+      authPassword: '',
+      denyIps: site.denyIps,
+      redirects: parseRedirects(site.redirects),
     },
   }
 }
@@ -207,6 +232,11 @@ async function saveSite(): Promise<void> {
       extraConfig: form.extraConfig,
       enabled: true,
       remark: form.remark.trim(),
+      authEnabled: form.authEnabled,
+      authUser: form.authUser.trim(),
+      authPassword: form.authPassword,
+      denyIps: form.denyIps.split('\n').map((line) => line.trim()).filter(Boolean),
+      redirects: form.redirects.filter((rule) => rule.from.trim() && rule.to.trim()),
     }
     if (form.id === 0) {
       await websiteApi.create(payload)
@@ -712,6 +742,60 @@ function capitalize(value: string): string {
           <NSwitch v-model:value="editor.form.forceHttps" />
         </NFormItem>
       </template>
+
+      <NDivider style="margin: 4px 0 14px">{{ t('website.protection') }}</NDivider>
+
+      <NFormItem :label="t('website.auth')" :feedback="t('website.authHelp')">
+        <NSwitch v-model:value="editor.form.authEnabled" />
+      </NFormItem>
+
+      <template v-if="editor.form.authEnabled">
+        <NFormItem :label="t('website.authUser')">
+          <NInput v-model:value="editor.form.authUser" placeholder="khach" />
+        </NFormItem>
+
+        <NFormItem :label="t('website.authPassword')" :feedback="t('website.authPasswordHelp')">
+          <NInput
+            v-model:value="editor.form.authPassword"
+            type="password"
+            show-password-on="click"
+          />
+        </NFormItem>
+      </template>
+
+      <NFormItem :label="t('website.denyIps')" :feedback="t('website.denyIpsHelp')">
+        <NInput v-model:value="editor.form.denyIps" type="textarea" :rows="2" />
+      </NFormItem>
+
+      <NFormItem :label="t('website.redirects')" :feedback="t('website.redirectsHelp')">
+        <NSpace vertical :size="8" style="width: 100%">
+          <NSpace
+            v-for="(rule, index) in editor.form.redirects"
+            :key="index"
+            :size="6"
+            :wrap="false"
+            align="center"
+          >
+            <NInput v-model:value="rule.from" placeholder="/duong-dan-cu" style="width: 190px" />
+            <NInput v-model:value="rule.to" placeholder="https://example.com/moi" />
+            <NSpace align="center" :size="4" :wrap="false">
+              <NSwitch v-model:value="rule.permanent" size="small" />
+              <NText depth="3" style="font-size: 12px">301</NText>
+            </NSpace>
+            <NButton quaternary type="error" size="small" @click="editor.form.redirects.splice(index, 1)">
+              ×
+            </NButton>
+          </NSpace>
+
+          <NButton
+            size="small"
+            dashed
+            @click="editor.form.redirects.push({ from: '', to: '', permanent: false })"
+          >
+            {{ t('website.addRedirect') }}
+          </NButton>
+        </NSpace>
+      </NFormItem>
 
       <NFormItem :label="t('website.extraConfig')" :feedback="t('website.extraConfigHelp')">
         <NInput

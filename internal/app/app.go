@@ -113,7 +113,7 @@ func New(cfg config.Config) (*App, error) {
 	nginxHost := host.NewLocalHost(cfg.Server.FileRoot, []string{"nginx"})
 	websites := service.NewWebsiteService(
 		db, webserver.NewNginx(nginxHost, cfg.Website.NginxConfDir), certificates,
-		websiteHost, cfg.Website.ACMEWebroot, audit,
+		websiteHost, cfg.Website.ACMEWebroot, cfg.Website.AuthDir, audit,
 	)
 	// Chứng chỉ mới chỉ có tác dụng sau khi máy chủ web đọc lại tệp.
 	certificates.SetReloader(websites.Reload)

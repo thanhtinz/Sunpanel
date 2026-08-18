@@ -411,8 +411,19 @@ export interface Website {
   extraConfig: string
   enabled: boolean
   remark: string
+  authEnabled: boolean
+  authUser: string
+  denyIps: string
+  redirects: string
   createdAt: string
   updatedAt: string
+}
+
+/** Một quy tắc chuyển hướng của website. */
+export interface RedirectRule {
+  from: string
+  to: string
+  permanent: boolean
 }
 
 export interface WebsitePayload {
@@ -430,6 +441,11 @@ export interface WebsitePayload {
   extraConfig?: string
   enabled?: boolean
   remark?: string
+  authEnabled?: boolean
+  authUser?: string
+  authPassword?: string
+  denyIps?: string[]
+  redirects?: RedirectRule[]
 }
 
 export interface WebServerStatus {
