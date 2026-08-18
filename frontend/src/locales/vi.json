@@ -487,8 +487,7 @@
     "installedCount": "Đã cài {count} bản",
     "uninstall": "Gỡ",
     "uninstalled": "Đã gỡ ứng dụng.",
-    "uninstallConfirm": "Gỡ ứng dụng {name}?",
-    "removeData": "Xóa luôn dữ liệu (không khôi phục được)",
+    "uninstallConfirm": "Gỡ {name} và xóa toàn bộ dữ liệu? Không khôi phục được.",
     "noneInstalled": "Chưa cài ứng dụng nào. Chọn một ứng dụng ở tab Danh mục.",
     "allCategories": "Tất cả nhóm",
     "name": "Tên cài đặt",
@@ -538,7 +537,8 @@
     "leftoverHint": "Lần gỡ trước giữ lại dữ liệu, nên thư mục và volume vẫn chiếm chỗ trên đĩa. Xóa hẳn để lấy lại chỗ, hoặc để nguyên nếu định cài lại rồi dùng tiếp dữ liệu cũ.",
     "leftoverRemove": "Xóa hẳn",
     "leftoverConfirm": "Xóa hẳn dữ liệu của {name}? Không khôi phục được.",
-    "leftoverRemoved": "Đã xóa dữ liệu còn lại của {name}"
+    "leftoverRemoved": "Đã xóa dữ liệu còn lại của {name}",
+    "keepData": "Giữ lại dữ liệu để cài lại sau"
   },
   "appErr": {
     "not_found": "Không tìm thấy ứng dụng đã cài.",

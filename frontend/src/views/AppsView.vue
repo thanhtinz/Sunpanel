@@ -359,7 +359,7 @@ const columns = computed<DataTableColumns<InstalledApp>>(() => [
             ),
             h(
               NPopconfirm,
-              { onPositiveClick: () => uninstall(row, uninstallData.value) },
+              { onPositiveClick: () => uninstall(row, !keepData.value) },
               {
                 trigger: () =>
                   h(
@@ -368,7 +368,7 @@ const columns = computed<DataTableColumns<InstalledApp>>(() => [
                       size: 'tiny',
                       quaternary: true,
                       type: 'error',
-                      onClick: () => (uninstallData.value = false),
+                      onClick: () => (keepData.value = false),
                     },
                     { default: () => t('apps.uninstall') },
                   ),
@@ -379,10 +379,10 @@ const columns = computed<DataTableColumns<InstalledApp>>(() => [
                       h(
                         NCheckbox,
                         {
-                          checked: uninstallData.value,
-                          'onUpdate:checked': (value: boolean) => (uninstallData.value = value),
+                          checked: keepData.value,
+                          'onUpdate:checked': (value: boolean) => (keepData.value = value),
                         },
-                        { default: () => t('apps.removeData') },
+                        { default: () => t('apps.keepData') },
                       ),
                     ],
                   }),
@@ -395,8 +395,15 @@ const columns = computed<DataTableColumns<InstalledApp>>(() => [
   },
 ])
 
-/** Xóa dữ liệu là thao tác không hoàn tác được nên luôn bắt đầu từ trạng thái tắt. */
-const uninstallData = ref(false)
+/**
+ * Gỡ ứng dụng mặc định xóa sạch cả thư mục lẫn volume.
+ *
+ * Đó là điều người dùng muốn ở gần như mọi lần gỡ: giữ lại dữ liệu chỉ có nghĩa
+ * khi định cài lại đúng ứng dụng đó rồi dùng tiếp dữ liệu cũ. Mặc định giữ lại
+ * khiến đĩa đầy dần bằng thư mục không ai nhớ tới, nên nó thành lựa chọn phải
+ * tự tick, còn hộp xác nhận nói thẳng rằng dữ liệu sẽ mất.
+ */
+const keepData = ref(false)
 </script>
 
 <template>

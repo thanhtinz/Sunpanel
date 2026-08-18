@@ -487,8 +487,7 @@
     "installedCount": "{count} installed",
     "uninstall": "Uninstall",
     "uninstalled": "Application uninstalled.",
-    "uninstallConfirm": "Uninstall {name}?",
-    "removeData": "Also delete the data (cannot be undone)",
+    "uninstallConfirm": "Uninstall {name} and delete all its data? This cannot be undone.",
     "noneInstalled": "Nothing installed yet. Pick an application from the Catalog tab.",
     "allCategories": "All categories",
     "name": "Install name",
@@ -538,7 +537,8 @@
     "leftoverHint": "The last uninstall kept the data, so its folder and volumes still take up disk space. Delete them to reclaim the space, or leave them if you plan to reinstall and pick the data back up.",
     "leftoverRemove": "Delete",
     "leftoverConfirm": "Delete all data for {name}? This cannot be undone.",
-    "leftoverRemoved": "Deleted the leftover data for {name}"
+    "leftoverRemoved": "Deleted the leftover data for {name}",
+    "keepData": "Keep the data for a later reinstall"
   },
   "appErr": {
     "not_found": "Installed application not found.",
