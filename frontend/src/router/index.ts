@@ -106,6 +106,11 @@ const router = createRouter({
           component: () => import('@/views/ProfileView.vue'),
         },
         {
+          path: 'disk',
+          name: 'disk',
+          component: () => import('@/views/DiskView.vue'),
+        },
+        {
           path: 'system-logs',
           name: 'system-logs',
           component: () => import('@/views/SystemLogsView.vue'),

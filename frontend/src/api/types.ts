@@ -908,3 +908,22 @@ export interface LogChunk {
   size: number
   truncated: boolean
 }
+
+/** Một mục con kèm dung lượng đã tính. */
+export interface DiskEntry {
+  name: string
+  path: string
+  size: number
+  isDir: boolean
+  files: number
+  percent: number
+}
+
+export interface DiskReport {
+  path: string
+  total: number
+  entries: DiskEntry[]
+  partial: boolean
+  files: number
+  durationMs: number
+}

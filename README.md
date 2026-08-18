@@ -61,6 +61,8 @@ sunpanel reset-password -user admin
 - **Terminal web**: PTY thật với xterm.js, đa tab; mọi lệnh được ghi vào nhật ký.
 - **Dịch vụ hệ thống**: điều khiển systemd, xem nhật ký, có lớp chặn không cho tự
   khóa mình khỏi máy chủ.
+- **Dung lượng**: bảng phân vùng, và trình phân tích kiểu `du` bấm sâu được xuống
+  từng thư mục để tìm chỗ đang chiếm đĩa.
 - **Nhật ký hệ thống**: đọc tệp nhật ký trong /var/log ngay trên giao diện, theo dõi
   trực tiếp phần mới ghi vào, lọc theo từ khóa; chỉ đọc và không ra khỏi thư mục đó.
 - **Tiến trình**: bảng tiến trình sắp theo mức dùng CPU thật, tìm theo tên hoặc
@@ -210,6 +212,8 @@ sunpanel reset-password -user admin
   detected from the data, so a file with the wrong extension still opens.
 - **Web terminal**: real PTY with xterm.js, multiple tabs; every command is audited.
 - **System services**: systemd control and logs, with a guard against locking yourself out.
+- **Disk usage**: a partition table plus a `du`-style analyzer you can drill into,
+  folder by folder, to find what is filling the disk.
 - **System logs**: read log files under /var/log in the browser, follow new lines live
   and filter by keyword; read-only and confined to that directory.
 - **Processes**: a process table sorted by real CPU usage, searchable by name or

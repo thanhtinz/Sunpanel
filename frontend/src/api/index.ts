@@ -29,6 +29,8 @@ import type {
   InstalledApp,
   CertPayload,
   Certificate,
+  DiskReport,
+  DiskUsage,
   CronJob,
   CronJobPayload,
   CronRun,
@@ -488,6 +490,14 @@ export const websiteApi = {
       body: form,
     })
   },
+}
+
+/** Các endpoint phân tích dung lượng ổ đĩa. */
+export const diskApi = {
+  partitions: () => request<DiskUsage[]>('/api/v1/disk/partitions'),
+
+  usage: (path: string) =>
+    request<DiskReport>(`/api/v1/disk/usage?path=${encodeURIComponent(path)}`),
 }
 
 /** Các endpoint xem nhật ký hệ thống. */

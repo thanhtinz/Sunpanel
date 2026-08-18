@@ -48,6 +48,7 @@ type Services struct {
 	Settings  *service.SettingsService
 	SysUsers  *service.SystemUserService
 	Logs      *service.LogService
+	Disks     *service.DiskService
 }
 
 // New dựng handler HTTP hoàn chỉnh của panel.
@@ -110,6 +111,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	settingsHandler := v1.NewSettingsHandler(svc.Settings)
 	sysUserHandler := v1.NewSystemUserHandler(svc.SysUsers)
 	logHandler := v1.NewLogHandler(svc.Logs)
+	diskHandler := v1.NewDiskHandler(svc.Disks)
 	dockerHandler := v1.NewDockerHandler(svc.Docker)
 
 	api := engine.Group("/api/v1")
@@ -414,6 +416,13 @@ func registerAPI(engine *gin.Engine, svc Services) {
 				write.POST("/compress", fileHandler.Compress)
 				write.POST("/extract", fileHandler.Extract)
 			}
+		}
+
+		// Phân tích dung lượng chỉ đọc, cùng mức quyền với việc duyệt tệp.
+		disks := authenticated.Group("/disk")
+		{
+			disks.GET("/partitions", diskHandler.Partitions)
+			disks.GET("/usage", diskHandler.Usage)
 		}
 
 		// Nhật ký hệ thống chỉ đọc, nhưng nội dung của nó lộ khá nhiều về máy chủ

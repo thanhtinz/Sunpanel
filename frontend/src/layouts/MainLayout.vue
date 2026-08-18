@@ -28,6 +28,7 @@ import IconServices from '@/components/icons/IconServices.vue'
 import IconPulse from '@/components/icons/IconPulse.vue'
 import IconSliders from '@/components/icons/IconSliders.vue'
 import IconKey from '@/components/icons/IconKey.vue'
+import IconDisk from '@/components/icons/IconDisk.vue'
 import IconClock from '@/components/icons/IconClock.vue'
 import IconShield from '@/components/icons/IconShield.vue'
 import IconDocker from '@/components/icons/IconDocker.vue'
@@ -106,6 +107,7 @@ const menuOptions = computed<MenuOption[]>(() => {
       label: renderGroupLabel(t('nav.groupSystem')),
       children: [
         item('files', IconFolder),
+        item('disk', IconDisk),
         item('services', IconServices),
         item('processes', IconPulse),
         item('cron', IconClock),

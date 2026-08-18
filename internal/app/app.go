@@ -23,6 +23,7 @@ import (
 	"github.com/thanhtinz/sunpanel/pkg/certs"
 	"github.com/thanhtinz/sunpanel/pkg/compose"
 	"github.com/thanhtinz/sunpanel/pkg/crypto"
+	"github.com/thanhtinz/sunpanel/pkg/diskscan"
 	"github.com/thanhtinz/sunpanel/pkg/dockerx"
 	"github.com/thanhtinz/sunpanel/pkg/firewall"
 	"github.com/thanhtinz/sunpanel/pkg/host"
@@ -178,6 +179,10 @@ func New(cfg config.Config) (*App, error) {
 	})
 	sysUsers := service.NewSystemUserService(sysuser.New(userHost), audit)
 
+	// Bộ quét dung lượng dùng chung phạm vi với trình quản lý tệp: thứ người dùng
+	// nhìn thấy ở đây cũng là thứ họ vào xóa được ở trang Tệp.
+	diskService := service.NewDiskService(diskscan.New(localHost.FS()), monitor)
+
 	// Nhật ký nằm ngoài phạm vi trình quản lý tệp trên nhiều máy, và bộ đọc tự
 	// giới hạn mình trong /var/log nên host này không cần chạy lệnh nào.
 	logService := service.NewLogService(logs.New(host.NewLocalHost("/", nil), cfg.Log.SystemDir))
@@ -211,6 +216,7 @@ func New(cfg config.Config) (*App, error) {
 		Settings:  service.NewSettingsService(cfg, cfg.ConfigPath(), restart, audit),
 		SysUsers:  sysUsers,
 		Logs:      logService,
+		Disks:     diskService,
 	}
 
 	handler, err := router.New(cfg, svc)
