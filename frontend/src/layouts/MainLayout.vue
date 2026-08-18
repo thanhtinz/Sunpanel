@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, h, ref, type Component } from 'vue'
+import { computed, h, ref, watch, type Component } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import {
   NAvatar,
   NButton,
+  NDrawer,
+  NDrawerContent,
   NDropdown,
   NIcon,
   NLayout,
@@ -18,6 +20,7 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import { SUPPORTED_LOCALES, setLocale, type Locale } from '@/locales'
+import { useBreakpoint } from '@/composables/useBreakpoint'
 import IconGauge from '@/components/icons/IconGauge.vue'
 import IconFolder from '@/components/icons/IconFolder.vue'
 import IconTerminal from '@/components/icons/IconTerminal.vue'
@@ -25,6 +28,9 @@ import IconServices from '@/components/icons/IconServices.vue'
 import IconClock from '@/components/icons/IconClock.vue'
 import IconShield from '@/components/icons/IconShield.vue'
 import IconDocker from '@/components/icons/IconDocker.vue'
+import IconMenu from '@/components/icons/IconMenu.vue'
+import IconSearch from '@/components/icons/IconSearch.vue'
+import CommandPalette from '@/components/CommandPalette.vue'
 import IconUsers from '@/components/icons/IconUsers.vue'
 import IconLogs from '@/components/icons/IconLogs.vue'
 import IconMoon from '@/components/icons/IconMoon.vue'
@@ -37,7 +43,14 @@ const theme = useThemeStore()
 const route = useRoute()
 const router = useRouter()
 
+const { isMobile } = useBreakpoint()
+const palette = ref<InstanceType<typeof CommandPalette> | null>(null)
 const collapsed = ref(false)
+/** Trên di động, thanh điều hướng là ngăn kéo phủ lên nội dung thay vì cột cố định. */
+const drawerOpen = ref(false)
+
+// Chuyển trang thì đóng ngăn kéo, nếu không nó che mất trang vừa mở.
+watch(() => route.fullPath, () => (drawerOpen.value = false))
 
 function renderIcon(icon: Component) {
   return () => h(NIcon, null, { default: () => h(icon) })
@@ -138,6 +151,7 @@ function toggleTheme(): void {
 <template>
   <NLayout has-sider position="absolute">
     <NLayoutSider
+      v-if="!isMobile"
       bordered
       collapse-mode="width"
       :collapsed-width="64"
@@ -163,9 +177,26 @@ function toggleTheme(): void {
 
     <NLayout>
       <NLayoutHeader bordered class="header">
-        <NText strong class="page-title">{{ t(`nav.${String(route.name ?? 'dashboard')}`) }}</NText>
+        <NSpace align="center" :size="10" class="header-left">
+          <NButton
+            v-if="isMobile"
+            quaternary
+            circle
+            :aria-label="t('nav.menu')"
+            @click="drawerOpen = true"
+          >
+            <template #icon><NIcon><IconMenu /></NIcon></template>
+          </NButton>
+          <NText strong class="page-title">
+            {{ t(`nav.${String(route.name ?? 'dashboard')}`) }}
+          </NText>
+        </NSpace>
 
-        <NSpace align="center" :size="8">
+        <NSpace align="center" :size="8" class="header-right">
+          <NButton quaternary circle :title="t('palette.open')" @click="palette?.open()">
+            <template #icon><NIcon><IconSearch /></NIcon></template>
+          </NButton>
+
           <NDropdown :options="languageOptions" @select="handleLanguage">
             <NButton quaternary circle :title="t('profile.language')">
               <template #icon><NIcon><IconGlobe /></NIcon></template>
@@ -183,7 +214,7 @@ function toggleTheme(): void {
               <NAvatar round size="small" :style="{ background: '#f0a500' }">
                 {{ auth.user?.username.charAt(0).toUpperCase() }}
               </NAvatar>
-              <NText>{{ auth.user?.username }}</NText>
+              <NText v-if="!isMobile">{{ auth.user?.username }}</NText>
             </NSpace>
           </NDropdown>
         </NSpace>
@@ -196,6 +227,18 @@ function toggleTheme(): void {
       </NLayout>
     </NLayout>
   </NLayout>
+
+  <CommandPalette ref="palette" />
+
+  <NDrawer v-model:show="drawerOpen" :width="260" placement="left">
+    <NDrawerContent :native-scrollbar="false" body-content-style="padding: 0">
+      <div class="brand">
+        <div class="brand-mark">☀</div>
+        <NText strong class="brand-name">{{ t('app.name') }}</NText>
+      </div>
+      <NMenu :options="menuOptions" :value="String(route.name ?? '')" />
+    </NDrawerContent>
+  </NDrawer>
 </template>
 
 <style scoped>
@@ -224,12 +267,27 @@ function toggleTheme(): void {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   height: 56px;
   padding: 0 20px;
 }
 
+/* min-width: 0 là bắt buộc để phần tử con co lại được; thiếu nó, tiêu đề dài sẽ
+   đẩy giãn khối cha và đè lên nhóm nút bên phải. */
+.header-left {
+  min-width: 0;
+  flex: 1;
+}
+
+.header-right {
+  flex: none;
+}
+
 .page-title {
+  overflow: hidden;
   font-size: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .user-chip {
@@ -244,5 +302,15 @@ function toggleTheme(): void {
    cộng thêm padding, khiến nội dung tràn ngang và bị cắt ở mép phải. */
 .content-inner {
   padding: 20px;
+}
+
+@media (max-width: 900px) {
+  .header {
+    padding: 0 12px;
+  }
+
+  .content-inner {
+    padding: 12px;
+  }
 }
 </style>

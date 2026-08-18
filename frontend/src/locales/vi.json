@@ -49,7 +49,8 @@
     "services": "Dịch vụ",
     "cron": "Tác vụ định kỳ",
     "firewall": "Tường lửa",
-    "docker": "Docker"
+    "docker": "Docker",
+    "menu": "Menu"
   },
   "dashboard": {
     "title": "Tổng quan hệ thống",
@@ -440,5 +441,13 @@
     "conflict": "Thao tác xung đột với trạng thái hiện tại.",
     "action_failed": "Thao tác với Docker thất bại.",
     "self_protected": "Đây là container đang chạy chính panel, không thể dừng hoặc xóa từ đây."
+  },
+  "palette": {
+    "placeholder": "Gõ để tìm trang hoặc lệnh…",
+    "navigate": "Đi tới",
+    "actions": "Hành động",
+    "noResults": "Không tìm thấy lệnh nào phù hợp.",
+    "hint": "↑↓ chọn · Enter chạy · Esc đóng",
+    "open": "Tìm nhanh (Ctrl K)"
   }
 }

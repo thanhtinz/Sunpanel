@@ -58,7 +58,8 @@ sunpanel reset-password -user admin
 - **Tường lửa**: ufw và firewalld, quản lý cổng và quy tắc theo nguồn.
 - **Docker**: quản lý container, image, volume và mạng; xem nhật ký và tài nguyên
   của từng container, dọn rác giải phóng dung lượng.
-- **Giao diện**: chế độ sáng/tối, chuyển ngôn ngữ tức thời, hoạt động tốt trên di động.
+- **Giao diện**: chế độ sáng/tối, chuyển ngôn ngữ tức thời, bảng lệnh nhanh Ctrl+K
+  (tìm được cả khi gõ không dấu), bố cục riêng cho điện thoại.
 
 Xem [lộ trình phát triển](docs/ROADMAP.md) cho các tính năng đang tới: quản lý Docker,
 chợ ứng dụng một chạm, website và SSL tự động, cơ sở dữ liệu và sao lưu.
@@ -175,7 +176,8 @@ sunpanel reset-password -user admin
 - **Firewall**: ufw and firewalld, port and source-scoped rules.
 - **Docker**: manage containers, images, volumes and networks; per-container logs
   and resource usage, plus cleanup to reclaim disk.
-- **UI**: light/dark theme, instant language switching, works on mobile.
+- **UI**: light/dark theme, instant language switching, Ctrl+K command palette
+  (matches Vietnamese text typed without diacritics), dedicated mobile layout.
 
 See the [roadmap](docs/ROADMAP.md) for what's next: Docker management, one-click app store,
 websites with automatic SSL, databases and backups.

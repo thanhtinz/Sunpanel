@@ -49,7 +49,8 @@
     "services": "Services",
     "cron": "Scheduled tasks",
     "firewall": "Firewall",
-    "docker": "Docker"
+    "docker": "Docker",
+    "menu": "Menu"
   },
   "dashboard": {
     "title": "System overview",
@@ -440,5 +441,13 @@
     "conflict": "The action conflicts with the current state.",
     "action_failed": "The Docker action failed.",
     "self_protected": "This container runs the panel itself and cannot be stopped or removed from here."
+  },
+  "palette": {
+    "placeholder": "Type to find a page or command…",
+    "navigate": "Go to",
+    "actions": "Actions",
+    "noResults": "No matching command.",
+    "hint": "↑↓ select · Enter run · Esc close",
+    "open": "Quick search (Ctrl K)"
   }
 }

@@ -44,3 +44,21 @@ body {
 .sp-muted {
   color: var(--sp-text-muted);
 }
+
+/* Bảng dữ liệu có nhiều cột không thể co vừa màn hình điện thoại. Cho phép cuộn
+   ngang bên trong bảng còn hơn ép mọi cột lại tới mức chữ vỡ thành từng ký tự. */
+@media (max-width: 900px) {
+  .n-data-table .n-data-table-base-table {
+    overflow-x: auto;
+  }
+
+  .n-data-table .n-data-table-table {
+    min-width: 640px;
+  }
+
+  /* Hộp thoại chiếm gần trọn màn hình: viền rộng trên điện thoại chỉ tổ phí chỗ. */
+  .n-modal.n-card {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+}

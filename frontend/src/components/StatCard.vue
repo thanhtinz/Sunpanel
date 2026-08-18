@@ -59,21 +59,33 @@ const clamped = computed(() => Math.min(100, Math.max(0, props.percent)))
 .stat-value {
   font-size: 15px;
   font-weight: 600;
+  /* Không cho xuống dòng: "34.9%" dài hơn "7.3%" và sẽ vỡ làm hai dòng bên trong
+     vòng tròn, đẩy con số lệch khỏi tâm. */
+  white-space: nowrap;
 }
 
 .stat-meta {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 4px;
+  /* min-width: 0 cho phép cột chữ co lại thay vì giữ nguyên bề rộng nội dung.
+     Thiếu nó, trên màn hẹp trình duyệt ép cột xuống đúng bề rộng một ký tự và
+     nhãn "Bộ nhớ" vỡ thành từng chữ cái xếp dọc. */
   min-width: 0;
 }
 
 .stat-label {
+  overflow: hidden;
   font-size: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .stat-detail {
+  overflow: hidden;
   font-size: 13px;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 </style>
