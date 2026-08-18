@@ -143,6 +143,11 @@ type LogConfig struct {
 	Format string `yaml:"format"`
 	// File là nơi ghi log; để trống thì ghi ra stdout.
 	File string `yaml:"file"`
+	// SystemDir là thư mục nhật ký của hệ điều hành mà panel cho phép xem.
+	//
+	// Trình xem nhật ký chỉ mở tệp bên trong thư mục này. Để nó ở cấu hình chứ
+	// không viết cứng vì máy chủ nào cũng có thể gắn nhật ký sang phân vùng khác.
+	SystemDir string `yaml:"systemDir"`
 }
 
 // Default trả về cấu hình mặc định khi chưa có tệp cấu hình.
@@ -188,8 +193,9 @@ func Default() Config {
 			ACMEWebroot:  defaultACMEWebroot(),
 		},
 		Log: LogConfig{
-			Level:  "info",
-			Format: "text",
+			Level:     "info",
+			Format:    "text",
+			SystemDir: defaultSystemLogDir(),
 		},
 	}
 }
@@ -306,6 +312,7 @@ func applyEnv(cfg *Config) {
 	envStr(&cfg.Log.Level, "LOG_LEVEL")
 	envStr(&cfg.Log.Format, "LOG_FORMAT")
 	envStr(&cfg.Log.File, "LOG_FILE")
+	envStr(&cfg.Log.SystemDir, "LOG_SYSTEM_DIR")
 
 	// Đường dẫn DB mặc định nằm trong thư mục dữ liệu, nên nếu người dùng chỉ đổi
 	// thư mục dữ liệu thì đường dẫn DB phải đi theo.

@@ -47,6 +47,8 @@ import type {
   FileList,
   HistorySample,
   LoginLog,
+  LogChunk,
+  LogSource,
   Overview,
   NotifyChannel,
   NotifyChannelPayload,
@@ -486,6 +488,17 @@ export const websiteApi = {
       body: form,
     })
   },
+}
+
+/** Các endpoint xem nhật ký hệ thống. */
+export const logApi = {
+  sources: () => request<LogSource[]>('/api/v1/logs'),
+
+  tail: (path: string, lines = 300) =>
+    request<LogChunk>(`/api/v1/logs/content?path=${encodeURIComponent(path)}&lines=${lines}`),
+
+  since: (path: string, offset: number) =>
+    request<LogChunk>(`/api/v1/logs/content?path=${encodeURIComponent(path)}&offset=${offset}`),
 }
 
 /** Các endpoint tài khoản đăng nhập của máy chủ. */

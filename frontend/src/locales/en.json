@@ -47,6 +47,7 @@
     "logout": "Sign out",
     "files": "Files",
     "terminal": "Terminal",
+    "system-logs": "System logs",
     "services": "Services",
     "processes": "Processes",
     "cron": "Scheduled tasks",
@@ -80,6 +81,7 @@
     "cron": "Scheduled tasks, with a log of every run",
     "firewall": "Ports and source-scoped rules",
     "terminal": "A shell straight onto the server",
+    "system-logs": "Read system and service log files",
     "backups": "Backup plans and data restores",
     "alerts": "Alert rules and notification channels",
     "nodes": "Other servers this panel drives through an agent",
@@ -96,7 +98,6 @@
     "swap": "Swap",
     "swapOff": "Swap disabled",
     "disk": "Disk",
-    "thisServer": "This server",
     "load": "Load average",
     "network": "Network",
     "diskIO": "Disk I/O",
@@ -118,7 +119,6 @@
     "mountpoint": "Mount point",
     "filesystem": "Filesystem",
     "usage": "Used",
-    "connected": "Live connection active",
     "disconnected": "Disconnected, retrying…",
     "perCore": "Per CPU core",
     "window": {
@@ -385,6 +385,17 @@
     "keyRemoved": "Key removed.",
     "keyRemoveConfirm": "Remove this key? The machine using it can no longer sign in.",
     "unavailable": "This server cannot manage operating system accounts."
+  },
+  "systemLogs": {
+    "title": "System logs",
+    "pick": "Pick a log file…",
+    "follow": "Follow live",
+    "filter": "Filter by keyword…",
+    "lineCount": "{count} lines",
+    "updated": "Last written {time}",
+    "empty": "No readable log files were found in the machine's log directory.",
+    "noLines": "No lines match.",
+    "rotated": "The file was just rotated; reading it again from the start."
   },
   "terminal": {
     "title": "Terminal",

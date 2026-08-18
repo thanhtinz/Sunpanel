@@ -41,7 +41,6 @@ import IconPlugin from '@/components/icons/IconPlugin.vue'
 import IconMenu from '@/components/icons/IconMenu.vue'
 import IconSearch from '@/components/icons/IconSearch.vue'
 import CommandPalette from '@/components/CommandPalette.vue'
-import StatusRail from '@/components/StatusRail.vue'
 import IconUsers from '@/components/icons/IconUsers.vue'
 import IconLogs from '@/components/icons/IconLogs.vue'
 import IconMoon from '@/components/icons/IconMoon.vue'
@@ -111,7 +110,7 @@ const menuOptions = computed<MenuOption[]>(() => {
         item('processes', IconPulse),
         item('cron', IconClock),
         item('firewall', IconShield),
-        ...(auth.canWrite ? [item('terminal', IconTerminal)] : []),
+        ...(auth.canWrite ? [item('system-logs', IconLogs), item('terminal', IconTerminal)] : []),
       ],
     },
 
@@ -227,7 +226,6 @@ function toggleTheme(): void {
           />
         </div>
 
-        <StatusRail :compact="collapsed" />
       </div>
     </NLayoutSider>
 
@@ -301,7 +299,6 @@ function toggleTheme(): void {
         <div class="sider-nav">
           <NMenu :options="menuOptions" :value="activeMenuKey" :indent="18" />
         </div>
-        <StatusRail />
       </div>
     </NDrawerContent>
   </NDrawer>

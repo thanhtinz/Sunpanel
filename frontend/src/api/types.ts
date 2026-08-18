@@ -893,3 +893,18 @@ export interface SystemAccountPayload {
   createHome: boolean
   sudo: boolean
 }
+
+/** Một tệp nhật ký hệ thống đọc được. */
+export interface LogSource {
+  name: string
+  path: string
+  size: number
+  modifiedAt: number
+}
+
+export interface LogChunk {
+  lines: string[]
+  offset: number
+  size: number
+  truncated: boolean
+}

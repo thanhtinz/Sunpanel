@@ -106,6 +106,12 @@ const router = createRouter({
           component: () => import('@/views/ProfileView.vue'),
         },
         {
+          path: 'system-logs',
+          name: 'system-logs',
+          component: () => import('@/views/SystemLogsView.vue'),
+          meta: { writeOnly: true },
+        },
+        {
           path: 'accounts',
           name: 'accounts',
           component: () => import('@/views/AccountsView.vue'),

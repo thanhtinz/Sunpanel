@@ -26,6 +26,7 @@ import (
 	"github.com/thanhtinz/sunpanel/pkg/dockerx"
 	"github.com/thanhtinz/sunpanel/pkg/firewall"
 	"github.com/thanhtinz/sunpanel/pkg/host"
+	"github.com/thanhtinz/sunpanel/pkg/logs"
 	"github.com/thanhtinz/sunpanel/pkg/plugin"
 	"github.com/thanhtinz/sunpanel/pkg/sysservice"
 	"github.com/thanhtinz/sunpanel/pkg/sysuser"
@@ -177,6 +178,10 @@ func New(cfg config.Config) (*App, error) {
 	})
 	sysUsers := service.NewSystemUserService(sysuser.New(userHost), audit)
 
+	// Nhật ký nằm ngoài phạm vi trình quản lý tệp trên nhiều máy, và bộ đọc tự
+	// giới hạn mình trong /var/log nên host này không cần chạy lệnh nào.
+	logService := service.NewLogService(logs.New(host.NewLocalHost("/", nil), cfg.Log.SystemDir))
+
 	// Tín hiệu khởi động lại được dựng trước các dịch vụ vì trang cài đặt cầm nó:
 	// đổi cổng hay đường dẫn bí mật xong thì phải có đường yêu cầu panel lên lại.
 	restart := newRestartSignal()
@@ -205,6 +210,7 @@ func New(cfg config.Config) (*App, error) {
 		Tokens:    tokens,
 		Settings:  service.NewSettingsService(cfg, cfg.ConfigPath(), restart, audit),
 		SysUsers:  sysUsers,
+		Logs:      logService,
 	}
 
 	handler, err := router.New(cfg, svc)

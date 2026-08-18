@@ -24,3 +24,6 @@ func defaultWebRoot() string { return "/www/wwwroot" }
 // Nằm dưới /var/www chứ không phải thư mục dữ liệu của panel, vì máy chủ web
 // chạy dưới người dùng khác và phải đọc được thư mục này.
 func defaultACMEWebroot() string { return "/var/www/sunpanel-acme" }
+
+// defaultSystemLogDir là thư mục nhật ký của hệ điều hành.
+func defaultSystemLogDir() string { return "/var/log" }

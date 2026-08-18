@@ -47,6 +47,7 @@
     "logout": "Đăng xuất",
     "files": "Tệp",
     "terminal": "Terminal",
+    "system-logs": "Nhật ký hệ thống",
     "services": "Dịch vụ",
     "processes": "Tiến trình",
     "cron": "Tác vụ định kỳ",
@@ -80,6 +81,7 @@
     "cron": "Tác vụ chạy theo lịch, kèm lịch sử từng lần",
     "firewall": "Cổng và quy tắc lọc theo nguồn",
     "terminal": "Dòng lệnh trực tiếp trên máy chủ",
+    "system-logs": "Đọc tệp nhật ký của hệ thống và dịch vụ",
     "backups": "Kế hoạch sao lưu và khôi phục dữ liệu",
     "alerts": "Quy tắc cảnh báo và kênh nhận thông báo",
     "nodes": "Các máy chủ khác panel điều khiển qua agent",
@@ -96,7 +98,6 @@
     "swap": "Swap",
     "swapOff": "Không bật swap",
     "disk": "Ổ đĩa",
-    "thisServer": "Máy chủ này",
     "load": "Tải trung bình",
     "network": "Mạng",
     "diskIO": "Đọc/ghi đĩa",
@@ -118,7 +119,6 @@
     "mountpoint": "Điểm gắn kết",
     "filesystem": "Hệ thống tệp",
     "usage": "Đã dùng",
-    "connected": "Đang kết nối trực tiếp",
     "disconnected": "Mất kết nối, đang thử lại…",
     "perCore": "Từng nhân CPU",
     "window": {
@@ -385,6 +385,17 @@
     "keyRemoved": "Đã gỡ khóa.",
     "keyRemoveConfirm": "Gỡ khóa này? Máy dùng khóa đó sẽ không đăng nhập được nữa.",
     "unavailable": "Máy chủ này không quản lý tài khoản hệ điều hành được."
+  },
+  "systemLogs": {
+    "title": "Nhật ký hệ thống",
+    "pick": "Chọn tệp nhật ký…",
+    "follow": "Theo dõi trực tiếp",
+    "filter": "Lọc theo từ khóa…",
+    "lineCount": "{count} dòng",
+    "updated": "Ghi lần cuối {time}",
+    "empty": "Không tìm thấy tệp nhật ký nào đọc được trong thư mục nhật ký của máy.",
+    "noLines": "Không có dòng nào khớp.",
+    "rotated": "Tệp vừa được xoay vòng, đang đọc lại từ đầu."
   },
   "terminal": {
     "title": "Terminal",

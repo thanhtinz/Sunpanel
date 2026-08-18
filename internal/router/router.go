@@ -47,6 +47,7 @@ type Services struct {
 	Alerts    *service.AlertService
 	Settings  *service.SettingsService
 	SysUsers  *service.SystemUserService
+	Logs      *service.LogService
 }
 
 // New dựng handler HTTP hoàn chỉnh của panel.
@@ -108,6 +109,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	firewallHandler := v1.NewFirewallHandler(svc.Firewall)
 	settingsHandler := v1.NewSettingsHandler(svc.Settings)
 	sysUserHandler := v1.NewSystemUserHandler(svc.SysUsers)
+	logHandler := v1.NewLogHandler(svc.Logs)
 	dockerHandler := v1.NewDockerHandler(svc.Docker)
 
 	api := engine.Group("/api/v1")
@@ -412,6 +414,14 @@ func registerAPI(engine *gin.Engine, svc Services) {
 				write.POST("/compress", fileHandler.Compress)
 				write.POST("/extract", fileHandler.Extract)
 			}
+		}
+
+		// Nhật ký hệ thống chỉ đọc, nhưng nội dung của nó lộ khá nhiều về máy chủ
+		// nên vẫn đòi quyền vận hành, ngang với việc xem nhật ký của dịch vụ.
+		logFiles := authenticated.Group("/logs", middleware.RequireWrite())
+		{
+			logFiles.GET("", logHandler.Sources)
+			logFiles.GET("/content", logHandler.Tail)
 		}
 
 		// Tài khoản đăng nhập của máy chủ: tạo được tài khoản có sudo nghĩa là tạo
