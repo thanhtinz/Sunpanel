@@ -1,7 +1,12 @@
 import { baseUrl, request } from './client'
 import type {
+  AppAction,
   ArchiveFormat,
   AuditLog,
+  CatalogResult,
+  ComposeStatus,
+  InstallPayload,
+  InstalledApp,
   CertPayload,
   Certificate,
   CronJob,
@@ -197,6 +202,29 @@ export const cronApi = {
 
   validate: (schedule: string) =>
     request<{ next: string[] }>('/api/v1/cron/validate', { method: 'POST', body: { schedule } }),
+}
+
+/** Các endpoint chợ ứng dụng. */
+export const appStoreApi = {
+  status: () => request<ComposeStatus>('/api/v1/apps/status'),
+
+  catalog: () => request<CatalogResult>('/api/v1/apps/catalog'),
+
+  list: () => request<InstalledApp[]>('/api/v1/apps'),
+
+  install: (payload: InstallPayload) =>
+    request<InstalledApp>('/api/v1/apps', { method: 'POST', body: payload }),
+
+  control: (id: number, action: AppAction) =>
+    request<{ action: string }>(`/api/v1/apps/${id}/${action}`, { method: 'POST' }),
+
+  logs: (id: number, lines = 200) =>
+    request<{ logs: string }>(`/api/v1/apps/${id}/logs?lines=${lines}`),
+
+  params: (id: number) => request<Record<string, string>>(`/api/v1/apps/${id}/params`),
+
+  uninstall: (id: number, removeData: boolean) =>
+    request<void>(`/api/v1/apps/${id}?removeData=${removeData}`, { method: 'DELETE' }),
 }
 
 /** Các endpoint website. */

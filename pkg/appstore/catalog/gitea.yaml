@@ -1,0 +1,66 @@
+key: gitea
+name:
+  vi: Gitea
+  en: Gitea
+description:
+  vi: "Máy chủ Git tự quản, nhẹ và đầy đủ: kho mã, pull request, issue và CI."
+  en: A lightweight self-hosted Git service with repositories, pull requests, issues and CI.
+category: development
+version: "1"
+website: https://gitea.io
+images:
+  - gitea/gitea:1
+  - postgres:16-alpine
+portField: HTTP_PORT
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3000"
+    required: true
+  - key: SSH_PORT
+    label: {vi: Cổng SSH, en: SSH port}
+    help:
+      vi: Cổng để đẩy mã bằng SSH; đặt khác 22 để không đụng SSH của máy chủ.
+      en: Port for pushing over SSH; keep it off 22 so it does not clash with the host.
+    type: port
+    default: "2222"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    gitea:
+      image: gitea/gitea:1
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        GITEA__database__DB_TYPE: postgres
+        GITEA__database__HOST: db:5432
+        GITEA__database__NAME: gitea
+        GITEA__database__USER: gitea
+        GITEA__database__PASSWD: ${DB_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:3000"
+        - "${SSH_PORT}:22"
+      volumes:
+        - data:/data
+
+    db:
+      image: postgres:16-alpine
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: gitea
+        POSTGRES_USER: gitea
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    data:
+    db:

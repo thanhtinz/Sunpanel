@@ -19,7 +19,9 @@ import (
 	"github.com/thanhtinz/sunpanel/internal/database"
 	"github.com/thanhtinz/sunpanel/internal/router"
 	"github.com/thanhtinz/sunpanel/internal/service"
+	"github.com/thanhtinz/sunpanel/pkg/appstore"
 	"github.com/thanhtinz/sunpanel/pkg/certs"
+	"github.com/thanhtinz/sunpanel/pkg/compose"
 	"github.com/thanhtinz/sunpanel/pkg/crypto"
 	"github.com/thanhtinz/sunpanel/pkg/dockerx"
 	"github.com/thanhtinz/sunpanel/pkg/firewall"
@@ -117,7 +119,28 @@ func New(cfg config.Config) (*App, error) {
 	firewallSvc := service.NewFirewallService(firewallManager, cfg.Server.Port, audit)
 
 	// Tên container của chính panel, để nó từ chối tự dừng mình.
-	dockerSvc := service.NewDockerService(dockerx.NewClient(), os.Getenv("SUNPANEL_CONTAINER_NAME"), audit)
+	dockerClient := dockerx.NewClient()
+	dockerSvc := service.NewDockerService(dockerClient, os.Getenv("SUNPANEL_CONTAINER_NAME"), audit)
+
+	// Danh mục ứng dụng: bản nhúng sẵn trước, rồi tới định nghĩa tự thêm của
+	// quản trị viên — trùng định danh thì bản tự thêm thắng.
+	catalog, err := appstore.LoadBuiltin()
+	if err != nil {
+		return nil, fmt.Errorf("nạp danh mục ứng dụng: %w", err)
+	}
+	custom, err := appstore.LoadDir(cfg.AppStore.CatalogDir)
+	if err != nil {
+		return nil, fmt.Errorf("nạp danh mục ứng dụng tự thêm: %w", err)
+	}
+	catalog.Merge(custom)
+
+	// Ứng dụng được cài bằng compose, vốn chạy container tùy ý — cùng mức tin cậy
+	// với terminal, nên dùng host riêng thay vì nới allowlist chung.
+	appHost := host.NewLocalHost("/", []string{"docker", "docker-compose"})
+	apps := service.NewAppStoreService(
+		db, catalog, compose.New(appHost), dockerClient, appHost, sealer,
+		cfg.AppStore.Root, audit,
+	)
 
 	svc := router.Services{
 		Auth:     auth,
@@ -128,6 +151,7 @@ func New(cfg config.Config) (*App, error) {
 		Terminal: terminal,
 		Services: sysServices,
 		Cron:     cronJobs,
+		Apps:     apps,
 		Websites: websites,
 		Certs:    certificates,
 		Firewall: firewallSvc,

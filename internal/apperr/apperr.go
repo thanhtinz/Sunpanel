@@ -227,6 +227,30 @@ var (
 	CertInUse = New(http.StatusConflict, "cert.in_use")
 )
 
+// Các lỗi của chợ ứng dụng.
+var (
+	// AppNotFound là không tìm thấy ứng dụng đã cài.
+	AppNotFound = New(http.StatusNotFound, "app.not_found")
+	// AppCatalogNotFound là không tìm thấy ứng dụng trong danh mục.
+	AppCatalogNotFound = New(http.StatusNotFound, "app.catalog_not_found")
+	// AppNameExists là tên ứng dụng đã được dùng.
+	AppNameExists = New(http.StatusConflict, "app.name_exists")
+	// AppInvalidName là tên ứng dụng không hợp lệ.
+	AppInvalidName = New(http.StatusBadRequest, "app.invalid_name")
+	// AppInvalidValue là giá trị cấu hình không hợp lệ.
+	AppInvalidValue = New(http.StatusBadRequest, "app.invalid_value")
+	// AppDirExists là thư mục cài đặt đã tồn tại từ lần cài trước.
+	AppDirExists = New(http.StatusConflict, "app.dir_exists")
+	// AppPortInUse là cổng đã có tiến trình khác chiếm.
+	AppPortInUse = New(http.StatusConflict, "app.port_in_use")
+	// AppComposeUnavailable là máy chủ không có Docker Compose.
+	AppComposeUnavailable = New(http.StatusServiceUnavailable, "app.compose_unavailable")
+	// AppInstallFailed là việc cài đặt thất bại.
+	AppInstallFailed = New(http.StatusInternalServerError, "app.install_failed")
+	// AppActionFailed là thao tác với ứng dụng thất bại.
+	AppActionFailed = New(http.StatusInternalServerError, "app.action_failed")
+)
+
 // Các lỗi của Docker.
 var (
 	// DockerUnavailable là không kết nối được tới Docker.

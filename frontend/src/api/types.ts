@@ -422,3 +422,76 @@ export interface CertPayload {
   certPem?: string
   keyPem?: string
 }
+
+export interface LocalizedText {
+  vi: string
+  en: string
+}
+
+export type AppFieldType = 'text' | 'password' | 'port' | 'number' | 'select'
+
+export interface AppFieldOption {
+  value: string
+  label: LocalizedText
+}
+
+export interface AppField {
+  key: string
+  label: LocalizedText
+  help: LocalizedText
+  type: AppFieldType
+  default: string
+  required: boolean
+  generate: boolean
+  min: number
+  max: number
+  options: AppFieldOption[] | null
+}
+
+export interface CatalogApp {
+  key: string
+  name: LocalizedText
+  description: LocalizedText
+  category: string
+  version: string
+  website: string
+  images: string[] | null
+  portField: string
+  fields: AppField[] | null
+}
+
+export interface CatalogResult {
+  apps: CatalogApp[]
+  categories: string[] | null
+}
+
+export interface InstalledApp {
+  id: number
+  name: string
+  appKey: string
+  version: string
+  dir: string
+  containerName: string
+  port: number
+  remark: string
+  lastError?: string
+  createdAt: string
+  updatedAt: string
+  app?: CatalogApp
+  running: boolean
+  state: string
+}
+
+export interface InstallPayload {
+  appKey: string
+  name: string
+  values: Record<string, string>
+  remark?: string
+}
+
+export interface ComposeStatus {
+  available: boolean
+  version: string
+}
+
+export type AppAction = 'start' | 'stop' | 'restart'

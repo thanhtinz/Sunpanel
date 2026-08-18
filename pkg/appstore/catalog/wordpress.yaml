@@ -1,0 +1,64 @@
+key: wordpress
+name:
+  vi: WordPress
+  en: WordPress
+description:
+  vi: Nền tảng viết blog và làm website phổ biến nhất, kèm sẵn cơ sở dữ liệu MariaDB.
+  en: The most widely used blogging and website platform, bundled with a MariaDB database.
+category: website
+version: "6"
+website: https://wordpress.org
+images:
+  - wordpress:6-apache
+  - mariadb:11
+portField: PORT
+fields:
+  - key: PORT
+    label: {vi: Cổng, en: Port}
+    help:
+      vi: Nên đặt cổng nội bộ rồi tạo website dạng chuyển tiếp trỏ tên miền vào đây.
+      en: Use an internal port, then create a reverse-proxy website pointing your domain here.
+    type: port
+    default: "8080"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+  - key: DB_ROOT_PASSWORD
+    label: {vi: Mật khẩu root cơ sở dữ liệu, en: Database root password}
+    type: password
+    generate: true
+compose: |
+  services:
+    wordpress:
+      image: wordpress:6-apache
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        WORDPRESS_DB_HOST: db
+        WORDPRESS_DB_NAME: wordpress
+        WORDPRESS_DB_USER: wordpress
+        WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "${PORT}:80"
+      volumes:
+        - data:/var/www/html
+
+    db:
+      image: mariadb:11
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        MARIADB_DATABASE: wordpress
+        MARIADB_USER: wordpress
+        MARIADB_PASSWORD: ${DB_PASSWORD}
+        MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      volumes:
+        - db:/var/lib/mysql
+
+  volumes:
+    data:
+    db:

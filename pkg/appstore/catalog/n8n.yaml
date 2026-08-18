@@ -1,0 +1,54 @@
+key: n8n
+name:
+  vi: n8n
+  en: n8n
+description:
+  vi: Tự động hóa quy trình bằng cách nối các dịch vụ lại với nhau, không cần viết mã.
+  en: Automate workflows by wiring services together, without writing code.
+category: automation
+version: "1"
+website: https://n8n.io
+images:
+  - n8nio/n8n:latest
+portField: PORT
+fields:
+  - key: PORT
+    label: {vi: Cổng, en: Port}
+    type: port
+    default: "5678"
+    required: true
+  - key: ADMIN_USER
+    label: {vi: Tài khoản quản trị, en: Admin user}
+    type: text
+    default: admin
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    help:
+      vi: Để trống thì panel tự sinh một mật khẩu ngẫu nhiên.
+      en: Leave empty and the panel generates a random password.
+    type: password
+    generate: true
+  - key: TIMEZONE
+    label: {vi: Múi giờ, en: Time zone}
+    type: text
+    default: Asia/Ho_Chi_Minh
+    required: true
+compose: |
+  services:
+    n8n:
+      image: n8nio/n8n:latest
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        N8N_BASIC_AUTH_ACTIVE: "true"
+        N8N_BASIC_AUTH_USER: ${ADMIN_USER}
+        N8N_BASIC_AUTH_PASSWORD: ${ADMIN_PASSWORD}
+        GENERIC_TIMEZONE: ${TIMEZONE}
+      ports:
+        - "${PORT}:5678"
+      volumes:
+        - data:/home/node/.n8n
+
+  volumes:
+    data:

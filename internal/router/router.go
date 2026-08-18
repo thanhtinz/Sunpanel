@@ -32,6 +32,7 @@ type Services struct {
 	Terminal *service.TerminalService
 	Services *service.SystemServiceManager
 	Cron     *service.CronService
+	Apps     *service.AppStoreService
 	Websites *service.WebsiteService
 	Certs    *service.CertificateService
 	Firewall *service.FirewallService
@@ -87,6 +88,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	sysServiceHandler := v1.NewSysServiceHandler(svc.Services)
 	cronHandler := v1.NewCronHandler(svc.Cron, svc.Audit)
 	websiteHandler := v1.NewWebsiteHandler(svc.Websites, svc.Certs, svc.Audit)
+	appHandler := v1.NewAppStoreHandler(svc.Apps, svc.Audit)
 	firewallHandler := v1.NewFirewallHandler(svc.Firewall)
 	dockerHandler := v1.NewDockerHandler(svc.Docker)
 
@@ -215,6 +217,26 @@ func registerAPI(engine *gin.Engine, svc Services) {
 				certWrite.POST("", websiteHandler.IssueCert)
 				certWrite.POST("/:name/renew", websiteHandler.RenewCert)
 				certWrite.DELETE("/:name", websiteHandler.DeleteCert)
+			}
+		}
+
+		// Chợ ứng dụng: cài một ứng dụng là chạy container tùy ý trên máy chủ, nên
+		// mọi thao tác thay đổi đều cần quyền vận hành. Xem tham số thì càng chặt
+		// hơn nữa vì trong đó có mật khẩu.
+		apps := authenticated.Group("/apps")
+		{
+			apps.GET("/status", appHandler.Status)
+			apps.GET("/catalog", appHandler.Catalog)
+			apps.GET("", appHandler.List)
+			apps.GET("/:id", appHandler.Get)
+
+			appWrite := apps.Group("", middleware.RequireWrite())
+			{
+				appWrite.GET("/:id/logs", appHandler.Logs)
+				appWrite.GET("/:id/params", appHandler.Params)
+				appWrite.POST("", appHandler.Install)
+				appWrite.DELETE("/:id", appHandler.Uninstall)
+				appWrite.POST("/:id/:action", appHandler.Control)
 			}
 		}
 

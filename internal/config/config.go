@@ -24,6 +24,7 @@ type Config struct {
 	Security SecurityConfig `yaml:"security"`
 	Monitor  MonitorConfig  `yaml:"monitor"`
 	Website  WebsiteConfig  `yaml:"website"`
+	AppStore AppStoreConfig `yaml:"appStore"`
 	Log      LogConfig      `yaml:"log"`
 }
 
@@ -104,6 +105,17 @@ type WebsiteConfig struct {
 	ACMEWebroot string `yaml:"acmeWebroot"`
 }
 
+// AppStoreConfig là cấu hình chợ ứng dụng.
+type AppStoreConfig struct {
+	// Root là thư mục chứa tệp compose và dữ liệu của các ứng dụng đã cài.
+	Root string `yaml:"root"`
+	// CatalogDir là thư mục chứa định nghĩa ứng dụng do quản trị viên tự thêm.
+	//
+	// Định nghĩa ở đây ưu tiên hơn danh mục nhúng sẵn, nên sửa một ứng dụng không
+	// phải chờ bản cập nhật panel.
+	CatalogDir string `yaml:"catalogDir"`
+}
+
 // LogConfig là cấu hình ghi log.
 type LogConfig struct {
 	// Level nhận một trong: debug, info, warn, error.
@@ -139,6 +151,10 @@ func Default() Config {
 		Monitor: MonitorConfig{
 			Interval:  5 * time.Second,
 			Retention: 7 * 24 * time.Hour,
+		},
+		AppStore: AppStoreConfig{
+			Root:       filepath.Join(dataDir, "apps"),
+			CatalogDir: filepath.Join(dataDir, "catalog"),
 		},
 		Website: WebsiteConfig{
 			NginxConfDir: defaultNginxConfDir(),
@@ -247,6 +263,8 @@ func applyEnv(cfg *Config) {
 	envStr(&cfg.Website.NginxConfDir, "NGINX_CONF_DIR")
 	envStr(&cfg.Website.Root, "WEB_ROOT")
 	envStr(&cfg.Website.ACMEWebroot, "ACME_WEBROOT")
+	envStr(&cfg.AppStore.Root, "APP_ROOT")
+	envStr(&cfg.AppStore.CatalogDir, "APP_CATALOG_DIR")
 	envBool(&cfg.Server.TLS.Enabled, "TLS_ENABLED")
 	envStr(&cfg.Server.TLS.CertFile, "TLS_CERT_FILE")
 	envStr(&cfg.Server.TLS.KeyFile, "TLS_KEY_FILE")

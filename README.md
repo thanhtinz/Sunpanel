@@ -58,6 +58,8 @@ sunpanel reset-password -user admin
 - **Tường lửa**: ufw và firewalld, quản lý cổng và quy tắc theo nguồn.
 - **Docker**: quản lý container, image, volume và mạng; xem nhật ký và tài nguyên
   của từng container, dọn rác giải phóng dung lượng.
+- **Chợ ứng dụng**: cài WordPress, Gitea, n8n, Uptime Kuma bằng một chạm qua
+  Docker Compose; mật khẩu tự sinh và lưu mã hóa, thêm ứng dụng riêng bằng YAML.
 - **Website**: sinh vhost nginx cho website tĩnh, PHP và reverse proxy; cấu hình
   được nginx kiểm tra trước khi nạp và tự khôi phục bản cũ nếu sai.
 - **SSL**: chứng chỉ tự ký, tải lên, hoặc xin từ Let's Encrypt qua HTTP-01 và tự
@@ -65,8 +67,8 @@ sunpanel reset-password -user admin
 - **Giao diện**: chế độ sáng/tối, chuyển ngôn ngữ tức thời, bảng lệnh nhanh Ctrl+K
   (tìm được cả khi gõ không dấu), bố cục riêng cho điện thoại.
 
-Xem [lộ trình phát triển](docs/ROADMAP.md) cho các tính năng đang tới: chợ ứng dụng
-một chạm, cơ sở dữ liệu và sao lưu, hệ thống plugin và quản lý nhiều máy chủ.
+Xem [lộ trình phát triển](docs/ROADMAP.md) cho các tính năng đang tới: cơ sở dữ liệu
+và sao lưu, hệ thống plugin và quản lý nhiều máy chủ.
 
 ### Bảo mật
 
@@ -180,6 +182,9 @@ sunpanel reset-password -user admin
 - **Firewall**: ufw and firewalld, port and source-scoped rules.
 - **Docker**: manage containers, images, volumes and networks; per-container logs
   and resource usage, plus cleanup to reclaim disk.
+- **App store**: one-click WordPress, Gitea, n8n and Uptime Kuma over Docker
+  Compose; passwords are generated and stored encrypted, and you can add your own
+  applications with a YAML file.
 - **Websites**: generate nginx vhosts for static, PHP and reverse-proxy sites; every
   config is checked by nginx before reload and rolled back if it fails.
 - **SSL**: self-signed, uploaded, or Let's Encrypt certificates over HTTP-01, renewed
@@ -187,8 +192,8 @@ sunpanel reset-password -user admin
 - **UI**: light/dark theme, instant language switching, Ctrl+K command palette
   (matches Vietnamese text typed without diacritics), dedicated mobile layout.
 
-See the [roadmap](docs/ROADMAP.md) for what's next: a one-click app store, databases
-and backups, a plugin system and multi-server management.
+See the [roadmap](docs/ROADMAP.md) for what's next: databases and backups, a plugin
+system and multi-server management.
 
 ### Security
 
