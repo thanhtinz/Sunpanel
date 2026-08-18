@@ -395,7 +395,12 @@ const uninstallData = ref(false)
             <NGi v-for="app in visibleCatalog" :key="app.key">
               <NCard size="small" class="store-card">
                 <div class="store-head">
-                  <AppIcon :icon="app.icon" :name="localized(app.name)" :size="44" />
+                  <AppIcon
+                    :icon="app.icon"
+                    :icon-dark="app.iconDark"
+                    :name="localized(app.name)"
+                    :size="44"
+                  />
 
                   <div class="store-ident">
                     <div class="store-title">{{ localized(app.name) }}</div>
@@ -464,7 +469,12 @@ const uninstallData = ref(false)
   >
     <NForm v-if="installer.app" class="installer-form" @submit.prevent="install">
       <div class="installer-head">
-        <AppIcon :icon="installer.app.icon" :name="localized(installer.app.name)" :size="40" />
+        <AppIcon
+          :icon="installer.app.icon"
+          :icon-dark="installer.app.iconDark"
+          :name="localized(installer.app.name)"
+          :size="40"
+        />
         <p class="installer-desc">{{ localized(installer.app.description) }}</p>
       </div>
 

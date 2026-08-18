@@ -455,8 +455,10 @@ export interface CatalogApp {
   category: string
   version: string
   website: string
-  /** Biểu trưng dạng SVG, giao diện nhúng qua data URI vào thẻ <img>. */
+  /** Biểu trưng dạng data URI, giao diện nhúng vào thẻ <img>. */
   icon: string
+  /** Bản biểu trưng dùng khi panel ở chế độ tối; rỗng thì dùng chung bản thường. */
+  iconDark: string
   images: string[] | null
   portField: string
   fields: AppField[] | null

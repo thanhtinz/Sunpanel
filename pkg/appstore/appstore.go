@@ -94,13 +94,22 @@ type App struct {
 	Version string `yaml:"version" json:"version"`
 	// Website là trang chủ của ứng dụng.
 	Website string `yaml:"website" json:"website"`
-	// Icon là biểu trưng dạng SVG, giao diện hiển thị qua data URI.
+	// Icon là biểu trưng, dạng data URI hoàn chỉnh ("data:image/svg+xml;base64,…").
 	//
-	// Để trống thì panel tự lấy tệp icons/<định danh>.svg trong cùng danh mục.
-	// Giao diện nhúng nó vào thẻ <img> chứ không chèn thẳng vào trang: danh mục
-	// tự thêm của quản trị viên cũng là dữ liệu ngoài, và một tệp SVG chèn thẳng
-	// vào trang thì chạy được mã kịch bản.
+	// Để trống thì panel tự lấy tệp icons/<định danh> trong cùng danh mục, chấp
+	// nhận .svg, .webp, .png hoặc .jpg. Giao diện nhúng nó vào thẻ <img> chứ
+	// không chèn thẳng vào trang: danh mục tự thêm của quản trị viên cũng là dữ
+	// liệu ngoài, mà một tệp SVG chèn thẳng vào trang thì chạy được mã kịch bản.
+	//
+	// Bắt buộc là data URI chứ không nhận địa chỉ web: chính sách nội dung của
+	// panel chặn ảnh từ tên miền ngoài, nên một địa chỉ web chỉ cho ra ô trống.
 	Icon string `yaml:"icon" json:"icon"`
+	// IconDark là bản biểu trưng dùng khi panel đang ở chế độ tối.
+	//
+	// Vài logo là nét đen trên nền trong suốt (Ghost, Umami) và chìm hẳn vào nền
+	// tối; các dự án đó phát hành sẵn bản sáng màu cho trường hợp này. Để trống
+	// thì dùng chung bản thường. Panel tự lấy tệp icons/<định danh>-dark.
+	IconDark string `yaml:"iconDark" json:"iconDark"`
 	// Images liệt kê các image cần tải, để giao diện báo trước dung lượng sẽ tải.
 	Images []string `yaml:"images" json:"images"`
 	// PortField là tên biến chứa cổng chính, dùng để dựng liên kết mở ứng dụng.
@@ -162,6 +171,14 @@ func (a App) Validate() error {
 		default:
 			return fmt.Errorf("%w: %s biến %q có kiểu %q không hỗ trợ",
 				ErrInvalidApp, a.Key, field.Key, field.Type)
+		}
+	}
+
+	// Biểu trưng phải là data URI: mọi địa chỉ khác đều bị chính sách nội dung
+	// của panel chặn, và "javascript:" thì còn nguy hiểm.
+	for name, icon := range map[string]string{"icon": a.Icon, "iconDark": a.IconDark} {
+		if icon != "" && !strings.HasPrefix(icon, "data:image/") {
+			return fmt.Errorf("%w: %s có %s không phải data URI ảnh", ErrInvalidApp, a.Key, name)
 		}
 	}
 

@@ -2,6 +2,7 @@ package appstore
 
 import (
 	"embed"
+	"encoding/base64"
 	"fmt"
 	"io/fs"
 	"os"
@@ -20,7 +21,7 @@ import (
 // logo từ tên miền ngoài thì trên máy chủ kín mạng chợ ứng dụng sẽ trống trơn,
 // và chính sách nội dung của panel vốn chặn ảnh từ tên miền khác.
 //
-//go:embed catalog/*.yaml icons/*.svg
+//go:embed catalog/*.yaml icons/*.svg icons/*.webp
 var builtinCatalog embed.FS
 
 // Catalog là tập hợp ứng dụng đã nạp.
@@ -69,12 +70,13 @@ func load(fsys fs.FS, dir, iconDir string) (*Catalog, error) {
 		if err := yaml.Unmarshal(content, &app); err != nil {
 			return nil, fmt.Errorf("đọc %s: %w", entry.Name(), err)
 		}
-		// Biểu trưng để rời thành tệp .svg thay vì nhét vào YAML: sửa một hình vẽ
-		// bằng công cụ đồ họa dễ hơn nhiều so với sửa một chuỗi trong tệp cấu hình.
+		// Biểu trưng để rời thành tệp ảnh thay vì nhét vào YAML: thay logo bằng
+		// cách chép đè một tệp dễ hơn nhiều so với sửa một chuỗi trong cấu hình.
 		if app.Icon == "" {
-			if icon, err := fs.ReadFile(fsys, path.Join(iconDir, app.Key+".svg")); err == nil {
-				app.Icon = strings.TrimSpace(string(icon))
-			}
+			app.Icon = readIcon(fsys, iconDir, app.Key)
+		}
+		if app.IconDark == "" {
+			app.IconDark = readIcon(fsys, iconDir, app.Key+"-dark")
 		}
 
 		if err := app.Validate(); err != nil {
@@ -90,6 +92,31 @@ func load(fsys fs.FS, dir, iconDir string) (*Catalog, error) {
 
 	sortApps(catalog.apps)
 	return catalog, nil
+}
+
+// iconFormats là các định dạng biểu trưng được chấp nhận, xếp theo thứ tự ưu
+// tiên: ảnh véc-tơ nét gọn hơn hẳn ảnh điểm ở mọi cỡ hiển thị.
+var iconFormats = []struct{ ext, mime string }{
+	{".svg", "image/svg+xml"},
+	{".webp", "image/webp"},
+	{".png", "image/png"},
+	{".jpg", "image/jpeg"},
+	{".jpeg", "image/jpeg"},
+}
+
+// readIcon đọc tệp biểu trưng và trả về dưới dạng data URI.
+//
+// Trả về chuỗi rỗng khi không có tệp nào: thiếu biểu trưng không phải lỗi, giao
+// diện tự dựng ô chữ cái đầu thay thế.
+func readIcon(fsys fs.FS, dir, name string) string {
+	for _, format := range iconFormats {
+		content, err := fs.ReadFile(fsys, path.Join(dir, name+format.ext))
+		if err != nil {
+			continue
+		}
+		return "data:" + format.mime + ";base64," + base64.StdEncoding.EncodeToString(content)
+	}
+	return ""
 }
 
 // Merge gộp một danh mục khác vào, ứng dụng trùng định danh sẽ bị ghi đè.

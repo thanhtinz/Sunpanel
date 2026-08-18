@@ -1,6 +1,7 @@
 package appstore
 
 import (
+	"encoding/base64"
 	"errors"
 	"os"
 	"strings"
@@ -145,7 +146,7 @@ func TestRenderEnvIsStable(t *testing.T) {
 }
 
 // Biểu trưng đi kèm binary vì chính sách nội dung của panel chặn ảnh từ tên
-// miền ngoài: thiếu tệp svg là ô ứng dụng hiện ra trống trơn.
+// miền ngoài: thiếu tệp ảnh là ô ứng dụng hiện ra trống trơn.
 func TestBuiltinAppsHaveIcons(t *testing.T) {
 	catalog, err := LoadBuiltin()
 	if err != nil {
@@ -153,16 +154,41 @@ func TestBuiltinAppsHaveIcons(t *testing.T) {
 	}
 
 	for _, app := range catalog.Apps() {
-		if !strings.HasPrefix(app.Icon, "<svg") {
-			t.Errorf("ứng dụng %s không có biểu trưng svg", app.Key)
+		if !strings.HasPrefix(app.Icon, "data:image/") {
+			t.Errorf("ứng dụng %s không có biểu trưng", app.Key)
 			continue
 		}
+		if app.IconDark != "" && !strings.HasPrefix(app.IconDark, "data:image/") {
+			t.Errorf("ứng dụng %s có biểu trưng chế độ tối sai định dạng", app.Key)
+		}
+
+		// Biểu trưng nằm trong tệp .env của binary nên không ai xem lại bằng mắt;
+		// một tệp phình to thường là ảnh điểm 512×512 lọt vào chỗ của ảnh véc-tơ.
+		if len(app.Icon) > 64*1024 {
+			t.Errorf("biểu trưng của %s nặng %d KB, quá lớn cho một ô 44 điểm ảnh",
+				app.Key, len(app.Icon)/1024)
+		}
+
 		// Giao diện nhúng biểu trưng qua thẻ <img> nên mã kịch bản bên trong không
 		// chạy được, nhưng một tệp svg có <script> là dấu hiệu ai đó nhầm chỗ.
-		if strings.Contains(strings.ToLower(app.Icon), "<script") {
+		decoded, err := decodeIcon(app.Icon)
+		if err != nil {
+			t.Errorf("biểu trưng của %s không giải mã được: %v", app.Key, err)
+			continue
+		}
+		if strings.Contains(strings.ToLower(string(decoded)), "<script") {
 			t.Errorf("biểu trưng của %s chứa mã kịch bản", app.Key)
 		}
 	}
+}
+
+// decodeIcon lấy lại nội dung tệp từ data URI.
+func decodeIcon(icon string) ([]byte, error) {
+	_, encoded, found := strings.Cut(icon, ";base64,")
+	if !found {
+		return nil, errors.New("data URI không mã hóa base64")
+	}
+	return base64.StdEncoding.DecodeString(encoded)
 }
 
 // Danh mục phân loại phải nằm trong tập giao diện có nhãn dịch, nếu không ô lọc
