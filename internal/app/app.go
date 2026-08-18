@@ -113,6 +113,11 @@ func New(cfg config.Config) (*App, error) {
 	// Chứng chỉ mới chỉ có tác dụng sau khi máy chủ web đọc lại tệp.
 	certificates.SetReloader(websites.Reload)
 
+	databases := service.NewDatabaseService(db, sealer, audit)
+	backups := service.NewBackupService(
+		db, databases, sealer, cfg.Backup.WorkDir, cfg.Backup.Root, audit,
+	)
+
 	// Dò công cụ tường lửa một lần lúc khởi động: việc dò phải chạy vài lệnh, và
 	// công cụ trên máy không đổi giữa chừng.
 	firewallManager := firewall.Detect(context.Background(), localHost)
@@ -143,20 +148,22 @@ func New(cfg config.Config) (*App, error) {
 	)
 
 	svc := router.Services{
-		Auth:     auth,
-		Users:    users,
-		Audit:    audit,
-		Monitor:  monitor,
-		Files:    files,
-		Terminal: terminal,
-		Services: sysServices,
-		Cron:     cronJobs,
-		Apps:     apps,
-		Websites: websites,
-		Certs:    certificates,
-		Firewall: firewallSvc,
-		Docker:   dockerSvc,
-		Tokens:   tokens,
+		Auth:      auth,
+		Users:     users,
+		Audit:     audit,
+		Monitor:   monitor,
+		Files:     files,
+		Terminal:  terminal,
+		Services:  sysServices,
+		Cron:      cronJobs,
+		Apps:      apps,
+		Databases: databases,
+		Backups:   backups,
+		Websites:  websites,
+		Certs:     certificates,
+		Firewall:  firewallSvc,
+		Docker:    dockerSvc,
+		Tokens:    tokens,
 	}
 
 	handler, err := router.New(cfg, svc)
@@ -195,6 +202,11 @@ func (a *App) Run() error {
 		return fmt.Errorf("khởi động bộ lập lịch: %w", err)
 	}
 	defer a.svc.Cron.Stop()
+
+	if err := a.svc.Backups.Start(ctx); err != nil {
+		return fmt.Errorf("khởi động bộ lập lịch sao lưu: %w", err)
+	}
+	defer a.svc.Backups.Stop()
 
 	go a.svc.Certs.RunRenewal(ctx)
 

@@ -25,6 +25,7 @@ type Config struct {
 	Monitor  MonitorConfig  `yaml:"monitor"`
 	Website  WebsiteConfig  `yaml:"website"`
 	AppStore AppStoreConfig `yaml:"appStore"`
+	Backup   BackupConfig   `yaml:"backup"`
 	Log      LogConfig      `yaml:"log"`
 }
 
@@ -116,6 +117,17 @@ type AppStoreConfig struct {
 	CatalogDir string `yaml:"catalogDir"`
 }
 
+// BackupConfig là cấu hình sao lưu.
+type BackupConfig struct {
+	// Root là thư mục mặc định lưu bản sao lưu tại chỗ.
+	Root string `yaml:"root"`
+	// WorkDir là nơi ghi tệp tạm trong lúc dựng bản sao lưu.
+	//
+	// Tách khỏi Root vì tệp tạm cần dung lượng bằng cả bản sao lưu, và nơi lưu
+	// trữ thật có thể nằm trên mạng.
+	WorkDir string `yaml:"workDir"`
+}
+
 // LogConfig là cấu hình ghi log.
 type LogConfig struct {
 	// Level nhận một trong: debug, info, warn, error.
@@ -155,6 +167,10 @@ func Default() Config {
 		AppStore: AppStoreConfig{
 			Root:       filepath.Join(dataDir, "apps"),
 			CatalogDir: filepath.Join(dataDir, "catalog"),
+		},
+		Backup: BackupConfig{
+			Root:    filepath.Join(dataDir, "backups"),
+			WorkDir: filepath.Join(dataDir, "tmp"),
 		},
 		Website: WebsiteConfig{
 			NginxConfDir: defaultNginxConfDir(),
@@ -265,6 +281,8 @@ func applyEnv(cfg *Config) {
 	envStr(&cfg.Website.ACMEWebroot, "ACME_WEBROOT")
 	envStr(&cfg.AppStore.Root, "APP_ROOT")
 	envStr(&cfg.AppStore.CatalogDir, "APP_CATALOG_DIR")
+	envStr(&cfg.Backup.Root, "BACKUP_ROOT")
+	envStr(&cfg.Backup.WorkDir, "BACKUP_WORK_DIR")
 	envBool(&cfg.Server.TLS.Enabled, "TLS_ENABLED")
 	envStr(&cfg.Server.TLS.CertFile, "TLS_CERT_FILE")
 	envStr(&cfg.Server.TLS.KeyFile, "TLS_KEY_FILE")

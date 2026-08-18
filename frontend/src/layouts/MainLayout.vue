@@ -30,6 +30,8 @@ import IconShield from '@/components/icons/IconShield.vue'
 import IconDocker from '@/components/icons/IconDocker.vue'
 import IconSite from '@/components/icons/IconSite.vue'
 import IconApps from '@/components/icons/IconApps.vue'
+import IconDatabase from '@/components/icons/IconDatabase.vue'
+import IconBackup from '@/components/icons/IconBackup.vue'
 import IconMenu from '@/components/icons/IconMenu.vue'
 import IconSearch from '@/components/icons/IconSearch.vue'
 import CommandPalette from '@/components/CommandPalette.vue'
@@ -83,6 +85,16 @@ const menuOptions = computed<MenuOption[]>(() => {
       label: renderLink('websites', t('nav.websites')),
       key: 'websites',
       icon: renderIcon(IconSite),
+    },
+    {
+      label: renderLink('databases', t('nav.databases')),
+      key: 'databases',
+      icon: renderIcon(IconDatabase),
+    },
+    {
+      label: renderLink('backups', t('nav.backups')),
+      key: 'backups',
+      icon: renderIcon(IconBackup),
     },
     {
       label: renderLink('docker', t('nav.docker')),

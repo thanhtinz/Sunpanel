@@ -24,20 +24,22 @@ const (
 
 // Services gom các service mà router cần.
 type Services struct {
-	Auth     *service.AuthService
-	Users    *service.UserService
-	Audit    *service.AuditService
-	Monitor  *service.MonitorService
-	Files    *service.FileService
-	Terminal *service.TerminalService
-	Services *service.SystemServiceManager
-	Cron     *service.CronService
-	Apps     *service.AppStoreService
-	Websites *service.WebsiteService
-	Certs    *service.CertificateService
-	Firewall *service.FirewallService
-	Docker   *service.DockerService
-	Tokens   *service.TokenIssuer
+	Auth      *service.AuthService
+	Users     *service.UserService
+	Audit     *service.AuditService
+	Monitor   *service.MonitorService
+	Files     *service.FileService
+	Terminal  *service.TerminalService
+	Services  *service.SystemServiceManager
+	Cron      *service.CronService
+	Apps      *service.AppStoreService
+	Databases *service.DatabaseService
+	Backups   *service.BackupService
+	Websites  *service.WebsiteService
+	Certs     *service.CertificateService
+	Firewall  *service.FirewallService
+	Docker    *service.DockerService
+	Tokens    *service.TokenIssuer
 }
 
 // New dựng handler HTTP hoàn chỉnh của panel.
@@ -89,6 +91,8 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	cronHandler := v1.NewCronHandler(svc.Cron, svc.Audit)
 	websiteHandler := v1.NewWebsiteHandler(svc.Websites, svc.Certs, svc.Audit)
 	appHandler := v1.NewAppStoreHandler(svc.Apps, svc.Audit)
+	dbHandler := v1.NewDatabaseHandler(svc.Databases, svc.Audit)
+	backupHandler := v1.NewBackupHandler(svc.Backups, svc.Audit)
 	firewallHandler := v1.NewFirewallHandler(svc.Firewall)
 	dockerHandler := v1.NewDockerHandler(svc.Docker)
 
@@ -237,6 +241,51 @@ func registerAPI(engine *gin.Engine, svc Services) {
 				appWrite.POST("", appHandler.Install)
 				appWrite.DELETE("/:id", appHandler.Uninstall)
 				appWrite.POST("/:id/:action", appHandler.Control)
+			}
+		}
+
+		// Cơ sở dữ liệu: xem danh sách thì ai đăng nhập cũng được, còn tạo, xóa và
+		// chạy SQL thì phải có quyền vận hành — cửa sổ SQL chạy được cả DROP.
+		databases := authenticated.Group("/db")
+		{
+			databases.GET("/servers", dbHandler.ListServers)
+			databases.GET("/servers/:id/databases", dbHandler.ListDatabases)
+			databases.GET("/servers/:id/databases/:name/tables", dbHandler.ListTables)
+			databases.GET("/servers/:id/users", dbHandler.ListUsers)
+
+			dbWrite := databases.Group("", middleware.RequireWrite())
+			{
+				dbWrite.POST("/servers", dbHandler.CreateServer)
+				dbWrite.PUT("/servers/:id", dbHandler.UpdateServer)
+				dbWrite.DELETE("/servers/:id", dbHandler.DeleteServer)
+				dbWrite.POST("/servers/:id/databases", dbHandler.CreateDatabase)
+				dbWrite.DELETE("/servers/:id/databases/:name", dbHandler.DropDatabase)
+				dbWrite.POST("/servers/:id/users", dbHandler.CreateUser)
+				dbWrite.POST("/servers/:id/users/password", dbHandler.ChangePassword)
+				dbWrite.DELETE("/servers/:id/users/:name", dbHandler.DropUser)
+				dbWrite.POST("/servers/:id/query", dbHandler.Query)
+			}
+		}
+
+		// Sao lưu: khôi phục ghi đè dữ liệu đang chạy và không hoàn tác được, nên
+		// mọi thao tác thay đổi đều cần quyền vận hành.
+		backups := authenticated.Group("/backups")
+		{
+			backups.GET("", backupHandler.List)
+			backups.GET("/:id", backupHandler.Get)
+			backups.GET("/:id/runs", backupHandler.Runs)
+
+			backupWrite := backups.Group("", middleware.RequireWrite())
+			{
+				backupWrite.GET("/:id/objects", backupHandler.Objects)
+				backupWrite.POST("", backupHandler.Create)
+				backupWrite.POST("/check", backupHandler.Check)
+				backupWrite.PUT("/:id", backupHandler.Update)
+				backupWrite.DELETE("/:id", backupHandler.Delete)
+				backupWrite.POST("/:id/enabled", backupHandler.SetEnabled)
+				backupWrite.POST("/:id/run", backupHandler.Run)
+				backupWrite.POST("/:id/restore", backupHandler.Restore)
+				backupWrite.DELETE("/:id/objects/:object", backupHandler.DeleteObject)
 			}
 		}
 

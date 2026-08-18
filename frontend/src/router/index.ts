@@ -33,6 +33,16 @@ const router = createRouter({
           component: () => import('@/views/AppsView.vue'),
         },
         {
+          path: 'databases',
+          name: 'databases',
+          component: () => import('@/views/DatabasesView.vue'),
+        },
+        {
+          path: 'backups',
+          name: 'backups',
+          component: () => import('@/views/BackupsView.vue'),
+        },
+        {
           path: 'websites',
           name: 'websites',
           component: () => import('@/views/WebsitesView.vue'),

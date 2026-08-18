@@ -495,3 +495,125 @@ export interface ComposeStatus {
 }
 
 export type AppAction = 'start' | 'stop' | 'restart'
+
+export type DatabaseKind = 'mysql' | 'postgres'
+
+export interface DatabaseServer {
+  id: number
+  name: string
+  kind: DatabaseKind
+  host: string
+  port: number
+  user: string
+  remark: string
+  online: boolean
+  version?: string
+  error?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface DatabaseServerPayload {
+  name: string
+  kind: DatabaseKind
+  host: string
+  port: number
+  user: string
+  password?: string
+  remark?: string
+}
+
+export interface DatabaseInfo {
+  name: string
+  charset?: string
+  collation?: string
+  sizeBytes: number
+  system: boolean
+}
+
+export interface DatabaseUser {
+  name: string
+  host?: string
+  superUser: boolean
+}
+
+export interface DatabaseTable {
+  name: string
+  rows: number
+  sizeBytes: number
+}
+
+export interface DatabaseUserPayload {
+  name: string
+  password?: string
+  database?: string
+  host?: string
+}
+
+export interface QueryResult {
+  columns: string[]
+  rows: unknown[][]
+  rowsAffected: number
+  truncated: boolean
+  durationMs: number
+}
+
+export type BackupSource = 'database' | 'directory'
+export type BackupDestination = 'local' | 's3' | 'webdav'
+
+export interface BackupPlan {
+  id: number
+  name: string
+  source: BackupSource
+  serverId: number
+  database: string
+  path: string
+  exclude: string
+  destination: BackupDestination
+  schedule: string
+  keepCount: number
+  keepDays: number
+  enabled: boolean
+  lastRunAt?: string
+  lastSuccess?: boolean
+  lastError?: string
+  nextRunAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface BackupPlanPayload {
+  name: string
+  source: BackupSource
+  serverId?: number
+  database?: string
+  path?: string
+  exclude?: string
+  destination: BackupDestination
+  destConfig?: Record<string, string>
+  schedule?: string
+  keepCount?: number
+  keepDays?: number
+  enabled?: boolean
+}
+
+export interface BackupRun {
+  id: number
+  planId: number
+  planName: string
+  object: string
+  sizeBytes: number
+  startedAt: string
+  finishedAt?: string
+  durationMs: number
+  success: boolean
+  error?: string
+  triggeredBy: string
+  removed?: string
+}
+
+export interface BackupObject {
+  name: string
+  sizeBytes: number
+  modTime: string
+}

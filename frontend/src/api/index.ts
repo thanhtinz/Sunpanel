@@ -1,10 +1,20 @@
 import { baseUrl, request } from './client'
 import type {
   AppAction,
+  BackupObject,
+  BackupPlan,
+  BackupPlanPayload,
+  BackupRun,
   ArchiveFormat,
   AuditLog,
   CatalogResult,
   ComposeStatus,
+  DatabaseInfo,
+  DatabaseServer,
+  DatabaseServerPayload,
+  DatabaseTable,
+  DatabaseUser,
+  DatabaseUserPayload,
   InstallPayload,
   InstalledApp,
   CertPayload,
@@ -29,6 +39,7 @@ import type {
   LoginLog,
   Overview,
   PageResult,
+  QueryResult,
   Role,
   ServiceAction,
   ServiceManagerStatus,
@@ -202,6 +213,96 @@ export const cronApi = {
 
   validate: (schedule: string) =>
     request<{ next: string[] }>('/api/v1/cron/validate', { method: 'POST', body: { schedule } }),
+}
+
+/** Các endpoint sao lưu. */
+export const backupApi = {
+  list: () => request<BackupPlan[]>('/api/v1/backups'),
+
+  create: (payload: BackupPlanPayload) =>
+    request<BackupPlan>('/api/v1/backups', { method: 'POST', body: payload }),
+
+  update: (id: number, payload: BackupPlanPayload) =>
+    request<BackupPlan>(`/api/v1/backups/${id}`, { method: 'PUT', body: payload }),
+
+  remove: (id: number) => request<void>(`/api/v1/backups/${id}`, { method: 'DELETE' }),
+
+  setEnabled: (id: number, enabled: boolean) =>
+    request<BackupPlan>(`/api/v1/backups/${id}/enabled`, { method: 'POST', body: { enabled } }),
+
+  check: (payload: BackupPlanPayload) =>
+    request<{ ok: boolean }>('/api/v1/backups/check', { method: 'POST', body: payload }),
+
+  run: (id: number) => request<BackupRun>(`/api/v1/backups/${id}/run`, { method: 'POST' }),
+
+  runs: (id: number, limit = 50) =>
+    request<BackupRun[]>(`/api/v1/backups/${id}/runs?limit=${limit}`),
+
+  objects: (id: number) => request<BackupObject[]>(`/api/v1/backups/${id}/objects`),
+
+  deleteObject: (id: number, object: string) =>
+    request<void>(`/api/v1/backups/${id}/objects/${encodeURIComponent(object)}`, {
+      method: 'DELETE',
+    }),
+
+  restore: (id: number, object: string, target?: string) =>
+    request<{ restored: string }>(`/api/v1/backups/${id}/restore`, {
+      method: 'POST',
+      body: { object, target: target ?? '' },
+    }),
+}
+
+/** Các endpoint cơ sở dữ liệu. */
+export const databaseApi = {
+  servers: () => request<DatabaseServer[]>('/api/v1/db/servers'),
+
+  createServer: (payload: DatabaseServerPayload) =>
+    request<DatabaseServer>('/api/v1/db/servers', { method: 'POST', body: payload }),
+
+  updateServer: (id: number, payload: DatabaseServerPayload) =>
+    request<DatabaseServer>(`/api/v1/db/servers/${id}`, { method: 'PUT', body: payload }),
+
+  deleteServer: (id: number) => request<void>(`/api/v1/db/servers/${id}`, { method: 'DELETE' }),
+
+  databases: (id: number) => request<DatabaseInfo[]>(`/api/v1/db/servers/${id}/databases`),
+
+  createDatabase: (id: number, name: string) =>
+    request<{ name: string }>(`/api/v1/db/servers/${id}/databases`, {
+      method: 'POST',
+      body: { name },
+    }),
+
+  dropDatabase: (id: number, name: string) =>
+    request<void>(`/api/v1/db/servers/${id}/databases/${encodeURIComponent(name)}`, {
+      method: 'DELETE',
+    }),
+
+  tables: (id: number, name: string) =>
+    request<DatabaseTable[]>(`/api/v1/db/servers/${id}/databases/${encodeURIComponent(name)}/tables`),
+
+  users: (id: number) => request<DatabaseUser[]>(`/api/v1/db/servers/${id}/users`),
+
+  createUser: (id: number, payload: DatabaseUserPayload) =>
+    request<{ name: string }>(`/api/v1/db/servers/${id}/users`, { method: 'POST', body: payload }),
+
+  changePassword: (id: number, payload: DatabaseUserPayload) =>
+    request<{ name: string }>(`/api/v1/db/servers/${id}/users/password`, {
+      method: 'POST',
+      body: payload,
+    }),
+
+  dropUser: (id: number, name: string, host?: string) =>
+    request<void>(
+      `/api/v1/db/servers/${id}/users/${encodeURIComponent(name)}` +
+        (host ? `?host=${encodeURIComponent(host)}` : ''),
+      { method: 'DELETE' },
+    ),
+
+  query: (id: number, database: string, statement: string) =>
+    request<QueryResult>(`/api/v1/db/servers/${id}/query`, {
+      method: 'POST',
+      body: { database, statement },
+    }),
 }
 
 /** Các endpoint chợ ứng dụng. */

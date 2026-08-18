@@ -80,6 +80,9 @@ func migrate(db *gorm.DB) error {
 		&model.Website{},
 		&model.Certificate{},
 		&model.InstalledApp{},
+		&model.DatabaseServer{},
+		&model.BackupPlan{},
+		&model.BackupRun{},
 	}
 	if err := db.AutoMigrate(models...); err != nil {
 		return fmt.Errorf("chạy migration: %w", err)

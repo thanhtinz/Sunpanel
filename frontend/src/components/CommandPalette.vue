@@ -35,6 +35,8 @@ const navigationCommands = computed<Command[]>(() => {
     { name: 'files', keywords: 'tep file quan ly tep' },
     { name: 'apps', keywords: 'cho ung dung app store cai dat wordpress gitea n8n docker compose' },
     { name: 'websites', keywords: 'trang web site domain ten mien ssl chung chi nginx vhost' },
+    { name: 'databases', keywords: 'co so du lieu database mysql mariadb postgres sql truy van' },
+    { name: 'backups', keywords: 'sao luu backup khoi phuc restore s3 webdav lich' },
     { name: 'docker', keywords: 'container image volume' },
     { name: 'services', keywords: 'dich vu systemd service' },
     { name: 'cron', keywords: 'tac vu dinh ky schedule job' },

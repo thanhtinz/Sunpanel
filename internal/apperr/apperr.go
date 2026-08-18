@@ -251,6 +251,48 @@ var (
 	AppActionFailed = New(http.StatusInternalServerError, "app.action_failed")
 )
 
+// Các lỗi của cơ sở dữ liệu.
+var (
+	// DBServerNotFound là không tìm thấy máy chủ cơ sở dữ liệu.
+	DBServerNotFound = New(http.StatusNotFound, "db.server_not_found")
+	// DBServerNameExists là tên máy chủ đã được dùng.
+	DBServerNameExists = New(http.StatusConflict, "db.server_name_exists")
+	// DBInvalidKind là loại cơ sở dữ liệu không được hỗ trợ.
+	DBInvalidKind = New(http.StatusBadRequest, "db.invalid_kind")
+	// DBInvalidName là tên cơ sở dữ liệu hoặc tài khoản không hợp lệ.
+	DBInvalidName = New(http.StatusBadRequest, "db.invalid_name")
+	// DBConnectFailed là không kết nối được tới máy chủ.
+	DBConnectFailed = New(http.StatusBadGateway, "db.connect_failed")
+	// DBProtected là đối tượng hệ thống, không cho thao tác.
+	DBProtected = New(http.StatusForbidden, "db.protected")
+	// DBQueryFailed là câu lệnh SQL thất bại.
+	DBQueryFailed = New(http.StatusBadRequest, "db.query_failed")
+	// DBActionFailed là thao tác với cơ sở dữ liệu thất bại.
+	DBActionFailed = New(http.StatusInternalServerError, "db.action_failed")
+)
+
+// Các lỗi của sao lưu.
+var (
+	// BackupPlanNotFound là không tìm thấy kế hoạch sao lưu.
+	BackupPlanNotFound = New(http.StatusNotFound, "backup.not_found")
+	// BackupNameExists là tên kế hoạch đã được dùng.
+	BackupNameExists = New(http.StatusConflict, "backup.name_exists")
+	// BackupInvalidConfig là cấu hình kế hoạch không hợp lệ.
+	BackupInvalidConfig = New(http.StatusBadRequest, "backup.invalid_config")
+	// BackupInvalidSchedule là biểu thức lịch không hợp lệ.
+	BackupInvalidSchedule = New(http.StatusBadRequest, "backup.invalid_schedule")
+	// BackupDestinationFailed là nơi lưu trữ không dùng được.
+	BackupDestinationFailed = New(http.StatusBadGateway, "backup.destination_failed")
+	// BackupDumpUnavailable là máy chủ thiếu công cụ kết xuất cơ sở dữ liệu.
+	BackupDumpUnavailable = New(http.StatusServiceUnavailable, "backup.dump_unavailable")
+	// BackupFailed là lần sao lưu thất bại.
+	BackupFailed = New(http.StatusInternalServerError, "backup.failed")
+	// BackupRestoreFailed là việc khôi phục thất bại.
+	BackupRestoreFailed = New(http.StatusInternalServerError, "backup.restore_failed")
+	// BackupObjectNotFound là không tìm thấy tệp sao lưu ở nơi lưu trữ.
+	BackupObjectNotFound = New(http.StatusNotFound, "backup.object_not_found")
+)
+
 // Các lỗi của Docker.
 var (
 	// DockerUnavailable là không kết nối được tới Docker.
