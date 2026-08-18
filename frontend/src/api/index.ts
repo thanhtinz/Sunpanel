@@ -5,6 +5,13 @@ import type {
   CronJob,
   CronJobPayload,
   CronRun,
+  DockerAction,
+  DockerContainer,
+  DockerImage,
+  DockerNetwork,
+  DockerStats,
+  DockerStatus,
+  DockerVolume,
   FirewallRule,
   FirewallRulePayload,
   FirewallStatus,
@@ -201,6 +208,46 @@ export const firewallApi = {
 
   setEnabled: (enabled: boolean) =>
     request<void>('/api/v1/firewall/enabled', { method: 'POST', body: { enabled } }),
+}
+
+/** Các endpoint quản lý Docker. */
+export const dockerApi = {
+  status: () => request<DockerStatus>('/api/v1/docker/status'),
+
+  containers: (all = true) =>
+    request<DockerContainer[]>(`/api/v1/docker/containers?all=${all}`),
+
+  control: (id: string, action: DockerAction) =>
+    request<void>(`/api/v1/docker/containers/${encodeURIComponent(id)}/${action}`, {
+      method: 'POST',
+    }),
+
+  logs: (id: string, lines = 200) =>
+    request<{ logs: string }>(
+      `/api/v1/docker/containers/${encodeURIComponent(id)}/logs?lines=${lines}`,
+    ),
+
+  stats: (id: string) =>
+    request<DockerStats>(`/api/v1/docker/containers/${encodeURIComponent(id)}/stats`),
+
+  images: () => request<DockerImage[]>('/api/v1/docker/images'),
+
+  pullImage: (image: string) =>
+    request<void>('/api/v1/docker/images/pull', { method: 'POST', body: { image } }),
+
+  removeImage: (id: string, force = false) =>
+    request<void>(`/api/v1/docker/images/${encodeURIComponent(id)}?force=${force}`, {
+      method: 'DELETE',
+    }),
+
+  volumes: () => request<DockerVolume[]>('/api/v1/docker/volumes'),
+
+  removeVolume: (name: string) =>
+    request<void>(`/api/v1/docker/volumes/${encodeURIComponent(name)}`, { method: 'DELETE' }),
+
+  networks: () => request<DockerNetwork[]>('/api/v1/docker/networks'),
+
+  prune: () => request<{ freed: number }>('/api/v1/docker/prune', { method: 'POST' }),
 }
 
 /** Các endpoint nhật ký kiểm toán. */

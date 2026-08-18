@@ -28,7 +28,9 @@ lẫn firewalld, và tìm kiếm tệp theo nội dung.
 
 ## Giai đoạn 3: Docker và chợ ứng dụng
 
-- Quản lý container, image, volume, network, compose
+- **Đã xong — Quản lý Docker**: container (khởi động, dừng, tạm dừng, khởi động
+  lại, xóa, nhật ký, tài nguyên), image (tải, xóa), volume, mạng, dọn rác
+- Compose: quản lý dự án nhiều container
 - Chợ ứng dụng cài một chạm: WordPress, n8n, Gitea, Uptime Kuma…
 - Định nghĩa ứng dụng bằng YAML, hỗ trợ nguồn ứng dụng tự thêm
 

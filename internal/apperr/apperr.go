@@ -186,3 +186,17 @@ var (
 	// FirewallCriticalPort là quy tắc sẽ chặn cổng khiến quản trị viên mất đường vào máy chủ.
 	FirewallCriticalPort = New(http.StatusForbidden, "firewall.critical_port")
 )
+
+// Các lỗi của Docker.
+var (
+	// DockerUnavailable là không kết nối được tới Docker.
+	DockerUnavailable = New(http.StatusServiceUnavailable, "docker.unavailable")
+	// DockerNotFound là không tìm thấy đối tượng.
+	DockerNotFound = New(http.StatusNotFound, "docker.not_found")
+	// DockerConflict là thao tác xung đột với trạng thái hiện tại.
+	DockerConflict = New(http.StatusConflict, "docker.conflict")
+	// DockerActionFailed là thao tác với Docker thất bại.
+	DockerActionFailed = New(http.StatusInternalServerError, "docker.action_failed")
+	// DockerSelfProtected là container đang chạy chính panel, không cho dừng hoặc xóa.
+	DockerSelfProtected = New(http.StatusForbidden, "docker.self_protected")
+)

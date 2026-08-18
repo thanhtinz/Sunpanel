@@ -56,6 +56,8 @@ sunpanel reset-password -user admin
   khóa mình khỏi máy chủ.
 - **Tác vụ định kỳ**: bộ lập lịch nội bộ, xem lịch sử và đầu ra từng lần chạy.
 - **Tường lửa**: ufw và firewalld, quản lý cổng và quy tắc theo nguồn.
+- **Docker**: quản lý container, image, volume và mạng; xem nhật ký và tài nguyên
+  của từng container, dọn rác giải phóng dung lượng.
 - **Giao diện**: chế độ sáng/tối, chuyển ngôn ngữ tức thời, hoạt động tốt trên di động.
 
 Xem [lộ trình phát triển](docs/ROADMAP.md) cho các tính năng đang tới: quản lý Docker,
@@ -171,6 +173,8 @@ sunpanel reset-password -user admin
 - **System services**: systemd control and logs, with a guard against locking yourself out.
 - **Scheduled tasks**: built-in scheduler with per-run history and captured output.
 - **Firewall**: ufw and firewalld, port and source-scoped rules.
+- **Docker**: manage containers, images, volumes and networks; per-container logs
+  and resource usage, plus cleanup to reclaim disk.
 - **UI**: light/dark theme, instant language switching, works on mobile.
 
 See the [roadmap](docs/ROADMAP.md) for what's next: Docker management, one-click app store,

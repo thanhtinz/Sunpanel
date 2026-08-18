@@ -33,6 +33,7 @@ type Services struct {
 	Services *service.SystemServiceManager
 	Cron     *service.CronService
 	Firewall *service.FirewallService
+	Docker   *service.DockerService
 	Tokens   *service.TokenIssuer
 }
 
@@ -84,6 +85,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	sysServiceHandler := v1.NewSysServiceHandler(svc.Services)
 	cronHandler := v1.NewCronHandler(svc.Cron, svc.Audit)
 	firewallHandler := v1.NewFirewallHandler(svc.Firewall)
+	dockerHandler := v1.NewDockerHandler(svc.Docker)
 
 	api := engine.Group("/api/v1")
 
@@ -126,6 +128,27 @@ func registerAPI(engine *gin.Engine, svc Services) {
 		}
 
 		authenticated.PATCH("/users/me/preferences", userHandler.UpdatePreferences)
+
+		// Xem tài nguyên Docker thì ai đăng nhập cũng được; điều khiển thì không.
+		dockerGroup := authenticated.Group("/docker")
+		{
+			dockerGroup.GET("/status", dockerHandler.Status)
+			dockerGroup.GET("/containers", dockerHandler.ListContainers)
+			dockerGroup.GET("/containers/:id/logs", dockerHandler.ContainerLogs)
+			dockerGroup.GET("/containers/:id/stats", dockerHandler.ContainerStats)
+			dockerGroup.GET("/images", dockerHandler.ListImages)
+			dockerGroup.GET("/volumes", dockerHandler.ListVolumes)
+			dockerGroup.GET("/networks", dockerHandler.ListNetworks)
+
+			dockerWrite := dockerGroup.Group("", middleware.RequireWrite())
+			{
+				dockerWrite.POST("/containers/:id/:action", dockerHandler.ControlContainer)
+				dockerWrite.POST("/images/pull", dockerHandler.PullImage)
+				dockerWrite.DELETE("/images/:id", dockerHandler.RemoveImage)
+				dockerWrite.DELETE("/volumes/:name", dockerHandler.RemoveVolume)
+				dockerWrite.POST("/prune", dockerHandler.Prune)
+			}
+		}
 
 		// Xem cấu hình tường lửa thì ai đăng nhập cũng được; thay đổi thì không.
 		firewallGroup := authenticated.Group("/firewall")

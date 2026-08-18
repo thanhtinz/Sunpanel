@@ -265,3 +265,82 @@ export interface FirewallRulePayload {
   source?: string
   description?: string
 }
+
+export type ContainerState =
+  | 'running'
+  | 'exited'
+  | 'paused'
+  | 'created'
+  | 'restarting'
+  | 'dead'
+
+export interface PortMapping {
+  publicPort: number
+  privatePort: number
+  type: string
+  ip?: string
+}
+
+export interface DockerContainer {
+  id: string
+  name: string
+  image: string
+  state: ContainerState
+  status: string
+  created: number
+  ports: PortMapping[] | null
+  compose?: string
+  protected: boolean
+}
+
+export interface DockerImage {
+  id: string
+  tags: string[] | null
+  size: number
+  created: number
+  dangling: boolean
+}
+
+export interface DockerVolume {
+  name: string
+  driver: string
+  mountpoint: string
+  createdAt: string
+}
+
+export interface DockerNetwork {
+  id: string
+  name: string
+  driver: string
+  scope: string
+  internal: boolean
+  subnets: string[] | null
+}
+
+export interface DockerInfo {
+  version: string
+  apiVersion: string
+  containers: number
+  containersRunning: number
+  images: number
+  storageDriver: string
+  diskUsed: number
+  reclaimable: number
+}
+
+export interface DockerStatus {
+  available: boolean
+  socket: string
+  info: DockerInfo
+}
+
+export interface DockerStats {
+  cpuPercent: number
+  memoryUsage: number
+  memoryLimit: number
+  memoryPercent: number
+  networkRx: number
+  networkTx: number
+}
+
+export type DockerAction = 'start' | 'stop' | 'restart' | 'pause' | 'unpause' | 'remove'

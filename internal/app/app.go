@@ -20,6 +20,7 @@ import (
 	"github.com/thanhtinz/sunpanel/internal/router"
 	"github.com/thanhtinz/sunpanel/internal/service"
 	"github.com/thanhtinz/sunpanel/pkg/crypto"
+	"github.com/thanhtinz/sunpanel/pkg/dockerx"
 	"github.com/thanhtinz/sunpanel/pkg/firewall"
 	"github.com/thanhtinz/sunpanel/pkg/host"
 	"github.com/thanhtinz/sunpanel/pkg/sysservice"
@@ -94,6 +95,9 @@ func New(cfg config.Config) (*App, error) {
 	firewallManager := firewall.Detect(context.Background(), localHost)
 	firewallSvc := service.NewFirewallService(firewallManager, cfg.Server.Port, audit)
 
+	// Tên container của chính panel, để nó từ chối tự dừng mình.
+	dockerSvc := service.NewDockerService(dockerx.NewClient(), os.Getenv("SUNPANEL_CONTAINER_NAME"), audit)
+
 	svc := router.Services{
 		Auth:     auth,
 		Users:    users,
@@ -104,6 +108,7 @@ func New(cfg config.Config) (*App, error) {
 		Services: sysServices,
 		Cron:     cronJobs,
 		Firewall: firewallSvc,
+		Docker:   dockerSvc,
 		Tokens:   tokens,
 	}
 
