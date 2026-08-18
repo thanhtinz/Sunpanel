@@ -5,6 +5,9 @@ import type {
   CronJob,
   CronJobPayload,
   CronRun,
+  FirewallRule,
+  FirewallRulePayload,
+  FirewallStatus,
   FileContent,
   FileInfo,
   FileList,
@@ -182,6 +185,22 @@ export const cronApi = {
 
   validate: (schedule: string) =>
     request<{ next: string[] }>('/api/v1/cron/validate', { method: 'POST', body: { schedule } }),
+}
+
+/** Các endpoint tường lửa. */
+export const firewallApi = {
+  status: () => request<FirewallStatus>('/api/v1/firewall/status'),
+
+  rules: () => request<FirewallRule[]>('/api/v1/firewall/rules'),
+
+  addRule: (payload: FirewallRulePayload) =>
+    request<void>('/api/v1/firewall/rules', { method: 'POST', body: payload }),
+
+  deleteRule: (id: string) =>
+    request<void>(`/api/v1/firewall/rules/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+
+  setEnabled: (enabled: boolean) =>
+    request<void>('/api/v1/firewall/enabled', { method: 'POST', body: { enabled } }),
 }
 
 /** Các endpoint nhật ký kiểm toán. */

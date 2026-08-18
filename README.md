@@ -50,6 +50,12 @@ sunpanel reset-password -user admin
 - **Người dùng**: ba vai trò (quản trị viên / vận hành / chỉ xem), tạo, sửa, vô hiệu hóa,
   đặt lại mật khẩu.
 - **Nhật ký**: nhật ký thao tác và nhật ký đăng nhập, có phân trang.
+- **Trình quản lý tệp**: duyệt, sửa tệp bằng Monaco, tải lên/xuống, nén và giải nén.
+- **Terminal web**: PTY thật với xterm.js, đa tab; mọi lệnh được ghi vào nhật ký.
+- **Dịch vụ hệ thống**: điều khiển systemd, xem nhật ký, có lớp chặn không cho tự
+  khóa mình khỏi máy chủ.
+- **Tác vụ định kỳ**: bộ lập lịch nội bộ, xem lịch sử và đầu ra từng lần chạy.
+- **Tường lửa**: ufw và firewalld, quản lý cổng và quy tắc theo nguồn.
 - **Giao diện**: chế độ sáng/tối, chuyển ngôn ngữ tức thời, hoạt động tốt trên di động.
 
 Xem [lộ trình phát triển](docs/ROADMAP.md) cho các tính năng đang tới: quản lý Docker,
@@ -160,6 +166,11 @@ sunpanel reset-password -user admin
   throughput — streamed live over WebSocket, with history charts up to 7 days.
 - **Users**: three roles (admin / operator / read-only), create, edit, disable, reset password.
 - **Logs**: activity log and sign-in log, paginated.
+- **File manager**: browse, edit with Monaco, upload/download, compress and extract.
+- **Web terminal**: real PTY with xterm.js, multiple tabs; every command is audited.
+- **System services**: systemd control and logs, with a guard against locking yourself out.
+- **Scheduled tasks**: built-in scheduler with per-run history and captured output.
+- **Firewall**: ufw and firewalld, port and source-scoped rules.
 - **UI**: light/dark theme, instant language switching, works on mobile.
 
 See the [roadmap](docs/ROADMAP.md) for what's next: Docker management, one-click app store,

@@ -23,6 +23,7 @@ import IconFolder from '@/components/icons/IconFolder.vue'
 import IconTerminal from '@/components/icons/IconTerminal.vue'
 import IconServices from '@/components/icons/IconServices.vue'
 import IconClock from '@/components/icons/IconClock.vue'
+import IconShield from '@/components/icons/IconShield.vue'
 import IconUsers from '@/components/icons/IconUsers.vue'
 import IconLogs from '@/components/icons/IconLogs.vue'
 import IconMoon from '@/components/icons/IconMoon.vue'
@@ -66,6 +67,11 @@ const menuOptions = computed<MenuOption[]>(() => {
       label: renderLink('cron', t('nav.cron')),
       key: 'cron',
       icon: renderIcon(IconClock),
+    },
+    {
+      label: renderLink('firewall', t('nav.firewall')),
+      key: 'firewall',
+      icon: renderIcon(IconShield),
     },
   ]
 

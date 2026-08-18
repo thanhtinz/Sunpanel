@@ -28,6 +28,11 @@ const router = createRouter({
           component: () => import('@/views/FilesView.vue'),
         },
         {
+          path: 'firewall',
+          name: 'firewall',
+          component: () => import('@/views/FirewallView.vue'),
+        },
+        {
           path: 'cron',
           name: 'cron',
           component: () => import('@/views/CronView.vue'),

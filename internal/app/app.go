@@ -20,6 +20,7 @@ import (
 	"github.com/thanhtinz/sunpanel/internal/router"
 	"github.com/thanhtinz/sunpanel/internal/service"
 	"github.com/thanhtinz/sunpanel/pkg/crypto"
+	"github.com/thanhtinz/sunpanel/pkg/firewall"
 	"github.com/thanhtinz/sunpanel/pkg/host"
 	"github.com/thanhtinz/sunpanel/pkg/sysservice"
 )
@@ -88,6 +89,11 @@ func New(cfg config.Config) (*App, error) {
 	cronHost := host.NewLocalHost(cfg.Server.FileRoot, nil)
 	cronJobs := service.NewCronService(db, cronHost, cfg.Server.FileRoot, audit)
 
+	// Dò công cụ tường lửa một lần lúc khởi động: việc dò phải chạy vài lệnh, và
+	// công cụ trên máy không đổi giữa chừng.
+	firewallManager := firewall.Detect(context.Background(), localHost)
+	firewallSvc := service.NewFirewallService(firewallManager, cfg.Server.Port, audit)
+
 	svc := router.Services{
 		Auth:     auth,
 		Users:    users,
@@ -97,6 +103,7 @@ func New(cfg config.Config) (*App, error) {
 		Terminal: terminal,
 		Services: sysServices,
 		Cron:     cronJobs,
+		Firewall: firewallSvc,
 		Tokens:   tokens,
 	}
 

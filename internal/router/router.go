@@ -32,6 +32,7 @@ type Services struct {
 	Terminal *service.TerminalService
 	Services *service.SystemServiceManager
 	Cron     *service.CronService
+	Firewall *service.FirewallService
 	Tokens   *service.TokenIssuer
 }
 
@@ -82,6 +83,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	terminalHandler := v1.NewTerminalHandler(svc.Terminal)
 	sysServiceHandler := v1.NewSysServiceHandler(svc.Services)
 	cronHandler := v1.NewCronHandler(svc.Cron, svc.Audit)
+	firewallHandler := v1.NewFirewallHandler(svc.Firewall)
 
 	api := engine.Group("/api/v1")
 
@@ -124,6 +126,20 @@ func registerAPI(engine *gin.Engine, svc Services) {
 		}
 
 		authenticated.PATCH("/users/me/preferences", userHandler.UpdatePreferences)
+
+		// Xem cấu hình tường lửa thì ai đăng nhập cũng được; thay đổi thì không.
+		firewallGroup := authenticated.Group("/firewall")
+		{
+			firewallGroup.GET("/status", firewallHandler.Status)
+			firewallGroup.GET("/rules", firewallHandler.ListRules)
+
+			firewallWrite := firewallGroup.Group("", middleware.RequireWrite())
+			{
+				firewallWrite.POST("/rules", firewallHandler.AddRule)
+				firewallWrite.DELETE("/rules/:id", firewallHandler.DeleteRule)
+				firewallWrite.POST("/enabled", firewallHandler.SetEnabled)
+			}
+		}
 
 		// Tác vụ định kỳ chạy lệnh tùy ý trên máy chủ, nên xem thì ai cũng được
 		// nhưng tạo và sửa thì phải có quyền vận hành.

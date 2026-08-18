@@ -172,3 +172,17 @@ var (
 	// CronInvalidSchedule là biểu thức lịch không hợp lệ.
 	CronInvalidSchedule = New(http.StatusBadRequest, "cron.invalid_schedule")
 )
+
+// Các lỗi của tường lửa.
+var (
+	// FirewallUnavailable là máy chủ không có công cụ tường lửa khả dụng.
+	FirewallUnavailable = New(http.StatusServiceUnavailable, "firewall.unavailable")
+	// FirewallInvalidRule là quy tắc không hợp lệ.
+	FirewallInvalidRule = New(http.StatusBadRequest, "firewall.invalid_rule")
+	// FirewallRuleNotFound là không tìm thấy quy tắc cần xóa.
+	FirewallRuleNotFound = New(http.StatusNotFound, "firewall.rule_not_found")
+	// FirewallActionFailed là thao tác với tường lửa thất bại.
+	FirewallActionFailed = New(http.StatusInternalServerError, "firewall.action_failed")
+	// FirewallCriticalPort là quy tắc sẽ chặn cổng khiến quản trị viên mất đường vào máy chủ.
+	FirewallCriticalPort = New(http.StatusForbidden, "firewall.critical_port")
+)

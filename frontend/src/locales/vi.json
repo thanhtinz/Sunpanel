@@ -47,7 +47,8 @@
     "files": "Tệp",
     "terminal": "Terminal",
     "services": "Dịch vụ",
-    "cron": "Tác vụ định kỳ"
+    "cron": "Tác vụ định kỳ",
+    "firewall": "Tường lửa"
   },
   "dashboard": {
     "title": "Tổng quan hệ thống",
@@ -337,5 +338,47 @@
   "cronErr": {
     "not_found": "Không tìm thấy tác vụ.",
     "invalid_schedule": "Biểu thức lịch không hợp lệ."
+  },
+  "firewall": {
+    "title": "Tường lửa",
+    "status": "Trạng thái",
+    "backend": "Công cụ",
+    "on": "Đang bật",
+    "off": "Đang tắt",
+    "enable": "Bật tường lửa",
+    "disable": "Tắt tường lửa",
+    "rules": "Quy tắc",
+    "addRule": "Thêm quy tắc",
+    "action": "Hành động",
+    "protocol": "Giao thức",
+    "port": "Cổng",
+    "source": "Nguồn",
+    "description": "Ghi chú",
+    "anySource": "Mọi nguồn",
+    "anyPort": "Mọi cổng",
+    "allow": "Cho phép",
+    "deny": "Chặn",
+    "reject": "Từ chối",
+    "tcp": "TCP",
+    "udp": "UDP",
+    "any": "Mọi giao thức",
+    "deleteConfirm": "Xóa quy tắc này?",
+    "added": "Đã thêm quy tắc",
+    "removed": "Đã xóa quy tắc",
+    "enabled": "Đã bật tường lửa",
+    "disabled": "Đã tắt tường lửa",
+    "unavailableHint": "Máy chủ này chưa cài ufw hoặc firewalld. Hãy cài một trong hai rồi tải lại trang.",
+    "portHelp": "Cổng đơn (80) hoặc dải cổng (8000:8100). Để trống là mọi cổng.",
+    "sourceHelp": "Địa chỉ IP hoặc dải CIDR. Để trống là mọi nguồn.",
+    "enableWarning": "Panel sẽ tự mở cổng SSH và cổng của chính nó trước khi bật, để bạn không mất kết nối.",
+    "protectedHint": "Không thể chặn cổng này cho mọi nguồn — bạn sẽ mất đường vào máy chủ. Chặn theo từng IP thì vẫn được.",
+    "noRules": "Chưa có quy tắc nào."
+  },
+  "firewallErr": {
+    "unavailable": "Máy chủ không có công cụ tường lửa khả dụng.",
+    "invalid_rule": "Quy tắc không hợp lệ.",
+    "rule_not_found": "Không tìm thấy quy tắc.",
+    "action_failed": "Thao tác với tường lửa thất bại.",
+    "critical_port": "Không thể chặn cổng {port} ({name}) — bạn sẽ mất đường vào máy chủ."
   }
 }

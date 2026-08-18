@@ -11,14 +11,20 @@
 - Giao diện Vue 3 song ngữ Việt/Anh, sáng/tối
 - Biên dịch chéo 6 nền tảng, script cài một dòng, CI đầy đủ
 
-## Giai đoạn 2: Vận hành hệ thống
+## Đã hoàn thành — Giai đoạn 2: Vận hành hệ thống
 
-- **Trình quản lý tệp**: duyệt, tải lên theo khối, tải xuống, nén/giải nén, phân quyền,
-  soạn thảo bằng Monaco
-- **Terminal web**: xterm.js qua WebSocket, đa tab, ghi log phiên
-- **Quản lý dịch vụ**: liệt kê, khởi động, dừng, bật khi khởi động máy
-- **Cron**: quản lý tác vụ định kỳ, xem log từng lần chạy
-- **Tường lửa**: hỗ trợ ufw, firewalld, nftables
+- **Trình quản lý tệp**: duyệt, tải lên, tải xuống bằng vé ngắn hạn, nén/giải nén
+  zip và tar.gz, đổi tên, phân quyền, soạn thảo bằng Monaco
+- **Terminal web**: PTY thật qua WebSocket với xterm.js, đa tab, đổi kích thước,
+  ghi mọi lệnh vào nhật ký kiểm toán
+- **Quản lý dịch vụ**: systemd — liệt kê, khởi động, dừng, khởi động lại, bật/tắt
+  tự khởi động, xem nhật ký; từ chối dừng sshd và chính panel
+- **Tác vụ định kỳ**: bộ lập lịch nội bộ kèm lịch sử từng lần chạy và đầu ra
+- **Tường lửa**: ufw và firewalld, quản lý cổng và quy tắc theo nguồn; từ chối
+  các quy tắc khiến quản trị viên mất đường vào máy chủ
+
+Còn thiếu ở giai đoạn này: driver nftables thuần cho các bản Linux không cài ufw
+lẫn firewalld, và tìm kiếm tệp theo nội dung.
 
 ## Giai đoạn 3: Docker và chợ ứng dụng
 

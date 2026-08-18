@@ -237,3 +237,31 @@ export interface CronJobPayload {
   timeoutSeconds?: number
   enabled?: boolean
 }
+
+export type FirewallAction = 'allow' | 'deny' | 'reject'
+export type FirewallProtocol = 'tcp' | 'udp' | 'any'
+
+export interface FirewallRule {
+  id: string
+  action: FirewallAction
+  protocol: FirewallProtocol
+  port: string
+  source: string
+  description: string
+  ipv6: boolean
+  raw?: string
+}
+
+export interface FirewallStatus {
+  backend: string
+  available: boolean
+  enabled: boolean
+}
+
+export interface FirewallRulePayload {
+  action: FirewallAction
+  protocol: FirewallProtocol
+  port?: string
+  source?: string
+  description?: string
+}
