@@ -280,6 +280,11 @@ func (h *FileHandler) Compress(c *gin.Context) {
 	response.NoContent(c)
 }
 
+// Formats xử lý GET /api/v1/files/formats.
+func (h *FileHandler) Formats(c *gin.Context) {
+	response.OK(c, service.SupportedFormats())
+}
+
 // Extract xử lý POST /api/v1/files/extract.
 func (h *FileHandler) Extract(c *gin.Context) {
 	var req struct {
@@ -291,13 +296,14 @@ func (h *FileHandler) Extract(c *gin.Context) {
 		return
 	}
 
-	if err := h.files.Extract(c.Request.Context(), req.Path, req.Target); err != nil {
+	result, err := h.files.Extract(c.Request.Context(), req.Path, req.Target)
+	if err != nil {
 		response.Fail(c, err)
 		return
 	}
 
 	h.record(c, "file.extract", req.Path)
-	response.NoContent(c)
+	response.OK(c, result)
 }
 
 func (h *FileHandler) record(c *gin.Context, action, resource string) {

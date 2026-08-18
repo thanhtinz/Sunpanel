@@ -161,7 +161,7 @@ func TestCompressAndExtractRoundTrip(t *testing.T) {
 	writeFile(t, filepath.Join(root, "duan", "con", "b.txt"), "tệp B")
 	ctx := context.Background()
 
-	for _, format := range []ArchiveFormat{FormatZip, FormatTarGz} {
+	for _, format := range []ArchiveFormat{FormatZip, FormatTar, FormatTarGz, FormatTarXz, FormatTarZst} {
 		t.Run(string(format), func(t *testing.T) {
 			archive := "/luu-tru." + string(format)
 			if err := svc.Compress(ctx, []string{"/duan"}, archive, format); err != nil {
@@ -169,7 +169,7 @@ func TestCompressAndExtractRoundTrip(t *testing.T) {
 			}
 
 			target := "/giai-nen-" + strings.ReplaceAll(string(format), ".", "-")
-			if err := svc.Extract(ctx, archive, target); err != nil {
+			if _, err := svc.Extract(ctx, archive, target); err != nil {
 				t.Fatalf("giải nén: %v", err)
 			}
 
@@ -204,7 +204,7 @@ func TestExtractRejectsZipSlip(t *testing.T) {
 
 	writeFile(t, filepath.Join(root, "doc-hai.zip"), buf.String())
 
-	err = svc.Extract(context.Background(), "/doc-hai.zip", "/dich")
+	_, err = svc.Extract(context.Background(), "/doc-hai.zip", "/dich")
 	if !errors.Is(err, apperr.FileUnsafeArchive) {
 		t.Fatalf("lỗi = %v, mong đợi FileUnsafeArchive", err)
 	}
@@ -219,11 +219,46 @@ func TestExtractRejectsZipSlip(t *testing.T) {
 
 func TestExtractRejectsUnsupportedFormat(t *testing.T) {
 	svc, root := newTestFileService(t)
-	writeFile(t, filepath.Join(root, "tep.rar"), "không phải zip")
+	writeFile(t, filepath.Join(root, "ghi-chu.txt"), "chỉ là văn bản")
 
-	err := svc.Extract(context.Background(), "/tep.rar", "/dich")
+	_, err := svc.Extract(context.Background(), "/ghi-chu.txt", "/dich")
 	if !errors.Is(err, apperr.FileUnsupportedFormat) {
 		t.Fatalf("lỗi = %v, mong đợi FileUnsupportedFormat", err)
+	}
+}
+
+// Tên tệp nói dối được, nên định dạng phải đoán tiếp từ chữ ký đầu tệp: một bản
+// tải về đặt tên "source.download" vẫn là tệp zip và vẫn phải mở ra được.
+func TestExtractDetectsFormatWithoutExtension(t *testing.T) {
+	svc, root := newTestFileService(t)
+	writeFile(t, filepath.Join(root, "duan", "a.txt"), "tệp A")
+	ctx := context.Background()
+
+	if err := svc.Compress(ctx, []string{"/duan"}, "/luu-tru.zip", FormatZip); err != nil {
+		t.Fatalf("nén: %v", err)
+	}
+	if err := os.Rename(filepath.Join(root, "luu-tru.zip"), filepath.Join(root, "source.download")); err != nil {
+		t.Fatalf("đổi tên: %v", err)
+	}
+
+	result, err := svc.Extract(ctx, "/source.download", "/dich")
+	if err != nil {
+		t.Fatalf("giải nén: %v", err)
+	}
+	if result.Files != 1 {
+		t.Fatalf("giải ra %d tệp, mong 1", result.Files)
+	}
+}
+
+// Đuôi tên đúng nhưng nội dung không phải tệp nén phải báo tệp hỏng, chứ không
+// phải "không hỗ trợ định dạng" — hai nguyên nhân khác nhau cần hai cách xử lý.
+func TestExtractReportsCorruptArchive(t *testing.T) {
+	svc, root := newTestFileService(t)
+	writeFile(t, filepath.Join(root, "tep.rar"), "không phải rar")
+
+	_, err := svc.Extract(context.Background(), "/tep.rar", "/dich")
+	if !errors.Is(err, apperr.FileCorruptArchive) {
+		t.Fatalf("lỗi = %v, mong đợi FileCorruptArchive", err)
 	}
 }
 

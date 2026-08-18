@@ -21,7 +21,7 @@ import {
   type UploadFileInfo,
 } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
-import { ApiError, fileApi, type ArchiveFormat, type FileInfo } from '@/api'
+import { ApiError, fileApi, type ArchiveFormat, type ArchiveFormats, type FileInfo } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 import { translateError } from '@/locales'
 import { formatBytes, formatDateTime } from '@/utils/format'
@@ -51,6 +51,15 @@ const editor = ref({ show: false, path: '', content: '', saving: false })
 
 const archive = ref({ show: false, name: 'luu-tru.zip', format: 'zip' as ArchiveFormat })
 
+/**
+ * Định dạng nén do máy chủ khai báo.
+ *
+ * Danh sách chép tay sang đây là cách chắc chắn để thêm một định dạng ở backend
+ * rồi quên mất giao diện: nút "Giải nén" sẽ không hiện trên đúng tệp mà người
+ * dùng vừa tải lên.
+ */
+const formats = ref<ArchiveFormats>({ extract: [], create: ['zip', 'tar.gz'] })
+
 const uploadUrl = fileApi.uploadUrl()
 const uploadHeaders = computed(() => ({ Authorization: `Bearer ${auth.accessToken}` }))
 
@@ -65,7 +74,11 @@ const breadcrumbs = computed(() => {
   return crumbs
 })
 
-onMounted(() => void load('/'))
+onMounted(async () => {
+  const supported = await fileApi.formats().catch(() => null)
+  if (supported) formats.value = supported
+  await load('/')
+})
 
 function report(err: unknown): void {
   message.error(err instanceof ApiError ? translateError(err.code, err.params) : t('error.network'))
@@ -182,12 +195,27 @@ function promptChmod(item: FileInfo): void {
   )
 }
 
+/** Tên tệp có phải tệp nén panel mở được không. */
+function isArchive(name: string): boolean {
+  const lower = name.toLowerCase()
+  return formats.value.extract.some((suffix) => lower.endsWith(suffix))
+}
+
 function promptExtract(item: FileInfo): void {
   // Mặc định giải nén vào thư mục cùng tên với tệp nén, bỏ phần mở rộng.
-  const suggested = item.name.replace(/\.(zip|tar\.gz|tgz)$/i, '')
-  openPrompt(t('files.extract'), t('files.extractTo'), suggested, (target) =>
-    run(() => fileApi.extract(item.path, joinPath(currentPath.value, target)), t('files.extracted')),
-  )
+  const lower = item.name.toLowerCase()
+  const suffix = formats.value.extract.find((ext) => lower.endsWith(ext)) ?? ''
+  const suggested = suffix ? item.name.slice(0, -suffix.length) : item.name
+
+  openPrompt(t('files.extract'), t('files.extractTo'), suggested, async (target) => {
+    try {
+      const result = await fileApi.extract(item.path, joinPath(currentPath.value, target))
+      message.success(t('files.extractedCount', { files: result.files, dirs: result.dirs }))
+      await load(currentPath.value)
+    } catch (err) {
+      report(err)
+    }
+  })
 }
 
 async function submitCompress(): Promise<void> {
@@ -280,7 +308,7 @@ function rowActions(row: FileInfo) {
       { label: t('files.rename'), key: 'rename' },
       { label: t('files.permissions'), key: 'chmod' },
     )
-    if (/\.(zip|tar\.gz|tgz)$/i.test(row.name)) {
+    if (isArchive(row.name)) {
       options.push({ label: t('files.extract'), key: 'extract' })
     }
   }
@@ -403,10 +431,7 @@ async function handleRowAction(key: string, row: FileInfo): Promise<void> {
       <NInput v-model:value="archive.name" :placeholder="t('files.archiveName')" />
       <NSelect
         v-model:value="archive.format"
-        :options="[
-          { label: 'ZIP', value: 'zip' },
-          { label: 'TAR.GZ', value: 'tar.gz' },
-        ]"
+        :options="formats.create.map((value) => ({ label: value.toUpperCase(), value }))"
       />
       <NButton type="primary" block @click="submitCompress">{{ t('common.confirm') }}</NButton>
     </NSpace>

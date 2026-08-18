@@ -51,6 +51,8 @@ sunpanel reset-password -user admin
   đặt lại mật khẩu.
 - **Nhật ký**: nhật ký thao tác và nhật ký đăng nhập, có phân trang.
 - **Trình quản lý tệp**: duyệt, sửa tệp bằng Monaco, tải lên/xuống, nén và giải nén.
+  Mở được zip, rar, 7z, tar và tar nén gzip/bzip2/xz/zstd; định dạng được nhận từ
+  chính dữ liệu nên tệp đặt sai đuôi tên vẫn mở ra được.
 - **Terminal web**: PTY thật với xterm.js, đa tab; mọi lệnh được ghi vào nhật ký.
 - **Dịch vụ hệ thống**: điều khiển systemd, xem nhật ký, có lớp chặn không cho tự
   khóa mình khỏi máy chủ.
@@ -63,7 +65,9 @@ sunpanel reset-password -user admin
 - **Chợ ứng dụng**: cài WordPress, Gitea, n8n, Uptime Kuma bằng một chạm qua
   Docker Compose; mật khẩu tự sinh và lưu mã hóa, thêm ứng dụng riêng bằng YAML.
 - **Website**: sinh vhost nginx cho website tĩnh, PHP và reverse proxy; cấu hình
-  được nginx kiểm tra trước khi nạp và tự khôi phục bản cũ nếu sai.
+  được nginx kiểm tra trước khi nạp và tự khôi phục bản cũ nếu sai. Triển khai mã
+  nguồn bằng cách tải thẳng tệp nén lên — panel tự bóc lớp thư mục bọc mà bản tải
+  từ GitHub nào cũng có.
 - **Cơ sở dữ liệu**: quản lý MySQL/MariaDB và PostgreSQL — tạo cơ sở dữ liệu,
   tài khoản và phân quyền, kèm cửa sổ chạy SQL có bảng kết quả.
 - **Sao lưu**: sao lưu cơ sở dữ liệu và thư mục theo lịch, đẩy lên máy chủ, S3
@@ -190,6 +194,8 @@ sunpanel reset-password -user admin
 - **Users**: three roles (admin / operator / read-only), create, edit, disable, reset password.
 - **Logs**: activity log and sign-in log, paginated.
 - **File manager**: browse, edit with Monaco, upload/download, compress and extract.
+  Reads zip, rar, 7z, tar and tar compressed with gzip/bzip2/xz/zstd; the format is
+  detected from the data, so a file with the wrong extension still opens.
 - **Web terminal**: real PTY with xterm.js, multiple tabs; every command is audited.
 - **System services**: systemd control and logs, with a guard against locking yourself out.
 - **Processes**: a process table sorted by real CPU usage, searchable by name or
@@ -202,7 +208,9 @@ sunpanel reset-password -user admin
   Compose; passwords are generated and stored encrypted, and you can add your own
   applications with a YAML file.
 - **Websites**: generate nginx vhosts for static, PHP and reverse-proxy sites; every
-  config is checked by nginx before reload and rolled back if it fails.
+  config is checked by nginx before reload and rolled back if it fails. Deploy source
+  by uploading an archive — the panel strips the wrapper folder every GitHub download
+  comes with.
 - **Databases**: manage MySQL/MariaDB and PostgreSQL — create databases, users and
   grants, with an SQL console that renders results as a table.
 - **Backups**: scheduled database and directory backups shipped to this server, S3

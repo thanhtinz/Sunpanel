@@ -51,6 +51,13 @@ func (f *fakeWebServer) Remove(_ context.Context, name string) error {
 
 // newWebsiteFixture dựng dịch vụ website cùng một chứng chỉ tự ký sẵn có.
 func newWebsiteFixture(t *testing.T) (*WebsiteService, *CertificateService, *fakeWebServer) {
+	websites, certificates, server, _ := newWebsiteFixtureAt(t)
+	return websites, certificates, server
+}
+
+// newWebsiteFixtureAt trả về thêm thư mục gốc, cho bài kiểm thử nào cần đặt
+// thư mục website bên trong phạm vi của host.
+func newWebsiteFixtureAt(t *testing.T) (*WebsiteService, *CertificateService, *fakeWebServer, string) {
 	t.Helper()
 
 	db := newMemoryDB(t)
@@ -65,7 +72,7 @@ func newWebsiteFixture(t *testing.T) (*WebsiteService, *CertificateService, *fak
 		db, server, certificates,
 		host.NewLocalHost(root, nil), filepath.Join(root, "acme"), audit,
 	)
-	return websites, certificates, server
+	return websites, certificates, server, root
 }
 
 func TestCreateWebsiteWritesConfig(t *testing.T) {

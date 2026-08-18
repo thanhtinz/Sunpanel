@@ -219,6 +219,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 				websiteWrite.PUT("/:id", websiteHandler.Update)
 				websiteWrite.DELETE("/:id", websiteHandler.Delete)
 				websiteWrite.POST("/:id/enabled", websiteHandler.SetEnabled)
+				websiteWrite.POST("/:id/source", websiteHandler.DeploySource)
 			}
 		}
 
@@ -392,6 +393,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 		{
 			files.GET("", fileHandler.List)
 			files.GET("/stat", fileHandler.Stat)
+			files.GET("/formats", fileHandler.Formats)
 			files.GET("/content", fileHandler.Read)
 			files.POST("/ticket", fileHandler.Ticket)
 

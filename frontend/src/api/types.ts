@@ -171,7 +171,25 @@ export interface FileContent {
   mode: string
 }
 
-export type ArchiveFormat = 'zip' | 'tar.gz'
+export type ArchiveFormat = 'zip' | 'tar' | 'tar.gz' | 'tar.xz' | 'tar.zst'
+
+/** Định dạng nén panel mở được và nén ra được, do máy chủ khai báo. */
+export interface ArchiveFormats {
+  extract: string[]
+  create: string[]
+}
+
+export interface ExtractResult {
+  files: number
+  dirs: number
+  bytes: number
+  skipped: number
+}
+
+export interface SourceDeployResult extends ExtractResult {
+  root: string
+  wrapper: string
+}
 
 export type ServiceState =
   | 'active'

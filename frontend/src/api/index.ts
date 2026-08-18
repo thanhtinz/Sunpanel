@@ -12,6 +12,9 @@ import type {
   BackupPlanPayload,
   BackupRun,
   ArchiveFormat,
+  ArchiveFormats,
+  ExtractResult,
+  SourceDeployResult,
   AuditLog,
   CatalogResult,
   ComposeStatus,
@@ -170,7 +173,9 @@ export const fileApi = {
     request<void>('/api/v1/files/compress', { method: 'POST', body: { paths, target, format } }),
 
   extract: (path: string, target: string) =>
-    request<void>('/api/v1/files/extract', { method: 'POST', body: { path, target } }),
+    request<ExtractResult>('/api/v1/files/extract', { method: 'POST', body: { path, target } }),
+
+  formats: () => request<ArchiveFormats>('/api/v1/files/formats'),
 
   /**
    * Xin vé tải xuống rồi trả về URL dùng được cho thẻ <a>.
@@ -458,6 +463,23 @@ export const websiteApi = {
     request<Website>(`/api/v1/websites/${id}/enabled`, { method: 'POST', body: { enabled } }),
 
   reload: () => request<{ reloaded: boolean }>('/api/v1/websites/reload', { method: 'POST' }),
+
+  /** Triển khai mã nguồn: tải tệp nén lên, hoặc chỉ tới tệp đã có trên máy chủ. */
+  deploySource: (
+    id: number,
+    payload: { file?: File; path?: string; clean: boolean; keepWrapper: boolean },
+  ) => {
+    const form = new FormData()
+    if (payload.file) form.append('file', payload.file)
+    if (payload.path) form.append('path', payload.path)
+    form.append('clean', String(payload.clean))
+    form.append('keepWrapper', String(payload.keepWrapper))
+
+    return request<SourceDeployResult>(`/api/v1/websites/${id}/source`, {
+      method: 'POST',
+      body: form,
+    })
+  },
 }
 
 /** Các endpoint chứng chỉ TLS. */

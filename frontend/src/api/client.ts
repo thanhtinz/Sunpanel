@@ -61,14 +61,21 @@ interface RequestOptions {
  */
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const send = async (): Promise<Response> => {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    // Tải tệp lên đi cùng FormData: trình duyệt phải tự đặt Content-Type vì nó
+    // còn phải kèm chuỗi phân cách của multipart, thứ mã ở đây không biết trước.
+    const multipart = options.body instanceof FormData
+    const headers: Record<string, string> = multipart ? {} : { 'Content-Type': 'application/json' }
     const token = getToken()
     if (token) headers.Authorization = `Bearer ${token}`
+
+    let body: BodyInit | undefined
+    if (multipart) body = options.body as FormData
+    else if (options.body !== undefined) body = JSON.stringify(options.body)
 
     return fetch(`${baseUrl()}${path}`, {
       method: options.method ?? 'GET',
       headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body,
     })
   }
 

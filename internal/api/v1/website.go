@@ -1,6 +1,9 @@
 package v1
 
 import (
+	"net/http"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/thanhtinz/sunpanel/internal/apperr"
@@ -157,6 +160,57 @@ func (h *WebsiteHandler) SetEnabled(c *gin.Context) {
 
 	h.record(c, "website.set_enabled", site.Name)
 	response.OK(c, site)
+}
+
+// maxSourceUploadSize giới hạn dung lượng tệp mã nguồn tải lên một lần.
+const maxSourceUploadSize = 2 << 30 // 2 GB
+
+// DeploySource xử lý POST /api/v1/websites/:id/source.
+//
+// Nhận cả hai cách đưa mã nguồn vào: tải tệp lên trực tiếp (multipart) hoặc chỉ
+// đường dẫn tới tệp nén đã có sẵn trên máy chủ. Người dùng có mã nguồn trên máy
+// mình thì tải lên; người vừa tải về thẳng máy chủ bằng terminal thì chỉ đường.
+func (h *WebsiteHandler) DeploySource(c *gin.Context) {
+	id, err := uintParam(c, "id")
+	if err != nil {
+		response.Fail(c, err)
+		return
+	}
+
+	var req service.SourceRequest
+	var upload *service.Upload
+
+	if strings.HasPrefix(c.ContentType(), "multipart/form-data") {
+		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxSourceUploadSize)
+
+		req.Path = c.PostForm("path")
+		req.Clean = c.PostForm("clean") == "true"
+		req.KeepWrapper = c.PostForm("keepWrapper") == "true"
+
+		if header, err := c.FormFile("file"); err == nil {
+			src, err := header.Open()
+			if err != nil {
+				response.Fail(c, apperr.Internal.Wrap(err))
+				return
+			}
+			defer func() { _ = src.Close() }()
+			upload = &service.Upload{Name: header.Filename, Reader: src}
+		}
+	} else if err := c.ShouldBindJSON(&req); err != nil {
+		response.Fail(c, apperr.BadRequest.Wrap(err))
+		return
+	}
+
+	result, err := h.websites.DeploySource(c.Request.Context(), id, req, upload, service.AuditEntry{
+		UserID:   middleware.UserID(c),
+		Username: middleware.Username(c),
+		IP:       c.ClientIP(),
+	})
+	if err != nil {
+		response.Fail(c, err)
+		return
+	}
+	response.OK(c, result)
 }
 
 // Reload xử lý POST /api/v1/websites/reload.

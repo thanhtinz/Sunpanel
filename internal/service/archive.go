@@ -3,16 +3,17 @@ package service
 import (
 	"archive/tar"
 	"archive/zip"
-	"compress/gzip"
+	"bytes"
 	"context"
 	"errors"
-
 	"io"
+	"io/fs"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/thanhtinz/sunpanel/internal/apperr"
+	"github.com/thanhtinz/sunpanel/pkg/archive"
 	"github.com/thanhtinz/sunpanel/pkg/host"
 )
 
@@ -20,34 +21,69 @@ import (
 // một tệp nén vài KB có thể phình thành hàng trăm GB và lấp đầy ổ đĩa.
 const maxExtractSize = 2 << 30 // 2 GB
 
-// ArchiveFormat là định dạng tệp nén được hỗ trợ.
-type ArchiveFormat string
+// maxInMemoryArchive là ngưỡng nạp cả tệp nén vào bộ nhớ.
+//
+// zip và 7z để bảng thư mục ở cuối tệp nên phải đọc ngẫu nhiên. Máy hiện tại
+// cho ra thẳng tệp trên đĩa nên không cần nạp gì; ngưỡng này chỉ dùng cho host
+// không mở được tệp kiểu đọc ngẫu nhiên, và giữ đủ thấp để một tệp lớn không
+// nuốt hết RAM của máy chủ.
+const maxInMemoryArchive = 256 << 20 // 256 MB
 
-// Các định dạng nén được hỗ trợ.
+// ArchiveFormat là định dạng tệp nén, giữ lại làm bí danh để lớp trên không
+// phải nhắc tới gói archive chỉ vì một tên kiểu.
+type ArchiveFormat = archive.Format
+
+// Các định dạng nén ra được.
 const (
-	FormatZip   ArchiveFormat = "zip"
-	FormatTarGz ArchiveFormat = "tar.gz"
+	FormatZip    = archive.FormatZip
+	FormatTar    = archive.FormatTar
+	FormatTarGz  = archive.FormatTarGz
+	FormatTarXz  = archive.FormatTarXz
+	FormatTarZst = archive.FormatTarZst
 )
+
+// ArchiveFormats liệt kê định dạng panel đọc được và định dạng nén ra được.
+type ArchiveFormats struct {
+	// Extract là các phần đuôi tên tệp mở được.
+	Extract []string `json:"extract"`
+	// Create là các định dạng nén ra được.
+	Create []string `json:"create"`
+}
+
+// SupportedFormats cho giao diện biết panel làm được gì với tệp nén.
+//
+// Giao diện phải biết khi nào nên mời người dùng bấm "Giải nén", và danh sách đó
+// phải sinh ra từ chính lớp nhận dạng chứ không chép tay sang JavaScript — chép
+// tay là cách chắc chắn để thêm một định dạng ở backend rồi quên mất giao diện.
+func SupportedFormats() ArchiveFormats {
+	out := ArchiveFormats{Extract: archive.Extensions()}
+	for _, format := range archive.Formats() {
+		if format.CanCreate() {
+			out.Create = append(out.Create, string(format))
+		}
+	}
+	return out
+}
 
 // Compress nén danh sách mục vào tệp lưu trữ tại target.
 func (s *FileService) Compress(ctx context.Context, sources []string, target string, format ArchiveFormat) error {
 	if len(sources) == 0 {
 		return apperr.BadRequest
 	}
+	if !format.CanCreate() {
+		return apperr.FileUnsupportedFormat.WithParam("format", string(format))
+	}
 
-	// Ghi ra tệp tạm trong cùng thư mục rồi mới đổi tên, để việc nén bị gián đoạn
-	// không để lại một tệp lưu trữ hỏng mà người dùng tưởng là dùng được.
+	// Ghi qua ống dẫn: bộ nén chạy ở goroutine riêng còn lớp host ghi thẳng ra
+	// tệp, nên một thư mục lớn không phải nằm trọn trong bộ nhớ trước khi ghi.
 	pipeReader, pipeWriter := io.Pipe()
 
 	go func() {
 		var err error
-		switch format {
-		case FormatZip:
+		if format == FormatZip {
 			err = s.writeZip(ctx, pipeWriter, sources)
-		case FormatTarGz:
-			err = s.writeTarGz(ctx, pipeWriter, sources)
-		default:
-			err = apperr.FileUnsupportedFormat
+		} else {
+			err = s.writeTar(ctx, pipeWriter, sources, format)
 		}
 		_ = pipeWriter.CloseWithError(err)
 	}()
@@ -85,9 +121,14 @@ func (s *FileService) writeZip(ctx context.Context, w io.Writer, sources []strin
 	return zw.Close()
 }
 
-func (s *FileService) writeTarGz(ctx context.Context, w io.Writer, sources []string) error {
-	gz := gzip.NewWriter(w)
-	tw := tar.NewWriter(gz)
+// writeTar ghi tệp tar rồi đẩy qua bộ nén tương ứng với định dạng.
+func (s *FileService) writeTar(ctx context.Context, w io.Writer, sources []string, format ArchiveFormat) error {
+	compressor, err := archive.Compressor(w, format)
+	if err != nil {
+		return apperr.FileUnsupportedFormat.WithParam("format", string(format))
+	}
+
+	tw := tar.NewWriter(compressor)
 
 	for _, source := range sources {
 		base := path.Dir(normalizePath(source))
@@ -119,153 +160,148 @@ func (s *FileService) writeTarGz(ctx context.Context, w io.Writer, sources []str
 	if err := tw.Close(); err != nil {
 		return err
 	}
-	return gz.Close()
+	return compressor.Close()
 }
 
 // Extract giải nén một tệp lưu trữ vào thư mục đích.
-func (s *FileService) Extract(ctx context.Context, archivePath, targetDir string) error {
-	info, err := s.host.FS().Stat(ctx, archivePath)
+//
+// Định dạng được đoán từ tên tệp, và nếu tên không nói lên gì thì đoán tiếp từ
+// vài byte đầu: một bản tải về đặt tên "source.download" vẫn là tệp zip, và
+// bắt người dùng đổi đuôi tên tệp trước khi giải nén là bắt họ làm việc của máy.
+func (s *FileService) Extract(ctx context.Context, archivePath, targetDir string) (archive.Result, error) {
+	return extractArchive(ctx, s.host.FS(), archivePath, targetDir)
+}
+
+// extractArchive giải nén qua một hệ thống tệp bất kỳ.
+//
+// Tách khỏi FileService vì việc triển khai mã nguồn website cũng cần đúng logic
+// này nhưng làm việc trên một phạm vi thư mục khác — chép lại nghĩa là sửa một
+// lỗ hổng ở một chỗ rồi để nguyên ở chỗ kia.
+func extractArchive(
+	ctx context.Context, fsys host.FileSystem, archivePath, targetDir string,
+) (archive.Result, error) {
+	info, err := fsys.Stat(ctx, archivePath)
 	if err != nil {
-		return translateFSError(err)
+		return archive.Result{}, translateFSError(err)
 	}
 
-	if err := s.host.FS().Mkdir(ctx, targetDir, 0o755); err != nil {
-		return translateFSError(err)
+	format, err := detectFormat(ctx, fsys, archivePath, info.Name)
+	if err != nil {
+		return archive.Result{}, err
 	}
 
+	if err := fsys.Mkdir(ctx, targetDir, 0o755); err != nil {
+		return archive.Result{}, translateFSError(err)
+	}
+
+	reader, err := fsys.Open(ctx, archivePath)
+	if err != nil {
+		return archive.Result{}, translateFSError(err)
+	}
+	defer func() { _ = reader.Close() }()
+
+	source, err := randomAccess(reader, format, info.Size)
+	if err != nil {
+		return archive.Result{}, err
+	}
+
+	options := archive.Options{Format: format, Name: info.Name, MaxBytes: maxExtractSize}
+	result, err := archive.Extract(ctx, source, info.Size, options, &hostSink{fs: fsys, dir: targetDir})
+	return result, translateArchiveError(err)
+}
+
+// detectFormat đoán định dạng từ tên tệp, rồi từ chữ ký đầu tệp nếu tên im lặng.
+func detectFormat(
+	ctx context.Context, fsys host.FileSystem, archivePath, name string,
+) (archive.Format, error) {
+	if format, ok := archive.DetectName(name); ok {
+		return format, nil
+	}
+
+	reader, err := fsys.Open(ctx, archivePath)
+	if err != nil {
+		return "", translateFSError(err)
+	}
+	defer func() { _ = reader.Close() }()
+
+	head := make([]byte, archive.MagicSize)
+	n, err := io.ReadFull(reader, head)
+	if err != nil && !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) {
+		return "", apperr.Internal.Wrap(err)
+	}
+
+	format, ok := archive.DetectMagic(head[:n])
+	if !ok {
+		return "", apperr.FileUnsupportedFormat.WithParam("format", path.Ext(name))
+	}
+	return format, nil
+}
+
+// randomAccess cấp nguồn đọc ngẫu nhiên cho zip và 7z.
+//
+// Máy hiện tại cho ra tệp thật nên nó đã đọc ngẫu nhiên được; nhánh nạp vào bộ
+// nhớ chỉ dành cho host trả về luồng tuần tự — bản đa node sau này.
+func randomAccess(reader io.Reader, format archive.Format, size int64) (io.Reader, error) {
+	if !format.NeedsRandomAccess() {
+		return reader, nil
+	}
+	if _, ok := reader.(io.ReaderAt); ok {
+		return reader, nil
+	}
+	if size > maxInMemoryArchive {
+		return nil, apperr.FileTooLarge.WithParam("max", maxInMemoryArchive)
+	}
+
+	data, err := io.ReadAll(io.LimitReader(reader, maxInMemoryArchive))
+	if err != nil {
+		return nil, apperr.Internal.Wrap(err)
+	}
+	return bytes.NewReader(data), nil
+}
+
+// hostSink ghi từng mục giải nén ra qua lớp host.
+type hostSink struct {
+	fs  host.FileSystem
+	dir string
+}
+
+func (h *hostSink) Dir(ctx context.Context, name string, mode fs.FileMode) error {
+	return translateFSError(h.fs.Mkdir(ctx, path.Join(h.dir, name), os.FileMode(mode)))
+}
+
+func (h *hostSink) File(ctx context.Context, name string, mode fs.FileMode, r io.Reader) error {
+	target := path.Join(h.dir, name)
+	if err := h.fs.Mkdir(ctx, path.Dir(target), 0o755); err != nil {
+		return translateFSError(err)
+	}
+	return translateFSError(h.fs.Write(ctx, target, r, os.FileMode(mode)))
+}
+
+// translateArchiveError đổi lỗi của gói archive sang mã lỗi giao diện dịch được.
+func translateArchiveError(err error) error {
 	switch {
-	case strings.HasSuffix(strings.ToLower(info.Name), ".zip"):
-		return s.extractZip(ctx, archivePath, targetDir, info.Size)
-	case hasAnySuffix(strings.ToLower(info.Name), ".tar.gz", ".tgz"):
-		return s.extractTarGz(ctx, archivePath, targetDir)
-	default:
+	case err == nil:
+		return nil
+	case errors.Is(err, archive.ErrUnsupported):
 		return apperr.FileUnsupportedFormat
-	}
-}
-
-func (s *FileService) extractZip(ctx context.Context, archivePath, targetDir string, size int64) error {
-	// archive/zip cần đọc ngẫu nhiên (bảng thư mục nằm ở cuối tệp), nên phải nạp
-	// vào bộ nhớ thay vì đọc tuần tự như tar.
-	if size > maxExtractSize {
+	case errors.Is(err, archive.ErrUnsafePath):
+		return apperr.FileUnsafeArchive
+	case errors.Is(err, archive.ErrTooLarge):
 		return apperr.FileTooLarge.WithParam("max", maxExtractSize)
-	}
-
-	reader, err := s.host.FS().Open(ctx, archivePath)
-	if err != nil {
-		return translateFSError(err)
-	}
-	defer func() { _ = reader.Close() }()
-
-	data, err := io.ReadAll(reader)
-	if err != nil {
-		return apperr.Internal.Wrap(err)
-	}
-
-	zr, err := zip.NewReader(strings.NewReader(string(data)), int64(len(data)))
-	if err != nil {
+	case errors.Is(err, archive.ErrEncrypted):
+		return apperr.FileEncryptedArchive
+	case errors.Is(err, archive.ErrNeedRandomAccess):
+		return apperr.FileTooLarge.WithParam("max", maxInMemoryArchive)
+	case errors.Is(err, archive.ErrCorrupt):
 		return apperr.FileCorruptArchive.Wrap(err)
 	}
 
-	var written int64
-	for _, entry := range zr.File {
-		target, err := safeArchivePath(targetDir, entry.Name)
-		if err != nil {
-			return err
-		}
-
-		if entry.FileInfo().IsDir() {
-			if err := s.host.FS().Mkdir(ctx, target, 0o755); err != nil {
-				return translateFSError(err)
-			}
-			continue
-		}
-
-		// Kích thước khai báo trong tệp nén là do người tạo tệp ghi, có thể là con
-		// số dối để làm tràn phép cộng bên dưới. Chặn ngay ở đây.
-		if entry.UncompressedSize64 > maxExtractSize {
-			return apperr.FileTooLarge.WithParam("max", maxExtractSize)
-		}
-		written += int64(entry.UncompressedSize64) // #nosec G115 -- đã chặn > maxExtractSize ngay trên
-		if written > maxExtractSize {
-			return apperr.FileTooLarge.WithParam("max", maxExtractSize)
-		}
-
-		if err := s.extractOne(ctx, entry, target); err != nil {
-			return err
-		}
+	// Lỗi từ lớp host (hết đĩa, không có quyền) đã mang sẵn mã lỗi của panel.
+	var appErr *apperr.Error
+	if errors.As(err, &appErr) {
+		return err
 	}
-	return nil
-}
-
-func (s *FileService) extractOne(ctx context.Context, entry *zip.File, target string) error {
-	rc, err := entry.Open()
-	if err != nil {
-		return apperr.FileCorruptArchive.Wrap(err)
-	}
-	defer func() { _ = rc.Close() }()
-
-	if err := s.host.FS().Mkdir(ctx, path.Dir(target), 0o755); err != nil {
-		return translateFSError(err)
-	}
-	if err := s.host.FS().Write(ctx, target, io.LimitReader(rc, maxExtractSize), entry.Mode()); err != nil {
-		return translateFSError(err)
-	}
-	return nil
-}
-
-func (s *FileService) extractTarGz(ctx context.Context, archivePath, targetDir string) error {
-	reader, err := s.host.FS().Open(ctx, archivePath)
-	if err != nil {
-		return translateFSError(err)
-	}
-	defer func() { _ = reader.Close() }()
-
-	gz, err := gzip.NewReader(reader)
-	if err != nil {
-		return apperr.FileCorruptArchive.Wrap(err)
-	}
-	defer func() { _ = gz.Close() }()
-
-	tr := tar.NewReader(gz)
-	var written int64
-
-	for {
-		header, err := tr.Next()
-		if errors.Is(err, io.EOF) {
-			return nil
-		}
-		if err != nil {
-			return apperr.FileCorruptArchive.Wrap(err)
-		}
-
-		target, err := safeArchivePath(targetDir, header.Name)
-		if err != nil {
-			return err
-		}
-
-		switch header.Typeflag {
-		case tar.TypeDir:
-			if err := s.host.FS().Mkdir(ctx, target, archiveMode(header.Mode)); err != nil {
-				return translateFSError(err)
-			}
-		case tar.TypeReg:
-			written += header.Size
-			if written > maxExtractSize {
-				return apperr.FileTooLarge.WithParam("max", maxExtractSize)
-			}
-			if err := s.host.FS().Mkdir(ctx, path.Dir(target), 0o755); err != nil {
-				return translateFSError(err)
-			}
-			err := s.host.FS().Write(ctx, target, io.LimitReader(tr, maxExtractSize), archiveMode(header.Mode))
-			if err != nil {
-				return translateFSError(err)
-			}
-		default:
-			// Bỏ qua symlink, thiết bị, socket: giải nén chúng từ một tệp lưu trữ
-			// không đáng tin là con đường thoát khỏi thư mục đích.
-			continue
-		}
-	}
+	return apperr.Internal.Wrap(err)
 }
 
 // walk duyệt đệ quy một mục, gọi fn cho chính nó và mọi mục con.
@@ -313,48 +349,4 @@ func (s *FileService) copyFileInto(ctx context.Context, w io.Writer, p string) e
 func archiveName(base, p string) string {
 	name := strings.TrimPrefix(p, base)
 	return strings.TrimPrefix(name, "/")
-}
-
-// safeArchivePath chặn tấn công "zip slip": một tệp lưu trữ độc hại chứa mục tên
-// "../../etc/cron.d/x" sẽ ghi ra ngoài thư mục đích nếu ghép đường dẫn ngây thơ.
-//
-// Việc kiểm tra phải làm trên tên GỐC, trước khi làm sạch. path.Clean sẽ nuốt hết
-// các thành phần ".." và biến tên độc hại thành một tên trông vô hại nằm trong
-// thư mục đích — an toàn về mặt ghi đè, nhưng che giấu mất việc tệp nén đã bị can
-// thiệp. Người dùng cần biết điều đó thay vì lặng lẽ nhận về một tệp bị đổi chỗ.
-func safeArchivePath(targetDir, name string) (string, error) {
-	normalized := strings.ReplaceAll(name, "\\", "/")
-
-	for _, segment := range strings.Split(normalized, "/") {
-		if segment == ".." {
-			return "", apperr.FileUnsafeArchive.WithParam("entry", name)
-		}
-	}
-
-	// Đường dẫn tuyệt đối trong tệp lưu trữ là hợp lệ (tar thường lưu như vậy);
-	// nó được hiểu là tương đối so với thư mục đích.
-	clean := path.Clean("/" + normalized)
-	if clean == "/" {
-		return "", apperr.FileInvalidName
-	}
-
-	return path.Join(normalizePath(targetDir), clean), nil
-}
-
-// archiveMode chuyển trường quyền trong tệp lưu trữ thành os.FileMode.
-//
-// Trường này là int64 do người tạo tệp nén ghi, nên có thể chứa giá trị vô nghĩa.
-// Chỉ giữ lại 12 bit quyền hợp lệ và bỏ mọi bit khác — trong đó có cả setuid và
-// setgid, vốn không nên được khôi phục từ một tệp nén không đáng tin.
-func archiveMode(mode int64) os.FileMode {
-	return os.FileMode(mode & 0o777) // #nosec G115 -- phép AND kẹp giá trị xuống tối đa 0o777
-}
-
-func hasAnySuffix(s string, suffixes ...string) bool {
-	for _, suffix := range suffixes {
-		if strings.HasSuffix(s, suffix) {
-			return true
-		}
-	}
-	return false
 }

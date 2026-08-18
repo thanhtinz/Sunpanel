@@ -143,6 +143,8 @@ var (
 	FileCorruptArchive = New(http.StatusBadRequest, "file.corrupt_archive")
 	// FileUnsafeArchive là tệp nén chứa mục cố ghi ra ngoài thư mục đích.
 	FileUnsafeArchive = New(http.StatusBadRequest, "file.unsafe_archive")
+	// FileEncryptedArchive là tệp nén được đặt mật khẩu.
+	FileEncryptedArchive = New(http.StatusBadRequest, "file.encrypted_archive")
 )
 
 // Các lỗi của terminal.
@@ -207,6 +209,8 @@ var (
 	WebsiteNameExists = New(http.StatusConflict, "website.name_exists")
 	// WebsiteInvalidName là tên website không hợp lệ.
 	WebsiteInvalidName = New(http.StatusBadRequest, "website.invalid_name")
+	// WebsiteNoRoot là website không có thư mục gốc để triển khai mã nguồn.
+	WebsiteNoRoot = New(http.StatusBadRequest, "website.no_root")
 	// WebsiteInvalidDomain là tên miền không hợp lệ.
 	WebsiteInvalidDomain = New(http.StatusBadRequest, "website.invalid_domain")
 	// WebsiteDomainTaken là tên miền đã thuộc về một website khác.

@@ -4,6 +4,7 @@ import {
   NAlert,
   NButton,
   NCard,
+  NCheckbox,
   NDataTable,
   NForm,
   NFormItem,
@@ -18,7 +19,9 @@ import {
   NTabs,
   NTag,
   NText,
+  NUpload,
   useMessage,
+  type UploadFileInfo,
   type DataTableColumns,
 } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
@@ -231,6 +234,67 @@ async function toggleSite(site: Website, enabled: boolean): Promise<void> {
   }
 }
 
+/**
+ * Hộp thoại triển khai mã nguồn.
+ *
+ * Hai đường vào vì người dùng đến từ hai hoàn cảnh: mã nguồn đang nằm trên máy
+ * họ (tải lên) hoặc vừa được tải thẳng về máy chủ bằng terminal (chỉ đường dẫn).
+ */
+const deploy = ref({
+  show: false,
+  site: null as Website | null,
+  file: null as File | null,
+  path: '',
+  clean: false,
+  keepWrapper: false,
+  running: false,
+})
+
+function openDeploy(site: Website): void {
+  deploy.value = {
+    show: true,
+    site,
+    file: null,
+    path: '',
+    clean: false,
+    keepWrapper: false,
+    running: false,
+  }
+}
+
+// NUpload ở đây chỉ dùng để chọn tệp; việc gửi do chính hàm bên dưới làm, vì nó
+// còn phải gửi kèm các lựa chọn triển khai trong cùng một yêu cầu.
+function pickSource(options: { fileList: UploadFileInfo[] }): void {
+  deploy.value.file = options.fileList[0]?.file ?? null
+}
+
+const canDeploy = computed(() => Boolean(deploy.value.file) || deploy.value.path.trim() !== '')
+
+async function submitDeploy(): Promise<void> {
+  const site = deploy.value.site
+  if (!site || !canDeploy.value) return
+
+  deploy.value.running = true
+  try {
+    const result = await websiteApi.deploySource(site.id, {
+      file: deploy.value.file ?? undefined,
+      path: deploy.value.path.trim(),
+      clean: deploy.value.clean,
+      keepWrapper: deploy.value.keepWrapper,
+    })
+    deploy.value.show = false
+    message.success(
+      result.wrapper
+        ? t('website.deployedStripped', { files: result.files, wrapper: result.wrapper })
+        : t('website.deployed', { files: result.files }),
+    )
+  } catch (err) {
+    report(err)
+  } finally {
+    deploy.value.running = false
+  }
+}
+
 async function removeSite(site: Website): Promise<void> {
   try {
     await websiteApi.remove(site.id)
@@ -384,7 +448,7 @@ const siteColumns = computed<DataTableColumns<Website>>(() => [
   {
     title: t('common.actions'),
     key: 'actions',
-    width: 230,
+    width: 320,
     render: (row) =>
       h(
         NSpace,
@@ -401,6 +465,14 @@ const siteColumns = computed<DataTableColumns<Website>>(() => [
                   NButton,
                   { size: 'tiny', quaternary: true, onClick: () => openEdit(row) },
                   { default: () => t('common.edit') },
+                )
+              : null,
+            // Website chuyển tiếp không có thư mục gốc nên không có gì để triển khai.
+            auth.canWrite && row.type !== 'proxy'
+              ? h(
+                  NButton,
+                  { size: 'tiny', quaternary: true, onClick: () => openDeploy(row) },
+                  { default: () => t('website.deploySource') },
                 )
               : null,
             auth.canWrite
@@ -664,6 +736,44 @@ function capitalize(value: string): string {
         {{ t('common.save') }}
       </NButton>
     </NForm>
+  </NModal>
+
+  <NModal
+    v-model:show="deploy.show"
+    preset="card"
+    :title="t('website.deploySourceOf', { name: deploy.site?.name ?? '' })"
+    style="width: 92vw; max-width: 560px"
+  >
+    <NSpace vertical :size="16">
+      <NText depth="3" style="font-size: 13px">{{ t('website.deployHint') }}</NText>
+
+      <NUpload
+        :default-upload="false"
+        :max="1"
+        @change="pickSource"
+      >
+        <NButton>{{ t('website.chooseArchive') }}</NButton>
+      </NUpload>
+
+      <NInput
+        v-model:value="deploy.path"
+        :placeholder="t('website.serverPath')"
+        :disabled="Boolean(deploy.file)"
+      />
+
+      <NCheckbox v-model:checked="deploy.clean">{{ t('website.deployClean') }}</NCheckbox>
+      <NCheckbox v-model:checked="deploy.keepWrapper">{{ t('website.keepWrapper') }}</NCheckbox>
+
+      <NButton
+        type="primary"
+        block
+        :loading="deploy.running"
+        :disabled="!canDeploy"
+        @click="submitDeploy"
+      >
+        {{ t('website.deploy') }}
+      </NButton>
+    </NSpace>
   </NModal>
 
   <NModal
