@@ -502,6 +502,13 @@ export interface InstallPayload {
   remark?: string
 }
 
+/** Thư mục cài đặt còn nằm lại sau khi ứng dụng đã bị gỡ mà giữ dữ liệu. */
+export interface AppLeftover {
+  name: string
+  dir: string
+  modifiedAt: string
+}
+
 export interface ComposeStatus {
   available: boolean
   version: string

@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/thanhtinz/sunpanel/internal/apperr"
+	"github.com/thanhtinz/sunpanel/internal/model"
 	"github.com/thanhtinz/sunpanel/pkg/appstore"
 	"github.com/thanhtinz/sunpanel/pkg/compose"
 	"github.com/thanhtinz/sunpanel/pkg/crypto"
@@ -144,4 +145,64 @@ func listenAny(t *testing.T) (testListener, error) {
 		return testListener{}, err
 	}
 	return testListener{port: port, close: listener.Close}, nil
+}
+
+// Gỡ ứng dụng mà giữ dữ liệu để lại nguyên thư mục nhưng xóa bản ghi, nên panel
+// quên hẳn nó. Danh sách còn sót là đường duy nhất để thấy lại và dọn đi.
+func TestLeftoversListsForgottenDirectories(t *testing.T) {
+	svc, root := newAppStoreFixture(t)
+	ctx := context.Background()
+
+	apps := filepath.Join(root, "apps")
+	for _, name := range []string{"bo-quen", "dang-chay"} {
+		if err := svc.host.FS().Mkdir(ctx, filepath.Join(apps, name), 0o700); err != nil {
+			t.Fatalf("tạo thư mục %s: %v", name, err)
+		}
+	}
+
+	// Một trong hai thư mục vẫn thuộc về ứng dụng đang cài.
+	live := model.InstalledApp{
+		Name: "dang-chay", AppKey: "uptime-kuma", Version: "1",
+		Dir: filepath.Join(apps, "dang-chay"), ContainerName: "dang-chay",
+	}
+	if err := svc.db.Create(&live).Error; err != nil {
+		t.Fatalf("tạo bản ghi: %v", err)
+	}
+
+	items, err := svc.Leftovers(ctx)
+	if err != nil {
+		t.Fatalf("liệt kê thư mục còn sót: %v", err)
+	}
+	if len(items) != 1 || items[0].Name != "bo-quen" {
+		t.Fatalf("mong đợi đúng thư mục bị quên, nhận %+v", items)
+	}
+
+	// Thư mục của ứng dụng đang cài phải đi qua đường gỡ cài đặt, nơi container
+	// được dừng tử tế trước khi tệp biến mất.
+	if err := svc.RemoveLeftover(ctx, "dang-chay"); !errors.Is(err, apperr.AppNameExists) {
+		t.Errorf("xóa thư mục của ứng dụng đang cài phải bị từ chối, nhận: %v", err)
+	}
+	if _, err := svc.host.FS().Stat(ctx, live.Dir); err != nil {
+		t.Errorf("thư mục của ứng dụng đang cài đã bị xóa: %v", err)
+	}
+
+	if err := svc.RemoveLeftover(ctx, "bo-quen"); err != nil {
+		t.Fatalf("xóa thư mục bị quên: %v", err)
+	}
+	if _, err := svc.host.FS().Stat(ctx, filepath.Join(apps, "bo-quen")); err == nil {
+		t.Error("thư mục bị quên vẫn còn sau khi xóa")
+	}
+}
+
+// Tên thư mục đi thẳng từ đường dẫn URL vào lệnh xóa đệ quy, nên nó phải bị
+// chặn trước khi kịp trỏ ra ngoài thư mục ứng dụng.
+func TestRemoveLeftoverRejectsPathTraversal(t *testing.T) {
+	svc, _ := newAppStoreFixture(t)
+	ctx := context.Background()
+
+	for _, name := range []string{"../../etc", "..", "/etc", "a/../../b", ""} {
+		if err := svc.RemoveLeftover(ctx, name); !errors.Is(err, apperr.AppInvalidName) {
+			t.Errorf("tên %q phải bị từ chối, nhận: %v", name, err)
+		}
+	}
 }

@@ -138,6 +138,28 @@ func (h *AppStoreHandler) Logs(c *gin.Context) {
 	response.OK(c, gin.H{"logs": out})
 }
 
+// Leftovers xử lý GET /api/v1/apps/leftovers.
+func (h *AppStoreHandler) Leftovers(c *gin.Context) {
+	items, err := h.apps.Leftovers(c.Request.Context())
+	if err != nil {
+		response.Fail(c, err)
+		return
+	}
+	response.OK(c, items)
+}
+
+// RemoveLeftover xử lý DELETE /api/v1/apps/leftovers/:name.
+func (h *AppStoreHandler) RemoveLeftover(c *gin.Context) {
+	name := c.Param("name")
+	if err := h.apps.RemoveLeftover(c.Request.Context(), name); err != nil {
+		response.Fail(c, err)
+		return
+	}
+
+	h.record(c, "app.remove_leftover", name)
+	response.NoContent(c)
+}
+
 // Uninstall xử lý DELETE /api/v1/apps/:id.
 func (h *AppStoreHandler) Uninstall(c *gin.Context) {
 	id, err := uintParam(c, "id")

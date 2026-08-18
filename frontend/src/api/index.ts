@@ -6,6 +6,7 @@ import type {
   ApiKey,
   ApiKeyPayload,
   AppAction,
+  AppLeftover,
   BackupObject,
   BackupPlan,
   BackupPlanPayload,
@@ -414,6 +415,11 @@ export const appStoreApi = {
     request<{ logs: string }>(`/api/v1/apps/${id}/logs?lines=${lines}`),
 
   params: (id: number) => request<Record<string, string>>(`/api/v1/apps/${id}/params`),
+
+  leftovers: () => request<AppLeftover[]>('/api/v1/apps/leftovers'),
+
+  removeLeftover: (name: string) =>
+    request<void>(`/api/v1/apps/leftovers/${encodeURIComponent(name)}`, { method: 'DELETE' }),
 
   uninstall: (id: number, removeData: boolean) =>
     request<void>(`/api/v1/apps/${id}?removeData=${removeData}`, { method: 'DELETE' }),

@@ -9,8 +9,10 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"gorm.io/gorm"
 
@@ -424,6 +426,91 @@ func (s *AppStoreService) Logs(ctx context.Context, id uint, lines int) (string,
 		return "", apperr.AppActionFailed.Wrap(err)
 	}
 	return out, nil
+}
+
+// Leftover là thư mục cài đặt còn nằm lại sau khi ứng dụng đã bị gỡ.
+type Leftover struct {
+	// Name là tên thư mục, cũng là tên lần cài đã bị gỡ.
+	Name string `json:"name"`
+	Dir  string `json:"dir"`
+	// ModifiedAt là lần thay đổi cuối, để đoán được nó có từ bao giờ.
+	ModifiedAt time.Time `json:"modifiedAt"`
+}
+
+// Leftovers liệt kê thư mục cài đặt không còn ứng dụng nào trỏ tới.
+//
+// Gỡ ứng dụng mà giữ dữ liệu sẽ để lại nguyên thư mục và volume, nhưng bản ghi
+// thì biến mất — panel quên hẳn nó trong khi dữ liệu vẫn chiếm chỗ, và cài lại
+// đúng tên cũ thì bị chặn mà không có đường nào dọn từ giao diện. Danh sách này
+// đưa chúng trở lại tầm nhìn.
+func (s *AppStoreService) Leftovers(ctx context.Context) ([]Leftover, error) {
+	entries, err := s.host.FS().List(ctx, s.root)
+	if err != nil {
+		// Chưa cài ứng dụng nào thì thư mục gốc còn chưa tồn tại.
+		return []Leftover{}, nil
+	}
+
+	var installed []model.InstalledApp
+	if err := s.db.WithContext(ctx).Find(&installed).Error; err != nil {
+		return nil, apperr.Internal.Wrap(err)
+	}
+	known := make(map[string]struct{}, len(installed))
+	for _, app := range installed {
+		known[app.Name] = struct{}{}
+	}
+
+	out := make([]Leftover, 0)
+	for _, entry := range entries {
+		if !entry.IsDir {
+			continue
+		}
+		if _, ok := known[entry.Name]; ok {
+			continue
+		}
+		out = append(out, Leftover{
+			Name:       entry.Name,
+			Dir:        filepath.Join(s.root, entry.Name),
+			ModifiedAt: entry.ModTime,
+		})
+	}
+
+	sort.Slice(out, func(i, j int) bool { return out[i].Name < out[j].Name })
+	return out, nil
+}
+
+// RemoveLeftover xóa hẳn một thư mục còn sót lại cùng volume của nó.
+func (s *AppStoreService) RemoveLeftover(ctx context.Context, name string) error {
+	name = strings.ToLower(strings.TrimSpace(name))
+	if !validAppName.MatchString(name) {
+		return apperr.AppInvalidName.WithParam("name", name)
+	}
+
+	// Chỉ xóa được thứ panel đã quên. Một ứng dụng đang chạy phải đi qua đường
+	// gỡ cài đặt, nơi container được dừng tử tế trước khi tệp biến mất.
+	var count int64
+	if err := s.db.WithContext(ctx).Model(&model.InstalledApp{}).
+		Where("name = ?", name).Count(&count).Error; err != nil {
+		return apperr.Internal.Wrap(err)
+	}
+	if count > 0 {
+		return apperr.AppNameExists.WithParam("name", name)
+	}
+
+	dir := filepath.Join(s.root, name)
+	if _, err := s.host.FS().Stat(ctx, dir); err != nil {
+		return apperr.AppNotFound
+	}
+
+	// Volume vẫn còn dù container đã bị xóa từ lần gỡ trước; chạy lại down kèm
+	// volume mới thu hồi được chỗ đĩa mà chúng đang giữ.
+	if _, err := s.compose.Down(ctx, dir, true); err != nil {
+		slog.Warn("không gỡ được volume của thư mục còn sót", "dir", dir, "error", err)
+	}
+
+	if err := s.host.FS().Remove(ctx, dir, true); err != nil {
+		return apperr.AppActionFailed.Wrap(err)
+	}
+	return nil
 }
 
 // Uninstall gỡ một ứng dụng.

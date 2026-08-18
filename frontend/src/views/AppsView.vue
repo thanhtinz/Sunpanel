@@ -28,6 +28,7 @@ import { useI18n } from 'vue-i18n'
 import {
   ApiError,
   appStoreApi,
+  type AppLeftover,
   type CatalogApp,
   type ComposeStatus,
   type InstalledApp,
@@ -44,6 +45,7 @@ const status = ref<ComposeStatus>({ available: true, version: '' })
 const catalog = ref<CatalogApp[]>([])
 const categories = ref<string[]>([])
 const installed = ref<InstalledApp[]>([])
+const leftovers = ref<AppLeftover[]>([])
 const loading = ref(false)
 const category = ref<string>('')
 const search = ref('')
@@ -91,15 +93,17 @@ function report(err: unknown): void {
 async function load(): Promise<void> {
   loading.value = true
   try {
-    const [composeStatus, catalogResult, list] = await Promise.all([
+    const [composeStatus, catalogResult, list, orphans] = await Promise.all([
       appStoreApi.status(),
       appStoreApi.catalog(),
       appStoreApi.list(),
+      appStoreApi.leftovers().catch(() => [] as AppLeftover[]),
     ])
     status.value = composeStatus
     catalog.value = catalogResult.apps ?? []
     categories.value = catalogResult.categories ?? []
     installed.value = list
+    leftovers.value = orphans
   } catch (err) {
     report(err)
   } finally {
@@ -192,6 +196,17 @@ async function install(): Promise<void> {
     await load()
   } finally {
     form.saving = false
+  }
+}
+
+/** Xóa hẳn một thư mục còn sót lại của lần cài đã gỡ. */
+async function removeLeftover(name: string): Promise<void> {
+  try {
+    await appStoreApi.removeLeftover(name)
+    message.success(t('apps.leftoverRemoved', { name }))
+    await load()
+  } catch (err) {
+    report(err)
   }
 }
 
@@ -489,6 +504,31 @@ const uninstallData = ref(false)
       </NTabPane>
 
       <NTabPane name="installed" :tab="t('apps.installedTab')">
+        <!-- Gỡ ứng dụng mà giữ dữ liệu để lại nguyên thư mục nhưng xóa bản ghi,
+             nên panel quên hẳn nó trong khi dữ liệu vẫn chiếm chỗ. Đưa chúng
+             trở lại tầm nhìn ở đây, vì đây là đường duy nhất dọn được. -->
+        <NAlert
+          v-if="leftovers.length > 0"
+          type="warning"
+          :bordered="false"
+          :title="t('apps.leftoverTitle', { count: leftovers.length })"
+          style="margin-bottom: 14px"
+        >
+          <p class="leftover-hint">{{ t('apps.leftoverHint') }}</p>
+
+          <div v-for="item in leftovers" :key="item.name" class="leftover-row">
+            <code class="leftover-dir">{{ item.dir }}</code>
+            <NPopconfirm v-if="auth.canWrite" @positive-click="removeLeftover(item.name)">
+              <template #trigger>
+                <NButton size="tiny" type="error" quaternary>
+                  {{ t('apps.leftoverRemove') }}
+                </NButton>
+              </template>
+              {{ t('apps.leftoverConfirm', { name: item.name }) }}
+            </NPopconfirm>
+          </div>
+        </NAlert>
+
         <NDataTable
           :columns="columns"
           :data="installed"
@@ -748,6 +788,27 @@ const uninstallData = ref(false)
 .installer-form :deep(.n-form-item-feedback-wrapper) {
   min-height: 0;
   padding: 3px 0 10px;
+}
+
+.leftover-hint {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.leftover-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 0;
+}
+
+.leftover-dir {
+  min-width: 0;
+  overflow-x: auto;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .installed-app {

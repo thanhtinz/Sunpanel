@@ -533,7 +533,12 @@
     "homepage": "Trang chủ",
     "version": "Phiên bản",
     "versionHelp": "Cài nhiều phiên bản song song được, mỗi bản đặt một tên khác nhau.",
-    "versionCount": "{count} phiên bản"
+    "versionCount": "{count} phiên bản",
+    "leftoverTitle": "Còn {count} thư mục dữ liệu của ứng dụng đã gỡ",
+    "leftoverHint": "Lần gỡ trước giữ lại dữ liệu, nên thư mục và volume vẫn chiếm chỗ trên đĩa. Xóa hẳn để lấy lại chỗ, hoặc để nguyên nếu định cài lại rồi dùng tiếp dữ liệu cũ.",
+    "leftoverRemove": "Xóa hẳn",
+    "leftoverConfirm": "Xóa hẳn dữ liệu của {name}? Không khôi phục được.",
+    "leftoverRemoved": "Đã xóa dữ liệu còn lại của {name}"
   },
   "appErr": {
     "not_found": "Không tìm thấy ứng dụng đã cài.",
@@ -541,7 +546,7 @@
     "name_exists": "Tên {name} đã được dùng cho một ứng dụng khác.",
     "invalid_name": "Tên cài đặt không hợp lệ.",
     "invalid_value": "Giá trị cấu hình không hợp lệ.",
-    "dir_exists": "Thư mục {dir} đã tồn tại từ lần cài trước. Hãy chọn tên khác, hoặc gỡ bản cũ kèm xóa dữ liệu.",
+    "dir_exists": "Thư mục {dir} đã tồn tại từ lần cài trước. Hãy chọn tên khác, hoặc xóa hẳn dữ liệu cũ ở mục \"Đã cài\".",
     "port_in_use": "Cổng {port} đang bị tiến trình khác chiếm.",
     "compose_unavailable": "Máy chủ không có Docker Compose.",
     "install_failed": "Cài đặt thất bại. Xem nhật ký ứng dụng để biết chi tiết.",

@@ -240,6 +240,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 			apps.GET("/status", appHandler.Status)
 			apps.GET("/catalog", appHandler.Catalog)
 			apps.GET("", appHandler.List)
+			apps.GET("/leftovers", appHandler.Leftovers)
 			apps.GET("/:id", appHandler.Get)
 
 			appWrite := apps.Group("", middleware.RequireWrite())
@@ -248,6 +249,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 				appWrite.GET("/:id/params", appHandler.Params)
 				appWrite.POST("", appHandler.Install)
 				appWrite.DELETE("/:id", appHandler.Uninstall)
+				appWrite.DELETE("/leftovers/:name", appHandler.RemoveLeftover)
 				appWrite.POST("/:id/:action", appHandler.Control)
 			}
 		}

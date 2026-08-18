@@ -533,7 +533,12 @@
     "homepage": "Homepage",
     "version": "Version",
     "versionHelp": "You can run several versions side by side — give each install its own name.",
-    "versionCount": "{count} versions"
+    "versionCount": "{count} versions",
+    "leftoverTitle": "{count} data folders left from uninstalled apps",
+    "leftoverHint": "The last uninstall kept the data, so its folder and volumes still take up disk space. Delete them to reclaim the space, or leave them if you plan to reinstall and pick the data back up.",
+    "leftoverRemove": "Delete",
+    "leftoverConfirm": "Delete all data for {name}? This cannot be undone.",
+    "leftoverRemoved": "Deleted the leftover data for {name}"
   },
   "appErr": {
     "not_found": "Installed application not found.",
@@ -541,7 +546,7 @@
     "name_exists": "The name {name} is already used by another application.",
     "invalid_name": "Invalid install name.",
     "invalid_value": "Invalid configuration value.",
-    "dir_exists": "Directory {dir} already exists from an earlier install. Pick another name, or uninstall the old one and delete its data.",
+    "dir_exists": "Directory {dir} already exists from an earlier install. Pick another name, or delete the leftover data under the Installed tab.",
     "port_in_use": "Port {port} is already taken by another process.",
     "compose_unavailable": "Docker Compose is not available on this server.",
     "install_failed": "The install failed. Check the application logs for details.",
