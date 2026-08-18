@@ -1,0 +1,56 @@
+key: wireguard
+name:
+  vi: WireGuard
+  en: WireGuard
+description:
+  vi: "Máy chủ VPN WireGuard bản gốc, cấu hình bằng tệp, nhẹ hơn mọi lựa chọn khác."
+  en: "The plain WireGuard VPN server, configured by file — lighter than any alternative."
+category: security
+website: https://wireguard.com
+portField: VPN_PORT
+versions:
+  - name: "1.0.20260223"
+    images:
+      - linuxserver/wireguard:1.0.20260223
+    values:
+      IMAGE: "linuxserver/wireguard:1.0.20260223"
+fields:
+  - key: VPN_PORT
+    label: {vi: Cổng VPN, en: VPN port}
+    type: port
+    default: "51830"
+    required: true
+  - key: PUBLIC_HOST
+    label: {vi: Địa chỉ công khai, en: Public host}
+    type: text
+    default: "vpn.example.com"
+    required: true
+  - key: PEERS
+    label: {vi: Số thiết bị, en: Device count}
+    help:
+      vi: "Panel sinh sẵn từng ấy tệp cấu hình và mã QR cho thiết bị."
+      en: "This many device configs and QR codes are generated up front."
+    type: text
+    default: "5"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+        SERVERURL: "${PUBLIC_HOST}"
+        SERVERPORT: "${VPN_PORT}"
+        PEERS: "${PEERS}"
+      ports:
+        - "${VPN_PORT}:51820"
+      volumes:
+        - config:/config
+        - /lib/modules:/lib/modules:ro
+
+  volumes:
+    config:

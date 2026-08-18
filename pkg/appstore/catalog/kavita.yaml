@@ -1,0 +1,51 @@
+key: kavita
+name:
+  vi: Kavita
+  en: Kavita
+description:
+  vi: "Tủ sách và truyện tranh gọn nhẹ, đọc mượt trên điện thoại."
+  en: "A fast library for books and comics that reads well on a phone."
+category: media
+website: https://kavitareader.com
+portField: HTTP_PORT
+versions:
+  - name: "0.9.0.2"
+    images:
+      - jvmilazz0/kavita:0.9.0.2
+    values:
+      IMAGE: "jvmilazz0/kavita:0.9.0.2"
+  - name: "0.8.9"
+    images:
+      - jvmilazz0/kavita:0.8.9
+    values:
+      IMAGE: "jvmilazz0/kavita:0.8.9"
+  - name: "0.7.14"
+    images:
+      - jvmilazz0/kavita:0.7.14
+    values:
+      IMAGE: "jvmilazz0/kavita:0.7.14"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5001"
+    required: true
+  - key: BOOKS_DIR
+    label: {vi: Thư mục sách, en: Books folder}
+    type: text
+    default: "/srv/books"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:5000"
+      volumes:
+        - config:/kavita/config
+        - ${BOOKS_DIR}:/data
+
+  volumes:
+    config:

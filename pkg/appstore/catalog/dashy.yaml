@@ -1,0 +1,45 @@
+key: dashy
+name:
+  vi: Dashy
+  en: Dashy
+description:
+  vi: "Trang chủ tùy biến sâu cho máy chủ, có kiểm tra trạng thái và tìm kiếm nhanh."
+  en: "A highly customisable server start page with status checks and quick search."
+category: tool
+website: https://dashy.to
+portField: HTTP_PORT
+versions:
+  - name: "4.5.12"
+    images:
+      - lissy93/dashy:4.5.12
+    values:
+      IMAGE: "lissy93/dashy:4.5.12"
+  - name: "3.3.1"
+    images:
+      - lissy93/dashy:3.3.1
+    values:
+      IMAGE: "lissy93/dashy:3.3.1"
+  - name: "2.1.2"
+    images:
+      - lissy93/dashy:2.1.2
+    values:
+      IMAGE: "lissy93/dashy:2.1.2"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "4000"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - config:/app/user-data
+
+  volumes:
+    config:

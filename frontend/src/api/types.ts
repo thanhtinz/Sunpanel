@@ -448,18 +448,25 @@ export interface AppField {
   options: AppFieldOption[] | null
 }
 
+export interface AppVersion {
+  name: string
+  images: string[] | null
+  values: Record<string, string> | null
+  note: LocalizedText
+}
+
 export interface CatalogApp {
   key: string
   name: LocalizedText
   description: LocalizedText
   category: string
-  version: string
   website: string
+  /** Các phiên bản cài được, mới nhất trước. */
+  versions: AppVersion[] | null
   /** Biểu trưng dạng data URI, giao diện nhúng vào thẻ <img>. */
   icon: string
   /** Bản biểu trưng dùng khi panel ở chế độ tối; rỗng thì dùng chung bản thường. */
   iconDark: string
-  images: string[] | null
   portField: string
   fields: AppField[] | null
 }
@@ -489,6 +496,8 @@ export interface InstalledApp {
 export interface InstallPayload {
   appKey: string
   name: string
+  /** Phiên bản muốn cài; để trống thì máy chủ lấy phiên bản mới nhất. */
+  version?: string
   values: Record<string, string>
   remark?: string
 }

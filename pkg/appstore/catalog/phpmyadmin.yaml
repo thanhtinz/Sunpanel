@@ -1,0 +1,51 @@
+key: phpmyadmin
+name:
+  vi: phpMyAdmin
+  en: phpMyAdmin
+description:
+  vi: "Giao diện quản trị MySQL và MariaDB quen thuộc với mọi người làm web."
+  en: "The MySQL and MariaDB admin UI every web developer already knows."
+category: database
+website: https://phpmyadmin.net
+portField: HTTP_PORT
+versions:
+  - name: "5.2.3"
+    images:
+      - phpmyadmin:5.2.3
+    values:
+      IMAGE: "phpmyadmin:5.2.3"
+  - name: "5.1.3"
+    images:
+      - phpmyadmin:5.1.3
+    values:
+      IMAGE: "phpmyadmin:5.1.3"
+  - name: "5.0.4"
+    images:
+      - phpmyadmin:5.0.4
+    values:
+      IMAGE: "phpmyadmin:5.0.4"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8092"
+    required: true
+  - key: DB_HOST
+    label: {vi: Máy chủ cơ sở dữ liệu, en: Database host}
+    help:
+      vi: "Địa chỉ máy chủ MySQL cần quản trị, ví dụ tên container của nó."
+      en: "Address of the MySQL server to manage, for example its container name."
+    type: text
+    default: "127.0.0.1"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PMA_HOST: "${DB_HOST}"
+        UPLOAD_LIMIT: "512M"
+      ports:
+        - "${HTTP_PORT}:80"

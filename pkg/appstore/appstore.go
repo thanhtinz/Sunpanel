@@ -82,6 +82,24 @@ type Field struct {
 	Options []Option `yaml:"options" json:"options"`
 }
 
+// Version là một phiên bản cài được của ứng dụng.
+//
+// Một ứng dụng thường có nhiều phiên bản chạy song song trên cùng máy chủ: một
+// website cũ còn kẹt ở bản 5 trong khi website mới đã lên bản 6. Mỗi phiên bản
+// chỉ khác nhau ở thẻ image, nên nó được mô tả bằng bộ giá trị biến chứ không
+// phải bằng một khuôn compose riêng — nhân bản khuôn compose cho từng phiên bản
+// là cách chắc chắn nhất để sửa lỗi ở một bản mà quên mất các bản còn lại.
+type Version struct {
+	// Name là nhãn phiên bản hiển thị cho người dùng, ví dụ "6" hay "5.117".
+	Name string `yaml:"name" json:"name"`
+	// Images liệt kê image phiên bản này cần tải, để giao diện báo trước.
+	Images []string `yaml:"images" json:"images"`
+	// Values là giá trị các biến khuôn compose mà phiên bản này quyết định.
+	Values map[string]string `yaml:"values" json:"values"`
+	// Note là ghi chú riêng của phiên bản, ví dụ "cần PHP 8.3 trở lên".
+	Note Text `yaml:"note" json:"note"`
+}
+
 // App là một ứng dụng trong danh mục.
 type App struct {
 	// Key là định danh, dùng làm tên thư mục cài đặt.
@@ -90,8 +108,6 @@ type App struct {
 	Description Text   `yaml:"description" json:"description"`
 	// Category dùng để lọc trong giao diện.
 	Category string `yaml:"category" json:"category"`
-	// Version là phiên bản ứng dụng mà định nghĩa này cài.
-	Version string `yaml:"version" json:"version"`
 	// Website là trang chủ của ứng dụng.
 	Website string `yaml:"website" json:"website"`
 	// Icon là biểu trưng, dạng data URI hoàn chỉnh ("data:image/svg+xml;base64,…").
@@ -110,8 +126,8 @@ type App struct {
 	// tối; các dự án đó phát hành sẵn bản sáng màu cho trường hợp này. Để trống
 	// thì dùng chung bản thường. Panel tự lấy tệp icons/<định danh>-dark.
 	IconDark string `yaml:"iconDark" json:"iconDark"`
-	// Images liệt kê các image cần tải, để giao diện báo trước dung lượng sẽ tải.
-	Images []string `yaml:"images" json:"images"`
+	// Versions là các phiên bản cài được, xếp mới nhất trước.
+	Versions []Version `yaml:"versions" json:"versions"`
 	// PortField là tên biến chứa cổng chính, dùng để dựng liên kết mở ứng dụng.
 	PortField string  `yaml:"portField" json:"portField"`
 	Fields    []Field `yaml:"fields" json:"fields"`
@@ -187,19 +203,94 @@ func (a App) Validate() error {
 			return fmt.Errorf("%w: %s trỏ portField tới biến %q không tồn tại",
 				ErrInvalidApp, a.Key, a.PortField)
 		}
+		// Panel dựng liên kết mở ứng dụng từ biến này. Trỏ nhầm sang một ô mật
+		// khẩu thì liên kết vừa sai vừa lộ bí mật ra thanh địa chỉ.
+		for _, field := range a.Fields {
+			if field.Key == a.PortField && field.Type != FieldPort {
+				return fmt.Errorf("%w: %s trỏ portField tới biến %q kiểu %q, không phải cổng",
+					ErrInvalidApp, a.Key, field.Key, field.Type)
+			}
+		}
 	}
 
-	// Mọi biến khuôn compose dùng đều phải được khai báo, nếu không compose sẽ
-	// thay bằng chuỗi rỗng và container chạy với cấu hình trống rỗng.
+	if len(a.Versions) == 0 {
+		return fmt.Errorf("%w: %s không khai báo phiên bản nào", ErrInvalidApp, a.Key)
+	}
+
+	// Biến nào khuôn compose dùng mà biểu mẫu không hỏi thì phải do phiên bản
+	// điền — thực tế luôn là thẻ image. Gom danh sách đó ra trước rồi bắt MỌI
+	// phiên bản điền đủ: thiếu một biến ở một phiên bản thì compose thay bằng
+	// chuỗi rỗng và container chạy với cấu hình trống rỗng.
+	var versionVars []string
 	for _, name := range composeVariables(a.Compose) {
 		if _, reserved := ReservedVariables[name]; reserved {
 			continue
 		}
-		if _, ok := seen[name]; !ok {
-			return fmt.Errorf("%w: %s dùng biến %q chưa khai báo", ErrInvalidApp, a.Key, name)
+		if _, ok := seen[name]; ok {
+			continue
+		}
+		versionVars = append(versionVars, name)
+	}
+
+	names := make(map[string]struct{}, len(a.Versions))
+	for _, version := range a.Versions {
+		if strings.TrimSpace(version.Name) == "" {
+			return fmt.Errorf("%w: %s có phiên bản không tên", ErrInvalidApp, a.Key)
+		}
+		if _, duplicate := names[version.Name]; duplicate {
+			return fmt.Errorf("%w: %s khai báo trùng phiên bản %q",
+				ErrInvalidApp, a.Key, version.Name)
+		}
+		names[version.Name] = struct{}{}
+
+		if len(version.Images) == 0 {
+			return fmt.Errorf("%w: %s phiên bản %q không khai báo image nào",
+				ErrInvalidApp, a.Key, version.Name)
+		}
+		for _, name := range versionVars {
+			if _, ok := version.Values[name]; !ok {
+				return fmt.Errorf("%w: %s phiên bản %q thiếu biến %q",
+					ErrInvalidApp, a.Key, version.Name, name)
+			}
+		}
+		// Phiên bản không được đè lên biến của biểu mẫu: người dùng chọn cổng rồi
+		// mà phiên bản ghi đè thì cái ô họ vừa điền trở thành vô nghĩa.
+		for name := range version.Values {
+			if _, ok := seen[name]; ok {
+				return fmt.Errorf("%w: %s phiên bản %q đè lên biến %q của biểu mẫu",
+					ErrInvalidApp, a.Key, version.Name, name)
+			}
+			if _, reserved := ReservedVariables[name]; reserved {
+				return fmt.Errorf("%w: %s phiên bản %q dùng tên biến dành riêng %q",
+					ErrInvalidApp, a.Key, version.Name, name)
+			}
 		}
 	}
 	return nil
+}
+
+// DefaultVersion là phiên bản chọn sẵn khi mở biểu mẫu cài đặt.
+//
+// Danh mục xếp phiên bản mới nhất lên đầu, và đó cũng là thứ đại đa số người
+// dùng muốn.
+func (a App) DefaultVersion() Version {
+	if len(a.Versions) == 0 {
+		return Version{}
+	}
+	return a.Versions[0]
+}
+
+// FindVersion tìm một phiên bản theo tên.
+func (a App) FindVersion(name string) (Version, error) {
+	if strings.TrimSpace(name) == "" {
+		return a.DefaultVersion(), nil
+	}
+	for _, version := range a.Versions {
+		if version.Name == name {
+			return version, nil
+		}
+	}
+	return Version{}, fmt.Errorf("%w: %s không có phiên bản %q", ErrNotFound, a.Key, name)
 }
 
 // composeVarPattern khớp tham chiếu biến trong khuôn compose.
@@ -253,6 +344,26 @@ func (a App) Resolve(input map[string]string) (map[string]string, error) {
 		out[field.Key] = value
 	}
 	return out, nil
+}
+
+// ResolveVersion điền giá trị người dùng nhập rồi bổ sung giá trị của phiên bản.
+//
+// Giá trị của phiên bản ghi sau cùng nhưng không bao giờ đụng nhau: Validate đã
+// bắt buộc hai tập biến rời nhau.
+func (a App) ResolveVersion(name string, input map[string]string) (Version, map[string]string, error) {
+	version, err := a.FindVersion(name)
+	if err != nil {
+		return Version{}, nil, err
+	}
+
+	values, err := a.Resolve(input)
+	if err != nil {
+		return Version{}, nil, err
+	}
+	for key, value := range version.Values {
+		values[key] = value
+	}
+	return version, values, nil
 }
 
 // validateValue kiểm tra một giá trị theo kiểu của biến.

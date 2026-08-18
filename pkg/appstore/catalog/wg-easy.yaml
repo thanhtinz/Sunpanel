@@ -1,0 +1,70 @@
+key: wg-easy
+name:
+  vi: WireGuard Easy
+  en: WireGuard Easy
+description:
+  vi: "Máy chủ VPN WireGuard có giao diện: thêm thiết bị và lấy mã QR trong vài giây."
+  en: "A WireGuard VPN server with a UI: add a device and get its QR code in seconds."
+category: security
+website: https://github.com/wg-easy/wg-easy
+portField: HTTP_PORT
+versions:
+  - name: "15.4.0"
+    images:
+      - ghcr.io/wg-easy/wg-easy:15.4.0
+    values:
+      IMAGE: "ghcr.io/wg-easy/wg-easy:15.4.0"
+  - name: "15.3.0"
+    images:
+      - ghcr.io/wg-easy/wg-easy:15.3.0
+    values:
+      IMAGE: "ghcr.io/wg-easy/wg-easy:15.3.0"
+  - name: "15.2.2"
+    images:
+      - ghcr.io/wg-easy/wg-easy:15.2.2
+    values:
+      IMAGE: "ghcr.io/wg-easy/wg-easy:15.2.2"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "51821"
+    required: true
+  - key: VPN_PORT
+    label: {vi: Cổng VPN, en: VPN port}
+    help:
+      vi: "Cổng UDP các thiết bị kết nối vào; phải mở trên tường lửa."
+      en: "The UDP port devices connect to; it must be open on the firewall."
+    type: port
+    default: "51820"
+    required: true
+  - key: PUBLIC_HOST
+    label: {vi: Địa chỉ công khai, en: Public host}
+    help:
+      vi: "Tên miền hoặc IP mà thiết bị bên ngoài dùng để kết nối về."
+      en: "The domain or IP outside devices use to reach this server."
+    type: text
+    default: "vpn.example.com"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        WG_HOST: "${PUBLIC_HOST}"
+        PASSWORD: "${ADMIN_PASSWORD}"
+        WG_PORT: "${VPN_PORT}"
+      ports:
+        - "${HTTP_PORT}:51821"
+        - "${VPN_PORT}:51820/udp"
+      volumes:
+        - config:/etc/wireguard
+
+  volumes:
+    config:

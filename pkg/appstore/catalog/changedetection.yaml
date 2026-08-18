@@ -1,0 +1,45 @@
+key: changedetection
+name:
+  vi: Change Detection
+  en: Change Detection
+description:
+  vi: "Theo dõi một trang web và báo khi nội dung đổi — giá, tồn kho, thông báo tuyển dụng."
+  en: "Watches a web page and tells you when it changes — prices, stock, job postings."
+category: monitoring
+website: https://changedetection.io
+portField: HTTP_PORT
+versions:
+  - name: "0.55.8"
+    images:
+      - ghcr.io/dgtlmoon/changedetection.io:0.55.8
+    values:
+      IMAGE: "ghcr.io/dgtlmoon/changedetection.io:0.55.8"
+  - name: "0.54.10"
+    images:
+      - ghcr.io/dgtlmoon/changedetection.io:0.54.10
+    values:
+      IMAGE: "ghcr.io/dgtlmoon/changedetection.io:0.54.10"
+  - name: "0.53.7"
+    images:
+      - ghcr.io/dgtlmoon/changedetection.io:0.53.7
+    values:
+      IMAGE: "ghcr.io/dgtlmoon/changedetection.io:0.53.7"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5010"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:5000"
+      volumes:
+        - data:/datastore
+
+  volumes:
+    data:

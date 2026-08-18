@@ -6,21 +6,24 @@ description:
   vi: "Kho đối tượng tương thích S3, dùng làm đích sao lưu ngay trên máy chủ của bạn."
   en: "S3-compatible object storage — a backup target that lives on your own server."
 category: storage
-version: "1"
 website: https://min.io
-images:
-  - minio/minio:RELEASE.2024-09-13T20-26-02Z
 portField: CONSOLE_PORT
+versions:
+  - name: "RELEASE.2024-09-13T20-26-02Z"
+    images:
+      - minio/minio:RELEASE.2024-09-13T20-26-02Z
+    values:
+      IMAGE: "minio/minio:RELEASE.2024-09-13T20-26-02Z"
 fields:
-  - key: API_PORT
-    label: {vi: Cổng S3, en: S3 port}
-    type: port
-    default: "9002"
-    required: true
   - key: CONSOLE_PORT
     label: {vi: Cổng giao diện, en: Console port}
     type: port
     default: "9003"
+    required: true
+  - key: API_PORT
+    label: {vi: Cổng S3, en: S3 port}
+    type: port
+    default: "9002"
     required: true
   - key: ROOT_USER
     label: {vi: Tên truy cập, en: Access key}
@@ -33,17 +36,17 @@ fields:
     generate: true
 compose: |
   services:
-    minio:
-      image: minio/minio:RELEASE.2024-09-13T20-26-02Z
+    app:
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       command: server /data --console-address ":9001"
       environment:
-        MINIO_ROOT_USER: ${ROOT_USER}
-        MINIO_ROOT_PASSWORD: ${ROOT_PASSWORD}
+        MINIO_ROOT_USER: "${ROOT_USER}"
+        MINIO_ROOT_PASSWORD: "${ROOT_PASSWORD}"
       ports:
-        - "${API_PORT}:9000"
         - "${CONSOLE_PORT}:9001"
+        - "${API_PORT}:9000"
       volumes:
         - data:/data
 

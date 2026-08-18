@@ -59,8 +59,21 @@ const installer = ref({
   saving: false,
   app: null as CatalogApp | null,
   name: '',
+  version: '',
   values: {} as Record<string, string>,
 })
+
+/** Phiên bản đang chọn trong hộp thoại cài, để hiện ghi chú và danh sách image. */
+const selectedVersion = computed(() => {
+  const app = installer.value.app
+  if (!app) return null
+  const versions = app.versions ?? []
+  return versions.find((v) => v.name === installer.value.version) ?? versions[0] ?? null
+})
+
+const versionOptions = computed(() =>
+  (installer.value.app?.versions ?? []).map((v) => ({ label: v.name, value: v.name })),
+)
 
 const logs = ref({ show: false, name: '', content: '', loading: false })
 const secrets = ref({ show: false, name: '', values: {} as Record<string, string> })
@@ -139,7 +152,15 @@ function openInstaller(app: CatalogApp): void {
     values[field.key] = field.default ?? ''
   }
   // Tên gợi ý là định danh ứng dụng; lần cài thứ hai người dùng tự đổi.
-  installer.value = { show: true, saving: false, app, name: app.key, values }
+  installer.value = {
+    show: true,
+    saving: false,
+    app,
+    name: app.key,
+    // Phiên bản mới nhất đứng đầu danh sách và là thứ đại đa số người dùng muốn.
+    version: app.versions?.[0]?.name ?? '',
+    values,
+  }
 }
 
 const canInstall = computed(() => {
@@ -159,6 +180,7 @@ async function install(): Promise<void> {
     await appStoreApi.install({
       appKey: form.app.key,
       name: form.name.trim(),
+      version: form.version,
       values: form.values,
     })
     message.success(t('apps.installed'))
@@ -235,7 +257,25 @@ const columns = computed<DataTableColumns<InstalledApp>>(() => [
     title: t('apps.app'),
     key: 'appKey',
     minWidth: 160,
-    render: (row) => localized(row.app?.name) || row.appKey,
+    render: (row) =>
+      h('div', { class: 'installed-app' }, [
+        h(AppIcon, {
+          icon: row.app?.icon,
+          iconDark: row.app?.iconDark,
+          name: localized(row.app?.name) || row.appKey,
+          size: 22,
+        }),
+        h('span', null, localized(row.app?.name) || row.appKey),
+      ]),
+  },
+  {
+    // Cài nhiều phiên bản song song thì cột này là thứ duy nhất phân biệt được
+    // chúng, vì tên cài đặt do người dùng tự đặt.
+    title: t('apps.version'),
+    key: 'version',
+    width: 110,
+    render: (row) =>
+      h(NText, { class: 'sp-metric', depth: row.version ? 1 : 3 }, { default: () => row.version || '—' }),
   },
   {
     title: t('apps.state'),
@@ -405,7 +445,10 @@ const uninstallData = ref(false)
                   <div class="store-ident">
                     <div class="store-title">{{ localized(app.name) }}</div>
                     <div class="store-meta sp-metric">
-                      {{ t(`apps.category.${app.category}`) }} · v{{ app.version }}
+                      {{ t(`apps.category.${app.category}`) }} · v{{ app.versions?.[0]?.name }}
+                      <template v-if="(app.versions?.length ?? 0) > 1">
+                        · {{ t('apps.versionCount', { count: app.versions?.length }) }}
+                      </template>
                       <template v-if="installCount[app.key]">
                         · {{ t('apps.installedCount', { count: installCount[app.key] }) }}
                       </template>
@@ -479,11 +522,19 @@ const uninstallData = ref(false)
       </div>
 
       <NAlert type="info" :bordered="false" style="margin-bottom: 14px">
-        {{ t('apps.pullHint', { images: (installer.app.images ?? []).join(', ') }) }}
+        {{ t('apps.pullHint', { images: (selectedVersion?.images ?? []).join(', ') }) }}
       </NAlert>
 
       <NFormItem :label="t('apps.name')" :feedback="t('apps.nameHelp')">
         <NInput v-model:value="installer.name" autofocus />
+      </NFormItem>
+
+      <NFormItem
+        v-if="versionOptions.length > 0"
+        :label="t('apps.version')"
+        :feedback="localized(selectedVersion?.note) || t('apps.versionHelp')"
+      >
+        <NSelect v-model:value="installer.version" :options="versionOptions" />
       </NFormItem>
 
       <NFormItem
@@ -697,6 +748,13 @@ const uninstallData = ref(false)
 .installer-form :deep(.n-form-item-feedback-wrapper) {
   min-height: 0;
   padding: 3px 0 10px;
+}
+
+.installed-app {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
 }
 
 .installer-head {

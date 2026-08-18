@@ -1,0 +1,83 @@
+key: tandoor
+name:
+  vi: Tandoor Recipes
+  en: Tandoor Recipes
+description:
+  vi: "Sổ công thức nấu ăn có chia tỉ lệ khẩu phần và lên kế hoạch bữa ăn."
+  en: "A recipe book that scales servings and plans meals."
+category: productivity
+website: https://tandoor.dev
+portField: HTTP_PORT
+versions:
+  - name: "2.6.13"
+    images:
+      - vabene1111/recipes:2.6.13
+      - postgres:16-alpine
+    values:
+      IMAGE: "vabene1111/recipes:2.6.13"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "2.5.3"
+    images:
+      - vabene1111/recipes:2.5.3
+      - postgres:16-alpine
+    values:
+      IMAGE: "vabene1111/recipes:2.5.3"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "1.5.35"
+    images:
+      - vabene1111/recipes:1.5.35
+      - postgres:16-alpine
+    values:
+      IMAGE: "vabene1111/recipes:1.5.35"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8380"
+    required: true
+  - key: SECRET_KEY
+    label: {vi: Khóa bí mật, en: Secret key}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        SECRET_KEY: ${SECRET_KEY}
+        DB_ENGINE: django.db.backends.postgresql
+        POSTGRES_HOST: db
+        POSTGRES_DB: recipes
+        POSTGRES_USER: recipes
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+        TIMEZONE: Asia/Ho_Chi_Minh
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - static:/opt/recipes/staticfiles
+        - media:/opt/recipes/mediafiles
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: recipes
+        POSTGRES_USER: recipes
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    static:
+    media:
+    db:

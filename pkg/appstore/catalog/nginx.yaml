@@ -1,0 +1,47 @@
+key: nginx
+name:
+  vi: Nginx
+  en: Nginx
+description:
+  vi: "Máy chủ web phục vụ trang tĩnh, nhanh và ăn rất ít tài nguyên."
+  en: "A web server for static sites — fast and very light on resources."
+category: tool
+website: https://nginx.org
+portField: HTTP_PORT
+versions:
+  - name: "1.31.3"
+    images:
+      - nginx:1.31.3-alpine
+    values:
+      IMAGE: "nginx:1.31.3-alpine"
+  - name: "1.30.4"
+    images:
+      - nginx:1.30.4-alpine
+    values:
+      IMAGE: "nginx:1.30.4-alpine"
+  - name: "1.29.8"
+    images:
+      - nginx:1.29.8-alpine
+    values:
+      IMAGE: "nginx:1.29.8-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8281"
+    required: true
+  - key: SITE_DIR
+    label: {vi: Thư mục trang web, en: Site folder}
+    type: text
+    default: "/srv/www"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - ${SITE_DIR}:/usr/share/nginx/html:ro

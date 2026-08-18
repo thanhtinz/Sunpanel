@@ -1,0 +1,48 @@
+key: calibre-web
+name:
+  vi: Calibre-Web
+  en: Calibre-Web
+description:
+  vi: "Tủ sách điện tử qua web: đọc trực tiếp, gửi sang Kindle, quản lý theo tác giả và thể loại."
+  en: "A web ebook library: read in the browser, send to Kindle, organise by author and genre."
+category: media
+website: https://github.com/janeczku/calibre-web
+portField: HTTP_PORT
+versions:
+  - name: "0.6.27"
+    images:
+      - linuxserver/calibre-web:0.6.27
+    values:
+      IMAGE: "linuxserver/calibre-web:0.6.27"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8086"
+    required: true
+  - key: BOOKS_DIR
+    label: {vi: Thư mục sách, en: Books folder}
+    help:
+      vi: "Thư mục sẵn có trên máy chủ, được gắn vào ứng dụng."
+      en: "An existing folder on the host, mounted into the app."
+    type: text
+    default: "/srv/books"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:8083"
+      volumes:
+        - config:/config
+        - ${BOOKS_DIR}:/books
+
+  volumes:
+    config:

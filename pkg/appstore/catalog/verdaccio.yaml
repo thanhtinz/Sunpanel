@@ -1,0 +1,47 @@
+key: verdaccio
+name:
+  vi: Verdaccio
+  en: Verdaccio
+description:
+  vi: "Kho gói npm riêng, vừa làm bộ đệm cho npm công cộng vừa chứa gói nội bộ."
+  en: "A private npm registry that also caches the public one."
+category: development
+website: https://verdaccio.org
+portField: HTTP_PORT
+versions:
+  - name: "6.10"
+    images:
+      - verdaccio/verdaccio:6.10
+    values:
+      IMAGE: "verdaccio/verdaccio:6.10"
+  - name: "6.9.3"
+    images:
+      - verdaccio/verdaccio:6.9.3
+    values:
+      IMAGE: "verdaccio/verdaccio:6.9.3"
+  - name: "5.33"
+    images:
+      - verdaccio/verdaccio:5.33
+    values:
+      IMAGE: "verdaccio/verdaccio:5.33"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "4873"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:4873"
+      volumes:
+        - storage:/verdaccio/storage
+        - conf:/verdaccio/conf
+
+  volumes:
+    storage:
+    conf:

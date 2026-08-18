@@ -6,11 +6,24 @@ description:
   vi: "Bộ nhớ đệm và hàng đợi trong RAM, thứ hầu hết ứng dụng web cần tới sớm hay muộn."
   en: "An in-memory cache and queue that most web apps need sooner or later."
 category: database
-version: "1"
 website: https://redis.io
-images:
-  - redis:7-alpine
 portField: PORT
+versions:
+  - name: "8.10.0"
+    images:
+      - redis:8.10.0-alpine
+    values:
+      IMAGE: "redis:8.10.0-alpine"
+  - name: "7.4.10"
+    images:
+      - redis:7.4.10-alpine
+    values:
+      IMAGE: "redis:7.4.10-alpine"
+  - name: "6.2.23"
+    images:
+      - redis:6.2.23-alpine
+    values:
+      IMAGE: "redis:6.2.23-alpine"
 fields:
   - key: PORT
     label: {vi: Cổng, en: Port}
@@ -26,8 +39,8 @@ fields:
     generate: true
 compose: |
   services:
-    redis:
-      image: redis:7-alpine
+    app:
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       command: redis-server --requirepass ${PASSWORD} --appendonly yes

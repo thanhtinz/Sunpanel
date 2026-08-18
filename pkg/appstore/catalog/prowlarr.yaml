@@ -1,0 +1,49 @@
+key: prowlarr
+name:
+  vi: Prowlarr
+  en: Prowlarr
+description:
+  vi: "Quản lý nguồn tìm kiếm chung cho Sonarr và Radarr, khai báo một lần dùng cho tất cả."
+  en: "One place to manage search indexers for Sonarr and Radarr — configure once, use everywhere."
+category: media
+website: https://github.com/Prowlarr/Prowlarr
+portField: HTTP_PORT
+versions:
+  - name: "2.5.2"
+    images:
+      - linuxserver/prowlarr:2.5.2
+    values:
+      IMAGE: "linuxserver/prowlarr:2.5.2"
+  - name: "2.4.0"
+    images:
+      - linuxserver/prowlarr:2.4.0
+    values:
+      IMAGE: "linuxserver/prowlarr:2.4.0"
+  - name: "2.3.5"
+    images:
+      - linuxserver/prowlarr:2.3.5
+    values:
+      IMAGE: "linuxserver/prowlarr:2.3.5"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "9696"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:9696"
+      volumes:
+        - config:/config
+
+  volumes:
+    config:

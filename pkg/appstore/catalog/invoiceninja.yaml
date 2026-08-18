@@ -1,0 +1,89 @@
+key: invoiceninja
+name:
+  vi: Invoice Ninja
+  en: Invoice Ninja
+description:
+  vi: "Lập hóa đơn, báo giá và theo dõi thanh toán cho công việc tự do."
+  en: "Invoices, quotes and payment tracking for freelance work."
+category: productivity
+website: https://invoiceninja.com
+portField: HTTP_PORT
+versions:
+  - name: "5.13.33"
+    images:
+      - invoiceninja/invoiceninja:5.13.33
+      - mariadb:11
+    values:
+      IMAGE: "invoiceninja/invoiceninja:5.13.33"
+      DB_IMAGE: "mariadb:11"
+  - name: "5.12.70"
+    images:
+      - invoiceninja/invoiceninja:5.12.70
+      - mariadb:11
+    values:
+      IMAGE: "invoiceninja/invoiceninja:5.12.70"
+      DB_IMAGE: "mariadb:11"
+  - name: "5.11.82"
+    images:
+      - invoiceninja/invoiceninja:5.11.82
+      - mariadb:11
+    values:
+      IMAGE: "invoiceninja/invoiceninja:5.11.82"
+      DB_IMAGE: "mariadb:11"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8390"
+    required: true
+  - key: APP_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:8390"
+    required: true
+  - key: SECRET_KEY
+    label: {vi: Khóa ứng dụng, en: App key}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        APP_ENV: production
+        APP_URL: ${APP_URL}
+        APP_KEY: ${SECRET_KEY}
+        DB_HOST: db
+        DB_DATABASE: ninja
+        DB_USERNAME: ninja
+        DB_PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - public:/var/www/app/public
+        - storage:/var/www/app/storage
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        MARIADB_DATABASE: ninja
+        MARIADB_USER: ninja
+        MARIADB_PASSWORD: ${DB_PASSWORD}
+        MARIADB_RANDOM_ROOT_PASSWORD: "1"
+      volumes:
+        - db:/var/lib/mysql
+
+  volumes:
+    public:
+    storage:
+    db:

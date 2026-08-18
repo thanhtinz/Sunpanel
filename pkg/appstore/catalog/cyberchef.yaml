@@ -1,0 +1,40 @@
+key: cyberchef
+name:
+  vi: CyberChef
+  en: CyberChef
+description:
+  vi: "Dao đa năng cho dữ liệu: mã hóa, giải mã, phân tích định dạng, tất cả trong trình duyệt."
+  en: "The Swiss army knife for data: encode, decode and analyse formats, all in the browser."
+category: tool
+website: https://gchq.github.io/CyberChef
+portField: HTTP_PORT
+versions:
+  - name: "v11.2.0"
+    images:
+      - mpepping/cyberchef:v11.2.0
+    values:
+      IMAGE: "mpepping/cyberchef:v11.2.0"
+  - name: "v10.24.0"
+    images:
+      - mpepping/cyberchef:v10.24.0
+    values:
+      IMAGE: "mpepping/cyberchef:v10.24.0"
+  - name: "v9.55.0"
+    images:
+      - mpepping/cyberchef:v9.55.0
+    values:
+      IMAGE: "mpepping/cyberchef:v9.55.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8093"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8000"

@@ -1,0 +1,64 @@
+key: pihole
+name:
+  vi: Pi-hole
+  en: Pi-hole
+description:
+  vi: "Chặn quảng cáo ở tầng DNS cho cả nhà, kèm thống kê truy vấn theo thiết bị."
+  en: "Blocks ads at the DNS level for the whole household, with per-device query stats."
+category: security
+website: https://pi-hole.net
+portField: HTTP_PORT
+versions:
+  - name: "2026.07.2"
+    images:
+      - pihole/pihole:2026.07.2
+    values:
+      IMAGE: "pihole/pihole:2026.07.2"
+  - name: "2025.11.1"
+    images:
+      - pihole/pihole:2025.11.1
+    values:
+      IMAGE: "pihole/pihole:2025.11.1"
+  - name: "2024.07.0"
+    images:
+      - pihole/pihole:2024.07.0
+    values:
+      IMAGE: "pihole/pihole:2024.07.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8282"
+    required: true
+  - key: DNS_PORT
+    label: {vi: Cổng DNS, en: DNS port}
+    help:
+      vi: "Cổng 53 thường bị systemd-resolved chiếm; tắt nó hoặc chọn cổng khác."
+      en: "Port 53 is usually taken by systemd-resolved; disable it or pick another port."
+    type: port
+    default: "53"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        WEBPASSWORD: "${ADMIN_PASSWORD}"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:80"
+        - "${DNS_PORT}:53/tcp"
+        - "${DNS_PORT}:53/udp"
+      volumes:
+        - etc:/etc/pihole
+        - dnsmasq:/etc/dnsmasq.d
+
+  volumes:
+    etc:
+    dnsmasq:

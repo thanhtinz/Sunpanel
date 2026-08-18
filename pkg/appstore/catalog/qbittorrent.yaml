@@ -1,0 +1,66 @@
+key: qbittorrent
+name:
+  vi: qBittorrent
+  en: qBittorrent
+description:
+  vi: "Máy tải torrent có giao diện web, xếp hàng và giới hạn băng thông."
+  en: "A torrent client with a web UI, queueing and bandwidth limits."
+category: media
+website: https://qbittorrent.org
+portField: HTTP_PORT
+versions:
+  - name: "5.2.3"
+    images:
+      - linuxserver/qbittorrent:5.2.3
+    values:
+      IMAGE: "linuxserver/qbittorrent:5.2.3"
+  - name: "5.1.4"
+    images:
+      - linuxserver/qbittorrent:5.1.4
+    values:
+      IMAGE: "linuxserver/qbittorrent:5.1.4"
+  - name: "5.0.4"
+    images:
+      - linuxserver/qbittorrent:5.0.4
+    values:
+      IMAGE: "linuxserver/qbittorrent:5.0.4"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8087"
+    required: true
+  - key: TORRENT_PORT
+    label: {vi: Cổng torrent, en: Torrent port}
+    help:
+      vi: "Cổng nhận kết nối từ máy khác; mở trên tường lửa thì tải nhanh hơn nhiều."
+      en: "The port other peers connect to; opening it on the firewall speeds downloads up a lot."
+    type: port
+    default: "6881"
+    required: true
+  - key: DOWNLOAD_DIR
+    label: {vi: Thư mục tải về, en: Download folder}
+    type: text
+    default: "/srv/downloads"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+        WEBUI_PORT: "8080"
+      ports:
+        - "${HTTP_PORT}:8080"
+        - "${TORRENT_PORT}:6881/tcp"
+        - "${TORRENT_PORT}:6881/udp"
+      volumes:
+        - config:/config
+        - ${DOWNLOAD_DIR}:/downloads
+
+  volumes:
+    config:

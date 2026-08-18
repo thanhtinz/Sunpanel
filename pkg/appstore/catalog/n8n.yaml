@@ -3,50 +3,67 @@ name:
   vi: n8n
   en: n8n
 description:
-  vi: Tự động hóa quy trình bằng cách nối các dịch vụ lại với nhau, không cần viết mã.
-  en: Automate workflows by wiring services together, without writing code.
+  vi: "Tự động hóa quy trình bằng cách nối các dịch vụ lại với nhau, không cần viết mã."
+  en: "Workflow automation that wires services together without writing code."
 category: automation
-version: "1"
 website: https://n8n.io
-images:
-  - n8nio/n8n:latest
-portField: PORT
+portField: HTTP_PORT
+versions:
+  - name: "2.36.0"
+    images:
+      - n8nio/n8n:2.36.0
+    values:
+      IMAGE: "n8nio/n8n:2.36.0"
+  - name: "2.35.3"
+    images:
+      - n8nio/n8n:2.35.3
+    values:
+      IMAGE: "n8nio/n8n:2.35.3"
+  - name: "1.123.72"
+    images:
+      - n8nio/n8n:1.123.72
+    values:
+      IMAGE: "n8nio/n8n:1.123.72"
 fields:
-  - key: PORT
-    label: {vi: Cổng, en: Port}
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
     type: port
     default: "5678"
     required: true
-  - key: ADMIN_USER
-    label: {vi: Tài khoản quản trị, en: Admin user}
-    type: text
-    default: admin
-    required: true
-  - key: ADMIN_PASSWORD
-    label: {vi: Mật khẩu quản trị, en: Admin password}
+  - key: HOST_NAME
+    label: {vi: Tên miền, en: Host name}
     help:
-      vi: "Để trống thì panel tự sinh một mật khẩu ngẫu nhiên."
-      en: "Leave empty and the panel generates a random password."
-    type: password
-    generate: true
-  - key: TIMEZONE
-    label: {vi: Múi giờ, en: Time zone}
+      vi: "Địa chỉ n8n dùng để dựng liên kết webhook gửi cho dịch vụ ngoài."
+      en: "The address n8n uses to build the webhook links it hands to outside services."
     type: text
-    default: Asia/Ho_Chi_Minh
+    default: "localhost"
     required: true
+  - key: TIMEZONE
+    label: {vi: Múi giờ, en: Timezone}
+    type: select
+    default: "Asia/Ho_Chi_Minh"
+    options:
+      - value: "Asia/Ho_Chi_Minh"
+        label: {vi: Việt Nam, en: Vietnam}
+      - value: "UTC"
+        label: {vi: UTC, en: UTC}
+      - value: "Asia/Singapore"
+        label: {vi: Singapore, en: Singapore}
+      - value: "Europe/London"
+        label: {vi: London, en: London}
 compose: |
   services:
-    n8n:
-      image: n8nio/n8n:latest
+    app:
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       environment:
-        N8N_BASIC_AUTH_ACTIVE: "true"
-        N8N_BASIC_AUTH_USER: ${ADMIN_USER}
-        N8N_BASIC_AUTH_PASSWORD: ${ADMIN_PASSWORD}
-        GENERIC_TIMEZONE: ${TIMEZONE}
+        N8N_HOST: "${HOST_NAME}"
+        GENERIC_TIMEZONE: "${TIMEZONE}"
+        TZ: "${TIMEZONE}"
+        N8N_PORT: "5678"
       ports:
-        - "${PORT}:5678"
+        - "${HTTP_PORT}:5678"
       volumes:
         - data:/home/node/.n8n
 

@@ -1,0 +1,92 @@
+key: firefly-iii
+name:
+  vi: Firefly III
+  en: Firefly III
+description:
+  vi: "Quản lý tài chính cá nhân: ngân sách, hóa đơn định kỳ và báo cáo chi tiêu."
+  en: "Personal finance management: budgets, recurring bills and spending reports."
+category: productivity
+website: https://firefly-iii.org
+portField: HTTP_PORT
+versions:
+  - name: "6.6.6"
+    images:
+      - fireflyiii/core:version-6.6.6
+      - postgres:16-alpine
+    values:
+      IMAGE: "fireflyiii/core:version-6.6.6"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "6.5.9"
+    images:
+      - fireflyiii/core:version-6.5.9
+      - postgres:16-alpine
+    values:
+      IMAGE: "fireflyiii/core:version-6.5.9"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "6.4.23"
+    images:
+      - fireflyiii/core:version-6.4.23
+      - postgres:16-alpine
+    values:
+      IMAGE: "fireflyiii/core:version-6.4.23"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8380"
+    required: true
+  - key: APP_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:8380"
+    required: true
+  - key: SECRET_KEY
+    label: {vi: Khóa ứng dụng, en: App key}
+    help:
+      vi: "Firefly yêu cầu khóa dài đúng 32 ký tự; để trống để panel tự sinh."
+      en: "Firefly needs a key of exactly 32 characters; leave it blank to generate one."
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        APP_ENV: production
+        APP_KEY: ${SECRET_KEY}
+        APP_URL: ${APP_URL}
+        TZ: Asia/Ho_Chi_Minh
+        DB_CONNECTION: pgsql
+        DB_HOST: db
+        DB_PORT: "5432"
+        DB_DATABASE: firefly
+        DB_USERNAME: firefly
+        DB_PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - upload:/var/www/html/storage/upload
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: firefly
+        POSTGRES_USER: firefly
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    upload:
+    db:

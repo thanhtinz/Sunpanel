@@ -6,16 +6,29 @@ description:
   vi: "Bảng biểu đồ cho mọi nguồn số liệu: Prometheus, cơ sở dữ liệu, nhật ký."
   en: "Dashboards for any data source: Prometheus, databases and logs."
 category: monitoring
-version: "1"
 website: https://grafana.com
-images:
-  - grafana/grafana:11.2.0
 portField: HTTP_PORT
+versions:
+  - name: "13.2"
+    images:
+      - grafana/grafana:13.2
+    values:
+      IMAGE: "grafana/grafana:13.2"
+  - name: "12.4.8"
+    images:
+      - grafana/grafana:12.4.8
+    values:
+      IMAGE: "grafana/grafana:12.4.8"
+  - name: "11.6.16"
+    images:
+      - grafana/grafana:11.6.16
+    values:
+      IMAGE: "grafana/grafana:11.6.16"
 fields:
   - key: HTTP_PORT
     label: {vi: Cổng web, en: Web port}
     type: port
-    default: "3001"
+    default: "3004"
     required: true
   - key: ADMIN_USER
     label: {vi: Tài khoản quản trị, en: Admin user}
@@ -28,13 +41,13 @@ fields:
     generate: true
 compose: |
   services:
-    grafana:
-      image: grafana/grafana:11.2.0
+    app:
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       environment:
-        GF_SECURITY_ADMIN_USER: ${ADMIN_USER}
-        GF_SECURITY_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+        GF_SECURITY_ADMIN_USER: "${ADMIN_USER}"
+        GF_SECURITY_ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
       ports:
         - "${HTTP_PORT}:3000"
       volumes:

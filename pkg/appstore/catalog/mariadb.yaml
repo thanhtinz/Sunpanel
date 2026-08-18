@@ -1,0 +1,64 @@
+key: mariadb
+name:
+  vi: MariaDB
+  en: MariaDB
+description:
+  vi: "Cơ sở dữ liệu tương thích MySQL, thứ WordPress và hầu hết mã PHP cần tới."
+  en: "A MySQL-compatible database — what WordPress and most PHP code expect."
+category: database
+website: https://mariadb.org
+portField: PORT
+versions:
+  - name: "12.3.2"
+    images:
+      - mariadb:12.3.2
+    values:
+      IMAGE: "mariadb:12.3.2"
+  - name: "11.8.8"
+    images:
+      - mariadb:11.8.8
+    values:
+      IMAGE: "mariadb:11.8.8"
+  - name: "10.11.18"
+    images:
+      - mariadb:10.11.18
+    values:
+      IMAGE: "mariadb:10.11.18"
+fields:
+  - key: PORT
+    label: {vi: Cổng, en: Port}
+    type: port
+    default: "3307"
+    required: true
+  - key: DB_NAME
+    label: {vi: Tên cơ sở dữ liệu, en: Database name}
+    type: text
+    default: "app"
+    required: true
+  - key: DB_USER
+    label: {vi: Tên người dùng, en: User name}
+    type: text
+    default: "app"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu, en: Password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        MARIADB_DATABASE: "${DB_NAME}"
+        MARIADB_USER: "${DB_USER}"
+        MARIADB_PASSWORD: "${DB_PASSWORD}"
+        MARIADB_RANDOM_ROOT_PASSWORD: "1"
+      ports:
+        - "${PORT}:3306"
+      volumes:
+        - data:/var/lib/mysql
+
+  volumes:
+    data:

@@ -1,0 +1,50 @@
+key: valkey
+name:
+  vi: Valkey
+  en: Valkey
+description:
+  vi: "Nhánh cộng đồng của Redis, giữ nguyên giao thức và giấy phép nguồn mở."
+  en: "The community fork of Redis: same protocol, open-source licence kept."
+category: database
+website: https://valkey.io
+portField: PORT
+versions:
+  - name: "9.1.1"
+    images:
+      - valkey/valkey:9.1.1-alpine
+    values:
+      IMAGE: "valkey/valkey:9.1.1-alpine"
+  - name: "8.1.9"
+    images:
+      - valkey/valkey:8.1.9-alpine
+    values:
+      IMAGE: "valkey/valkey:8.1.9-alpine"
+  - name: "7.2.14"
+    images:
+      - valkey/valkey:7.2.14-alpine
+    values:
+      IMAGE: "valkey/valkey:7.2.14-alpine"
+fields:
+  - key: PORT
+    label: {vi: Cổng, en: Port}
+    type: port
+    default: "6380"
+    required: true
+  - key: PASSWORD
+    label: {vi: Mật khẩu, en: Password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: valkey-server --requirepass ${PASSWORD} --appendonly yes
+      ports:
+        - "${PORT}:6379"
+      volumes:
+        - data:/data
+
+  volumes:
+    data:

@@ -1,0 +1,109 @@
+key: immich
+name:
+  vi: Immich
+  en: Immich
+description:
+  vi: "Thư viện ảnh và video tự quản, tự sao lưu từ điện thoại và nhận diện khuôn mặt."
+  en: "A self-hosted photo and video library with phone backup and face recognition."
+category: media
+website: https://immich.app
+portField: HTTP_PORT
+versions:
+  - name: "v1.135.3"
+    images:
+      - ghcr.io/immich-app/immich-server:v1.135.3
+      - ghcr.io/immich-app/immich-machine-learning:release
+      - redis:7-alpine
+      - ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
+    values:
+      IMAGE: "ghcr.io/immich-app/immich-server:v1.135.3"
+      ML_IMAGE: "ghcr.io/immich-app/immich-machine-learning:release"
+      REDIS_IMAGE: "redis:7-alpine"
+      DB_IMAGE: "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0"
+  - name: "v1.134.0"
+    images:
+      - ghcr.io/immich-app/immich-server:v1.134.0
+      - ghcr.io/immich-app/immich-machine-learning:release
+      - redis:7-alpine
+      - ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
+    values:
+      IMAGE: "ghcr.io/immich-app/immich-server:v1.134.0"
+      ML_IMAGE: "ghcr.io/immich-app/immich-machine-learning:release"
+      REDIS_IMAGE: "redis:7-alpine"
+      DB_IMAGE: "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0"
+  - name: "v1.133.1"
+    images:
+      - ghcr.io/immich-app/immich-server:v1.133.1
+      - ghcr.io/immich-app/immich-machine-learning:release
+      - redis:7-alpine
+      - ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
+    values:
+      IMAGE: "ghcr.io/immich-app/immich-server:v1.133.1"
+      ML_IMAGE: "ghcr.io/immich-app/immich-machine-learning:release"
+      REDIS_IMAGE: "redis:7-alpine"
+      DB_IMAGE: "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "2283"
+    required: true
+  - key: UPLOAD_DIR
+    label: {vi: Thư mục lưu ảnh, en: Photo folder}
+    help:
+      vi: "Toàn bộ ảnh tải lên nằm ở đây; hãy chọn ổ còn nhiều chỗ trống."
+      en: "Every uploaded photo lands here, so pick a disk with room to grow."
+    type: text
+    default: "/srv/immich"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+        - redis
+      environment:
+        DB_HOSTNAME: db
+        DB_USERNAME: immich
+        DB_PASSWORD: ${DB_PASSWORD}
+        DB_DATABASE_NAME: immich
+        REDIS_HOSTNAME: redis
+      ports:
+        - "${HTTP_PORT}:2283"
+      volumes:
+        - ${UPLOAD_DIR}:/data
+
+    machine-learning:
+      image: ${ML_IMAGE}
+      container_name: ${CONTAINER_NAME}-ml
+      restart: unless-stopped
+      volumes:
+        - model-cache:/cache
+
+    redis:
+      image: ${REDIS_IMAGE}
+      container_name: ${CONTAINER_NAME}-redis
+      restart: unless-stopped
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: immich
+        POSTGRES_USER: immich
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+        POSTGRES_INITDB_ARGS: "--data-checksums"
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    model-cache:
+    db:

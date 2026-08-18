@@ -1,0 +1,52 @@
+key: openwebui
+name:
+  vi: Open WebUI
+  en: Open WebUI
+description:
+  vi: "Giao diện trò chuyện cho mô hình ngôn ngữ chạy nội bộ qua Ollama."
+  en: "A chat interface for language models running locally through Ollama."
+category: development
+website: https://openwebui.com
+portField: HTTP_PORT
+versions:
+  - name: "v0.7.2"
+    images:
+      - ghcr.io/open-webui/open-webui:v0.7.2
+    values:
+      IMAGE: "ghcr.io/open-webui/open-webui:v0.7.2"
+  - name: "v0.6.43"
+    images:
+      - ghcr.io/open-webui/open-webui:v0.6.43
+    values:
+      IMAGE: "ghcr.io/open-webui/open-webui:v0.6.43"
+  - name: "v0.5.20"
+    images:
+      - ghcr.io/open-webui/open-webui:v0.5.20
+    values:
+      IMAGE: "ghcr.io/open-webui/open-webui:v0.5.20"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3080"
+    required: true
+  - key: OLLAMA_URL
+    label: {vi: Địa chỉ Ollama, en: Ollama URL}
+    type: text
+    default: "http://localhost:11434"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        OLLAMA_BASE_URL: "${OLLAMA_URL}"
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - data:/app/backend/data
+
+  volumes:
+    data:

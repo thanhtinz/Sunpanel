@@ -1,0 +1,47 @@
+key: nodered
+name:
+  vi: Node-RED
+  en: Node-RED
+description:
+  vi: "Nối dịch vụ và thiết bị lại với nhau bằng cách kéo dây giữa các khối."
+  en: "Wires services and devices together by dragging connections between blocks."
+category: automation
+website: https://nodered.org
+portField: HTTP_PORT
+versions:
+  - name: "5.0.4"
+    images:
+      - nodered/node-red:5.0.4
+    values:
+      IMAGE: "nodered/node-red:5.0.4"
+  - name: "4.1.12"
+    images:
+      - nodered/node-red:4.1.12
+    values:
+      IMAGE: "nodered/node-red:4.1.12"
+  - name: "3.1.15"
+    images:
+      - nodered/node-red:3.1.15
+    values:
+      IMAGE: "nodered/node-red:3.1.15"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "1880"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:1880"
+      volumes:
+        - data:/data
+
+  volumes:
+    data:

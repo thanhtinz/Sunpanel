@@ -1,0 +1,55 @@
+key: restic-rest
+name:
+  vi: Restic REST Server
+  en: Restic REST Server
+description:
+  vi: "Kho lưu bản sao cho restic qua HTTP, nhanh hơn nhiều so với gửi qua SFTP."
+  en: "An HTTP repository for restic backups — much faster than pushing over SFTP."
+category: storage
+website: https://github.com/restic/rest-server
+portField: HTTP_PORT
+versions:
+  - name: "0.14.0"
+    images:
+      - restic/rest-server:0.14.0
+    values:
+      IMAGE: "restic/rest-server:0.14.0"
+  - name: "0.13.0"
+    images:
+      - restic/rest-server:0.13.0
+    values:
+      IMAGE: "restic/rest-server:0.13.0"
+  - name: "0.12.1"
+    images:
+      - restic/rest-server:0.12.1
+    values:
+      IMAGE: "restic/rest-server:0.12.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng, en: Port}
+    type: port
+    default: "8600"
+    required: true
+  - key: AUTH
+    label: {vi: Yêu cầu đăng nhập, en: Require login}
+    type: select
+    options:
+      - value: ""
+        label: {vi: Có, en: Yes}
+      - value: "--no-auth"
+        label: {vi: Không, en: No}
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        OPTIONS: "${AUTH}"
+      ports:
+        - "${HTTP_PORT}:8000"
+      volumes:
+        - data:/data
+
+  volumes:
+    data:

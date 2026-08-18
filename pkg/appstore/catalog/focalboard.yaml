@@ -1,0 +1,45 @@
+key: focalboard
+name:
+  vi: Focalboard
+  en: Focalboard
+description:
+  vi: "Bảng công việc kiểu Trello chạy trên máy chủ của bạn."
+  en: "A Trello-style project board running on your own server."
+category: productivity
+website: https://focalboard.com
+portField: HTTP_PORT
+versions:
+  - name: "7.11.4"
+    images:
+      - mattermost/focalboard:7.11.4
+    values:
+      IMAGE: "mattermost/focalboard:7.11.4"
+  - name: "7.10.6"
+    images:
+      - mattermost/focalboard:7.10.6
+    values:
+      IMAGE: "mattermost/focalboard:7.10.6"
+  - name: "7.9.7"
+    images:
+      - mattermost/focalboard:7.9.7
+    values:
+      IMAGE: "mattermost/focalboard:7.9.7"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8100"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8000"
+      volumes:
+        - data:/opt/focalboard/data
+
+  volumes:
+    data:

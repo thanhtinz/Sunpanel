@@ -530,7 +530,10 @@
     "searchPlaceholder": "Tìm theo tên hoặc công dụng",
     "countShown": "Hiện {shown}/{total} ứng dụng",
     "noMatch": "Không có ứng dụng nào khớp",
-    "homepage": "Trang chủ"
+    "homepage": "Trang chủ",
+    "version": "Phiên bản",
+    "versionHelp": "Cài nhiều phiên bản song song được, mỗi bản đặt một tên khác nhau.",
+    "versionCount": "{count} phiên bản"
   },
   "appErr": {
     "not_found": "Không tìm thấy ứng dụng đã cài.",

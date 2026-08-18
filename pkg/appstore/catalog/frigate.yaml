@@ -1,0 +1,53 @@
+key: frigate
+name:
+  vi: Frigate
+  en: Frigate
+description:
+  vi: "Camera an ninh có nhận diện vật thể ngay trên máy, không gửi hình lên đám mây."
+  en: "Security camera recording with on-device object detection — no cloud uploads."
+category: automation
+website: https://frigate.video
+portField: HTTP_PORT
+versions:
+  - name: "0.14.1"
+    images:
+      - ghcr.io/blakeblackshear/frigate:0.14.1
+    values:
+      IMAGE: "ghcr.io/blakeblackshear/frigate:0.14.1"
+  - name: "0.13.2"
+    images:
+      - ghcr.io/blakeblackshear/frigate:0.13.2
+    values:
+      IMAGE: "ghcr.io/blakeblackshear/frigate:0.13.2"
+  - name: "0.12.1"
+    images:
+      - ghcr.io/blakeblackshear/frigate:0.12.1
+    values:
+      IMAGE: "ghcr.io/blakeblackshear/frigate:0.12.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5010"
+    required: true
+  - key: STORAGE_DIR
+    label: {vi: Thư mục lưu video, en: Recording folder}
+    type: text
+    default: "/srv/frigate"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:5000"
+      volumes:
+        - config:/config
+        - ${STORAGE_DIR}:/media/frigate
+
+  volumes:
+    config:

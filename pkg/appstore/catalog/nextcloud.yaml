@@ -6,17 +6,35 @@ description:
   vi: "Ổ đĩa đám mây tự quản: đồng bộ tệp, chia sẻ liên kết, lịch và danh bạ."
   en: "Self-hosted cloud storage with file sync, share links, calendar and contacts."
 category: storage
-version: "1"
 website: https://nextcloud.com
-images:
-  - nextcloud:29-apache
-  - postgres:16-alpine
 portField: HTTP_PORT
+versions:
+  - name: "34.0.3"
+    images:
+      - nextcloud:34.0.3-apache
+      - postgres:16-alpine
+    values:
+      IMAGE: "nextcloud:34.0.3-apache"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "33.0.8"
+    images:
+      - nextcloud:33.0.8-apache
+      - postgres:16-alpine
+    values:
+      IMAGE: "nextcloud:33.0.8-apache"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "32.0.14"
+    images:
+      - nextcloud:32.0.14-apache
+      - postgres:16-alpine
+    values:
+      IMAGE: "nextcloud:32.0.14-apache"
+      DB_IMAGE: "postgres:16-alpine"
 fields:
   - key: HTTP_PORT
     label: {vi: Cổng web, en: Web port}
     type: port
-    default: "8080"
+    default: "8081"
     required: true
   - key: ADMIN_USER
     label: {vi: Tài khoản quản trị, en: Admin user}
@@ -34,7 +52,7 @@ fields:
 compose: |
   services:
     app:
-      image: nextcloud:29-apache
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       depends_on:
@@ -52,7 +70,7 @@ compose: |
         - data:/var/www/html
 
     db:
-      image: postgres:16-alpine
+      image: ${DB_IMAGE}
       container_name: ${CONTAINER_NAME}-db
       restart: unless-stopped
       environment:

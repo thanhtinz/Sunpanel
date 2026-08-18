@@ -1,0 +1,47 @@
+key: jellyseerr
+name:
+  vi: Jellyseerr
+  en: Jellyseerr
+description:
+  vi: "Trang để người nhà bấm yêu cầu phim, bạn duyệt rồi hệ thống tự tải."
+  en: "A page where your household requests movies; you approve and the system fetches them."
+category: media
+website: https://github.com/Fallenbagel/jellyseerr
+portField: HTTP_PORT
+versions:
+  - name: "2.7.3"
+    images:
+      - fallenbagel/jellyseerr:2.7.3
+    values:
+      IMAGE: "fallenbagel/jellyseerr:2.7.3"
+  - name: "2.6.0"
+    images:
+      - fallenbagel/jellyseerr:2.6.0
+    values:
+      IMAGE: "fallenbagel/jellyseerr:2.6.0"
+  - name: "1.9.2"
+    images:
+      - fallenbagel/jellyseerr:1.9.2
+    values:
+      IMAGE: "fallenbagel/jellyseerr:1.9.2"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5055"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:5055"
+      volumes:
+        - config:/app/config
+
+  volumes:
+    config:

@@ -6,12 +6,30 @@ description:
   vi: "Nền tảng viết blog và bản tin, nhanh và tập trung vào nội dung."
   en: "A fast publishing platform for blogs and newsletters."
 category: website
-version: "1"
 website: https://ghost.org
-images:
-  - ghost:5-alpine
-  - mysql:8
 portField: HTTP_PORT
+versions:
+  - name: "6.57.1"
+    images:
+      - ghost:6.57.1-alpine
+      - mysql:8
+    values:
+      IMAGE: "ghost:6.57.1-alpine"
+      DB_IMAGE: "mysql:8"
+  - name: "6.56.0"
+    images:
+      - ghost:6.56.0-alpine
+      - mysql:8
+    values:
+      IMAGE: "ghost:6.56.0-alpine"
+      DB_IMAGE: "mysql:8"
+  - name: "5.130.6"
+    images:
+      - ghost:5.130.6-alpine
+      - mysql:8
+    values:
+      IMAGE: "ghost:5.130.6-alpine"
+      DB_IMAGE: "mysql:8"
 fields:
   - key: HTTP_PORT
     label: {vi: Cổng web, en: Web port}
@@ -32,8 +50,8 @@ fields:
     generate: true
 compose: |
   services:
-    ghost:
-      image: ghost:5-alpine
+    app:
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       depends_on:
@@ -51,7 +69,7 @@ compose: |
         - content:/var/lib/ghost/content
 
     db:
-      image: mysql:8
+      image: ${DB_IMAGE}
       container_name: ${CONTAINER_NAME}-db
       restart: unless-stopped
       environment:

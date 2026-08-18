@@ -6,12 +6,23 @@ description:
   vi: "Thống kê truy cập website, nhẹ và không theo dõi người dùng bằng cookie."
   en: "Website analytics that stays light and does not track visitors with cookies."
 category: monitoring
-version: "1"
 website: https://umami.is
-images:
-  - ghcr.io/umami-software/umami:postgresql-v2.12.1
-  - postgres:16-alpine
 portField: HTTP_PORT
+versions:
+  - name: "3.0.0"
+    images:
+      - ghcr.io/umami-software/umami:postgresql-3.0.0
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/umami-software/umami:postgresql-3.0.0"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "v2.20.2"
+    images:
+      - ghcr.io/umami-software/umami:postgresql-v2.20.2
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/umami-software/umami:postgresql-v2.20.2"
+      DB_IMAGE: "postgres:16-alpine"
 fields:
   - key: HTTP_PORT
     label: {vi: Cổng web, en: Web port}
@@ -28,8 +39,8 @@ fields:
     generate: true
 compose: |
   services:
-    umami:
-      image: ghcr.io/umami-software/umami:postgresql-v2.12.1
+    app:
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       depends_on:
@@ -42,7 +53,7 @@ compose: |
         - "${HTTP_PORT}:3000"
 
     db:
-      image: postgres:16-alpine
+      image: ${DB_IMAGE}
       container_name: ${CONTAINER_NAME}-db
       restart: unless-stopped
       environment:

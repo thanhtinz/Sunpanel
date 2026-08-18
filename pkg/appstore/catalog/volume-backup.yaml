@@ -1,0 +1,60 @@
+key: volume-backup
+name:
+  vi: Docker Volume Backup
+  en: Docker Volume Backup
+description:
+  vi: "Sao lưu định kỳ volume của Docker ra tệp nén, gửi được lên S3 hoặc WebDAV."
+  en: "Periodically backs up Docker volumes to archives, optionally shipped to S3 or WebDAV."
+category: storage
+website: https://github.com/offen/docker-volume-backup
+versions:
+  - name: "v2.48.2"
+    images:
+      - offen/docker-volume-backup:v2.48.2
+    values:
+      IMAGE: "offen/docker-volume-backup:v2.48.2"
+  - name: "v2.47.2"
+    images:
+      - offen/docker-volume-backup:v2.47.2
+    values:
+      IMAGE: "offen/docker-volume-backup:v2.47.2"
+  - name: "v2.46.1"
+    images:
+      - offen/docker-volume-backup:v2.46.1
+    values:
+      IMAGE: "offen/docker-volume-backup:v2.46.1"
+fields:
+  - key: BACKUP_DIR
+    label: {vi: Thư mục chứa bản sao, en: Backup folder}
+    type: text
+    default: "/srv/backups"
+    required: true
+  - key: SCHEDULE
+    label: {vi: Lịch chạy, en: Schedule}
+    type: select
+    default: "0 0 2 * * *"
+    options:
+      - value: "0 0 2 * * *"
+        label: {vi: Mỗi ngày lúc 2 giờ sáng, en: Daily at 2am}
+      - value: "0 0 2 * * 0"
+        label: {vi: Mỗi tuần, en: Weekly}
+      - value: "0 0 */12 * * *"
+        label: {vi: Mỗi 12 giờ, en: Every 12 hours}
+  - key: RETENTION_DAYS
+    label: {vi: Số ngày giữ lại, en: Days to keep}
+    type: text
+    default: "14"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        BACKUP_CRON_EXPRESSION: "${SCHEDULE}"
+        BACKUP_RETENTION_DAYS: "${RETENTION_DAYS}"
+        BACKUP_FILENAME: "backup-%Y-%m-%dT%H-%M-%S.tar.gz"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+        - ${BACKUP_DIR}:/archive

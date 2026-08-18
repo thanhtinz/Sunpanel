@@ -1,0 +1,59 @@
+key: caddy
+name:
+  vi: Caddy
+  en: Caddy
+description:
+  vi: "Máy chủ web tự lo HTTPS: trỏ tên miền vào là có chứng chỉ, không cần cấu hình gì thêm."
+  en: "A web server that handles HTTPS itself — point a domain at it and the certificate appears."
+category: tool
+website: https://caddyserver.com
+portField: HTTP_PORT
+versions:
+  - name: "2.11.4"
+    images:
+      - caddy:2.11.4-alpine
+    values:
+      IMAGE: "caddy:2.11.4-alpine"
+  - name: "2.10.2"
+    images:
+      - caddy:2.10.2-alpine
+    values:
+      IMAGE: "caddy:2.10.2-alpine"
+  - name: "2.9.1"
+    images:
+      - caddy:2.9.1-alpine
+    values:
+      IMAGE: "caddy:2.9.1-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng HTTP, en: HTTP port}
+    type: port
+    default: "8280"
+    required: true
+  - key: HTTPS_PORT
+    label: {vi: Cổng HTTPS, en: HTTPS port}
+    type: port
+    default: "8443"
+    required: true
+  - key: SITE_DIR
+    label: {vi: Thư mục trang web, en: Site folder}
+    type: text
+    default: "/srv/www"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:80"
+        - "${HTTPS_PORT}:443"
+      volumes:
+        - ${SITE_DIR}:/usr/share/caddy
+        - data:/data
+        - config:/config
+
+  volumes:
+    data:
+    config:

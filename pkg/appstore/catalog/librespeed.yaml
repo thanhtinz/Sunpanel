@@ -1,0 +1,49 @@
+key: librespeed
+name:
+  vi: LibreSpeed
+  en: LibreSpeed
+description:
+  vi: "Trang đo tốc độ mạng của riêng bạn, đo đúng đường truyền tới máy chủ này."
+  en: "Your own speed test page, measuring the real path to this server."
+category: monitoring
+website: https://librespeed.org
+portField: HTTP_PORT
+versions:
+  - name: "6.2.1"
+    images:
+      - linuxserver/librespeed:6.2.1
+    values:
+      IMAGE: "linuxserver/librespeed:6.2.1"
+  - name: "6.1.0"
+    images:
+      - linuxserver/librespeed:6.1.0
+    values:
+      IMAGE: "linuxserver/librespeed:6.1.0"
+  - name: "5.5.1"
+    images:
+      - linuxserver/librespeed:5.5.1
+    values:
+      IMAGE: "linuxserver/librespeed:5.5.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8087"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - config:/config
+
+  volumes:
+    config:

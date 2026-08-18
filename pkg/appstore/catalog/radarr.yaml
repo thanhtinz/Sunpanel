@@ -1,0 +1,61 @@
+key: radarr
+name:
+  vi: Radarr
+  en: Radarr
+description:
+  vi: "Theo dõi phim lẻ: tự tải khi có bản mới, đổi tên và xếp vào thư viện."
+  en: "Follows movies: grabs new releases, renames them and files them into the library."
+category: media
+website: https://radarr.video
+portField: HTTP_PORT
+versions:
+  - name: "6.3.0"
+    images:
+      - linuxserver/radarr:6.3.0
+    values:
+      IMAGE: "linuxserver/radarr:6.3.0"
+  - name: "6.2.1"
+    images:
+      - linuxserver/radarr:6.2.1
+    values:
+      IMAGE: "linuxserver/radarr:6.2.1"
+  - name: "6.1.1"
+    images:
+      - linuxserver/radarr:6.1.1
+    values:
+      IMAGE: "linuxserver/radarr:6.1.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "7878"
+    required: true
+  - key: MEDIA_DIR
+    label: {vi: Thư mục phim, en: Movie folder}
+    type: text
+    default: "/srv/media/movies"
+    required: true
+  - key: DOWNLOAD_DIR
+    label: {vi: Thư mục tải về, en: Download folder}
+    type: text
+    default: "/srv/downloads"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:7878"
+      volumes:
+        - config:/config
+        - ${MEDIA_DIR}:/movies
+        - ${DOWNLOAD_DIR}:/downloads
+
+  volumes:
+    config:

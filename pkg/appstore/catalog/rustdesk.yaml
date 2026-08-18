@@ -1,0 +1,43 @@
+key: rustdesk
+name:
+  vi: RustDesk Server
+  en: RustDesk Server
+description:
+  vi: "Máy chủ điều khiển máy tính từ xa của riêng bạn, thay cho TeamViewer."
+  en: "Your own remote desktop relay server, in place of TeamViewer."
+category: tool
+website: https://rustdesk.com
+portField: ID_PORT
+versions:
+  - name: "1.1.16"
+    images:
+      - rustdesk/rustdesk-server:1.1.16
+    values:
+      IMAGE: "rustdesk/rustdesk-server:1.1.16"
+fields:
+  - key: ID_PORT
+    label: {vi: Cổng máy chủ định danh, en: ID server port}
+    type: port
+    default: "21116"
+    required: true
+  - key: RELAY_PORT
+    label: {vi: Cổng chuyển tiếp, en: Relay port}
+    type: port
+    default: "21117"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: hbbs
+      ports:
+        - "${ID_PORT}:21116"
+        - "${RELAY_PORT}:21117"
+        - "${ID_PORT}:21116/udp"
+      volumes:
+        - data:/root
+
+  volumes:
+    data:

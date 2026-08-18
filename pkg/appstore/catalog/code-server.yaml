@@ -6,11 +6,24 @@ description:
   vi: "VS Code chạy trên máy chủ, mở bằng trình duyệt — sửa mã ngay nơi mã đang chạy."
   en: "VS Code running on the server and opened in a browser — edit code where it runs."
 category: development
-version: "1"
 website: https://github.com/coder/code-server
-images:
-  - codercom/code-server:4.93.1
 portField: HTTP_PORT
+versions:
+  - name: "4.133.0"
+    images:
+      - codercom/code-server:4.133.0
+    values:
+      IMAGE: "codercom/code-server:4.133.0"
+  - name: "4.132.0"
+    images:
+      - codercom/code-server:4.132.0
+    values:
+      IMAGE: "codercom/code-server:4.132.0"
+  - name: "4.131.0"
+    images:
+      - codercom/code-server:4.131.0
+    values:
+      IMAGE: "codercom/code-server:4.131.0"
 fields:
   - key: HTTP_PORT
     label: {vi: Cổng web, en: Web port}
@@ -28,12 +41,12 @@ fields:
     required: true
 compose: |
   services:
-    code-server:
-      image: codercom/code-server:4.93.1
+    app:
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       environment:
-        PASSWORD: ${PASSWORD}
+        PASSWORD: "${PASSWORD}"
       ports:
         - "${HTTP_PORT}:8080"
       volumes:

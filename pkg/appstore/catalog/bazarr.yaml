@@ -1,0 +1,50 @@
+key: bazarr
+name:
+  vi: Bazarr
+  en: Bazarr
+description:
+  vi: "Tự tìm và tải phụ đề cho phim bộ, phim lẻ đã có trong thư viện."
+  en: "Finds and downloads subtitles for the shows and movies already in your library."
+category: media
+website: https://bazarr.media
+portField: HTTP_PORT
+versions:
+  - name: "1.6.0"
+    images:
+      - linuxserver/bazarr:1.6.0
+    values:
+      IMAGE: "linuxserver/bazarr:1.6.0"
+  - name: "1.5.6"
+    images:
+      - linuxserver/bazarr:1.5.6
+    values:
+      IMAGE: "linuxserver/bazarr:1.5.6"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "6767"
+    required: true
+  - key: MEDIA_DIR
+    label: {vi: Thư mục phim, en: Media folder}
+    type: text
+    default: "/srv/media"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:6767"
+      volumes:
+        - config:/config
+        - ${MEDIA_DIR}:/media
+
+  volumes:
+    config:

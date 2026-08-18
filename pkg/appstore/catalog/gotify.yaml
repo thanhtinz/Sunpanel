@@ -1,0 +1,52 @@
+key: gotify
+name:
+  vi: Gotify
+  en: Gotify
+description:
+  vi: "Máy chủ thông báo đẩy riêng, nhận cảnh báo từ script bằng một lệnh curl."
+  en: "Your own push notification server — send alerts from a script with one curl call."
+category: monitoring
+website: https://gotify.net
+portField: HTTP_PORT
+versions:
+  - name: "3.0"
+    images:
+      - gotify/server:3.0
+    values:
+      IMAGE: "gotify/server:3.0"
+  - name: "2.9.1"
+    images:
+      - gotify/server:2.9.1
+    values:
+      IMAGE: "gotify/server:2.9.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8096"
+    required: true
+  - key: ADMIN_USER
+    label: {vi: Tài khoản quản trị, en: Admin user}
+    type: text
+    default: "admin"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        GOTIFY_DEFAULTUSER_NAME: "${ADMIN_USER}"
+        GOTIFY_DEFAULTUSER_PASS: "${ADMIN_PASSWORD}"
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - data:/app/data
+
+  volumes:
+    data:

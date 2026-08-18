@@ -6,11 +6,24 @@ description:
   vi: "Máy chủ phim và nhạc cá nhân, phát tới trình duyệt, TV và điện thoại."
   en: "A personal movie and music server that streams to browsers, TVs and phones."
 category: media
-version: "1"
 website: https://jellyfin.org
-images:
-  - jellyfin/jellyfin:10.9.11
 portField: HTTP_PORT
+versions:
+  - name: "10.11.11"
+    images:
+      - jellyfin/jellyfin:10.11.11
+    values:
+      IMAGE: "jellyfin/jellyfin:10.11.11"
+  - name: "10.10.7"
+    images:
+      - jellyfin/jellyfin:10.10.7
+    values:
+      IMAGE: "jellyfin/jellyfin:10.10.7"
+  - name: "10.9.11"
+    images:
+      - jellyfin/jellyfin:10.9.11
+    values:
+      IMAGE: "jellyfin/jellyfin:10.9.11"
 fields:
   - key: HTTP_PORT
     label: {vi: Cổng web, en: Web port}
@@ -27,8 +40,8 @@ fields:
     required: true
 compose: |
   services:
-    jellyfin:
-      image: jellyfin/jellyfin:10.9.11
+    app:
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       ports:

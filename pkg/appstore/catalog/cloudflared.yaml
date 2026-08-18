@@ -1,0 +1,40 @@
+key: cloudflared
+name:
+  vi: Cloudflare Tunnel
+  en: Cloudflare Tunnel
+description:
+  vi: "Mở dịch vụ nội bộ ra Internet qua Cloudflare mà không cần mở cổng nào trên tường lửa."
+  en: "Publishes an internal service through Cloudflare without opening a single firewall port."
+category: security
+website: https://developers.cloudflare.com/cloudflare-one
+versions:
+  - name: "2026.8.2"
+    images:
+      - cloudflare/cloudflared:2026.8.2
+    values:
+      IMAGE: "cloudflare/cloudflared:2026.8.2"
+  - name: "2025.11.1"
+    images:
+      - cloudflare/cloudflared:2025.11.1
+    values:
+      IMAGE: "cloudflare/cloudflared:2025.11.1"
+  - name: "2024.12.2"
+    images:
+      - cloudflare/cloudflared:2024.12.2
+    values:
+      IMAGE: "cloudflare/cloudflared:2024.12.2"
+fields:
+  - key: TUNNEL_TOKEN
+    label: {vi: Mã đường hầm, en: Tunnel token}
+    help:
+      vi: "Lấy trong bảng điều khiển Cloudflare Zero Trust khi tạo đường hầm."
+      en: "Copy it from the Cloudflare Zero Trust dashboard when creating the tunnel."
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}

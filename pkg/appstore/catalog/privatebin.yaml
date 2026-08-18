@@ -1,0 +1,40 @@
+key: privatebin
+name:
+  vi: PrivateBin
+  en: PrivateBin
+description:
+  vi: "Dán và chia sẻ đoạn văn bản được mã hóa ngay trên trình duyệt, máy chủ không đọc được."
+  en: "Share text snippets encrypted in the browser — the server cannot read them."
+category: tool
+website: https://privatebin.info
+portField: HTTP_PORT
+versions:
+  - name: "2.0.6"
+    images:
+      - privatebin/nginx-fpm-alpine:2.0.6
+    values:
+      IMAGE: "privatebin/nginx-fpm-alpine:2.0.6"
+  - name: "1.7.8"
+    images:
+      - privatebin/nginx-fpm-alpine:1.7.8
+    values:
+      IMAGE: "privatebin/nginx-fpm-alpine:1.7.8"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8091"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - data:/srv/data
+
+  volumes:
+    data:

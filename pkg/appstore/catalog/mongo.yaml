@@ -1,0 +1,57 @@
+key: mongo
+name:
+  vi: MongoDB
+  en: MongoDB
+description:
+  vi: "Cơ sở dữ liệu tài liệu, lưu dữ liệu dạng JSON không cần khai báo bảng trước."
+  en: "A document database that stores JSON without declaring tables first."
+category: database
+website: https://mongodb.com
+portField: PORT
+versions:
+  - name: "8.3.8"
+    images:
+      - mongo:8.3.8
+    values:
+      IMAGE: "mongo:8.3.8"
+  - name: "7.0.40"
+    images:
+      - mongo:7.0.40
+    values:
+      IMAGE: "mongo:7.0.40"
+  - name: "6.0.28"
+    images:
+      - mongo:6.0.28
+    values:
+      IMAGE: "mongo:6.0.28"
+fields:
+  - key: PORT
+    label: {vi: Cổng, en: Port}
+    type: port
+    default: "27017"
+    required: true
+  - key: DB_USER
+    label: {vi: Tài khoản quản trị, en: Admin user}
+    type: text
+    default: "root"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu, en: Password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        MONGO_INITDB_ROOT_USERNAME: "${DB_USER}"
+        MONGO_INITDB_ROOT_PASSWORD: "${DB_PASSWORD}"
+      ports:
+        - "${PORT}:27017"
+      volumes:
+        - data:/data/db
+
+  volumes:
+    data:

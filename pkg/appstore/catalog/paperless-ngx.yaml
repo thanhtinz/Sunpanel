@@ -1,0 +1,100 @@
+key: paperless-ngx
+name:
+  vi: Paperless-ngx
+  en: Paperless-ngx
+description:
+  vi: "Số hóa giấy tờ: quét, nhận dạng chữ, gắn thẻ và tìm lại bằng nội dung."
+  en: "Goes paperless: scan, OCR, tag and find documents by their contents."
+category: productivity
+website: https://docs.paperless-ngx.com
+portField: HTTP_PORT
+versions:
+  - name: "3.0.5"
+    images:
+      - ghcr.io/paperless-ngx/paperless-ngx:3.0.5
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "ghcr.io/paperless-ngx/paperless-ngx:3.0.5"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "2.20.15"
+    images:
+      - ghcr.io/paperless-ngx/paperless-ngx:2.20.15
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "ghcr.io/paperless-ngx/paperless-ngx:2.20.15"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8777"
+    required: true
+  - key: ADMIN_USER
+    label: {vi: Tài khoản quản trị, en: Admin user}
+    type: text
+    default: "admin"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+  - key: SECRET_KEY
+    label: {vi: Khóa bí mật, en: Secret key}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+        - redis
+      environment:
+        PAPERLESS_REDIS: redis://redis:6379
+        PAPERLESS_DBHOST: db
+        PAPERLESS_DBNAME: paperless
+        PAPERLESS_DBUSER: paperless
+        PAPERLESS_DBPASS: ${DB_PASSWORD}
+        PAPERLESS_SECRET_KEY: ${SECRET_KEY}
+        PAPERLESS_ADMIN_USER: ${ADMIN_USER}
+        PAPERLESS_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+        PAPERLESS_OCR_LANGUAGE: vie+eng
+        PAPERLESS_TIME_ZONE: Asia/Ho_Chi_Minh
+      ports:
+        - "${HTTP_PORT}:8000"
+      volumes:
+        - data:/usr/src/paperless/data
+        - media:/usr/src/paperless/media
+        - consume:/usr/src/paperless/consume
+
+    redis:
+      image: ${REDIS_IMAGE}
+      container_name: ${CONTAINER_NAME}-redis
+      restart: unless-stopped
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: paperless
+        POSTGRES_USER: paperless
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    data:
+    media:
+    consume:
+    db:

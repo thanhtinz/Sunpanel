@@ -1,0 +1,33 @@
+key: excalidraw
+name:
+  vi: Excalidraw
+  en: Excalidraw
+description:
+  vi: "Bảng vẽ tay để phác sơ đồ và ý tưởng, chia sẻ liên kết cho người khác cùng vẽ."
+  en: "A hand-drawn whiteboard for diagrams and ideas, shareable by link."
+category: productivity
+website: https://excalidraw.com
+portField: HTTP_PORT
+versions:
+  - name: "latest"
+    note:
+      vi: "Dự án chỉ phát hành thẻ latest, nên mỗi lần cài lại sẽ lấy bản mới nhất lúc đó."
+      en: "The project only publishes a latest tag, so each install pulls whatever is newest then."
+    images:
+      - excalidraw/excalidraw:latest
+    values:
+      IMAGE: "excalidraw/excalidraw:latest"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3050"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:80"

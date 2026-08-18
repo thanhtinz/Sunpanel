@@ -33,6 +33,8 @@ type InstallRequest struct {
 	AppKey string `json:"appKey" binding:"required"`
 	// Name là tên người dùng đặt cho lần cài này.
 	Name string `json:"name" binding:"required"`
+	// Version là phiên bản muốn cài; để trống thì lấy phiên bản mới nhất.
+	Version string `json:"version"`
 	// Values là các giá trị điền vào biểu mẫu.
 	Values map[string]string `json:"values"`
 	Remark string            `json:"remark"`
@@ -195,7 +197,7 @@ func (s *AppStoreService) Install(ctx context.Context, req InstallRequest) (mode
 		return model.InstalledApp{}, apperr.AppNameExists.WithParam("name", name)
 	}
 
-	values, err := app.Resolve(req.Values)
+	version, values, err := app.ResolveVersion(req.Version, req.Values)
 	if err != nil {
 		return model.InstalledApp{}, translateAppError(err)
 	}
@@ -244,7 +246,7 @@ func (s *AppStoreService) Install(ctx context.Context, req InstallRequest) (mode
 	}
 
 	record := model.InstalledApp{
-		Name: name, AppKey: app.Key, Version: app.Version, Dir: dir,
+		Name: name, AppKey: app.Key, Version: version.Name, Dir: dir,
 		ContainerName: containerName, Port: port, Params: sealed,
 		Remark: strings.TrimSpace(req.Remark),
 	}

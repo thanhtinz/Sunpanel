@@ -155,6 +155,9 @@ func New(cfg config.Config) (*App, error) {
 	if err != nil {
 		return nil, fmt.Errorf("nạp danh mục ứng dụng tự thêm: %w", err)
 	}
+	for _, problem := range custom.Problems() {
+		slog.Warn("bỏ qua một tệp danh mục ứng dụng tự thêm", "chi_tiết", problem)
+	}
 	catalog.Merge(custom)
 
 	// Ứng dụng được cài bằng compose, vốn chạy container tùy ý — cùng mức tin cậy

@@ -1,0 +1,60 @@
+key: gitlab
+name:
+  vi: GitLab
+  en: GitLab
+description:
+  vi: "Nền tảng DevOps trọn gói: kho mã, CI/CD, đăng ký container và quản lý dự án."
+  en: "A complete DevOps platform: repositories, CI/CD, container registry and project tracking."
+category: development
+website: https://gitlab.com
+portField: HTTP_PORT
+versions:
+  - name: "19.2.4"
+    images:
+      - gitlab/gitlab-ce:19.2.4-ce.0
+    values:
+      IMAGE: "gitlab/gitlab-ce:19.2.4-ce.0"
+  - name: "18.11.11"
+    images:
+      - gitlab/gitlab-ce:18.11.11-ce.0
+    values:
+      IMAGE: "gitlab/gitlab-ce:18.11.11-ce.0"
+  - name: "17.11.7"
+    images:
+      - gitlab/gitlab-ce:17.11.7-ce.0
+    values:
+      IMAGE: "gitlab/gitlab-ce:17.11.7-ce.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    help:
+      vi: "GitLab cần ít nhất 4 GB RAM; máy nhỏ hơn nên dùng Gitea."
+      en: "GitLab needs at least 4 GB of RAM; use Gitea on smaller machines."
+    type: port
+    default: "8094"
+    required: true
+  - key: SSH_PORT
+    label: {vi: Cổng SSH, en: SSH port}
+    type: port
+    default: "2223"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        GITLAB_OMNIBUS_CONFIG: "external_url 'http://localhost'"
+      ports:
+        - "${HTTP_PORT}:80"
+        - "${SSH_PORT}:22"
+      volumes:
+        - config:/etc/gitlab
+        - logs:/var/log/gitlab
+        - data:/var/opt/gitlab
+
+  volumes:
+    config:
+    logs:
+    data:

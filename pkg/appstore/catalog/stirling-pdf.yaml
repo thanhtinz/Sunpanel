@@ -6,21 +6,34 @@ description:
   vi: "Bộ công cụ PDF chạy ngay trên máy chủ: gộp, tách, xoay, nén, ký, chuyển định dạng."
   en: "A PDF toolbox on your own server: merge, split, rotate, compress, sign and convert."
 category: tool
-version: "1"
 website: https://stirlingpdf.com
-images:
-  - stirlingtools/stirling-pdf:0.29.0
 portField: HTTP_PORT
+versions:
+  - name: "2.14.3"
+    images:
+      - stirlingtools/stirling-pdf:2.14.3
+    values:
+      IMAGE: "stirlingtools/stirling-pdf:2.14.3"
+  - name: "1.6.0"
+    images:
+      - stirlingtools/stirling-pdf:1.6.0
+    values:
+      IMAGE: "stirlingtools/stirling-pdf:1.6.0"
+  - name: "0.46.2"
+    images:
+      - stirlingtools/stirling-pdf:0.46.2
+    values:
+      IMAGE: "stirlingtools/stirling-pdf:0.46.2"
 fields:
   - key: HTTP_PORT
     label: {vi: Cổng web, en: Web port}
     type: port
-    default: "8083"
+    default: "8084"
     required: true
 compose: |
   services:
-    stirling:
-      image: stirlingtools/stirling-pdf:0.29.0
+    app:
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       ports:

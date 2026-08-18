@@ -1,0 +1,64 @@
+key: mysql
+name:
+  vi: MySQL
+  en: MySQL
+description:
+  vi: "Cơ sở dữ liệu quan hệ quen thuộc nhất, bản chính thức từ Oracle."
+  en: "The most familiar relational database, in its official build."
+category: database
+website: https://mysql.com
+portField: PORT
+versions:
+  - name: "26.7.0"
+    images:
+      - mysql:26.7.0
+    values:
+      IMAGE: "mysql:26.7.0"
+  - name: "9.7.2"
+    images:
+      - mysql:9.7.2
+    values:
+      IMAGE: "mysql:9.7.2"
+  - name: "8.4.11"
+    images:
+      - mysql:8.4.11
+    values:
+      IMAGE: "mysql:8.4.11"
+fields:
+  - key: PORT
+    label: {vi: Cổng, en: Port}
+    type: port
+    default: "3308"
+    required: true
+  - key: DB_NAME
+    label: {vi: Tên cơ sở dữ liệu, en: Database name}
+    type: text
+    default: "app"
+    required: true
+  - key: DB_USER
+    label: {vi: Tên người dùng, en: User name}
+    type: text
+    default: "app"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu, en: Password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        MYSQL_DATABASE: "${DB_NAME}"
+        MYSQL_USER: "${DB_USER}"
+        MYSQL_PASSWORD: "${DB_PASSWORD}"
+        MYSQL_RANDOM_ROOT_PASSWORD: "1"
+      ports:
+        - "${PORT}:3306"
+      volumes:
+        - data:/var/lib/mysql
+
+  volumes:
+    data:

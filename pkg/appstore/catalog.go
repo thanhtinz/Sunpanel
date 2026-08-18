@@ -28,16 +28,28 @@ var builtinCatalog embed.FS
 type Catalog struct {
 	apps  []App
 	byKey map[string]App
+	// problems là các tệp bị bỏ qua vì không đọc được, chỉ dùng cho danh mục tự
+	// thêm của quản trị viên.
+	problems []string
 }
+
+// Problems liệt kê các tệp danh mục bị bỏ qua kèm lý do.
+func (c *Catalog) Problems() []string { return c.problems }
 
 // LoadBuiltin nạp danh mục đi kèm binary.
 func LoadBuiltin() (*Catalog, error) {
-	return load(builtinCatalog, "catalog", "icons")
+	// Danh mục nhúng sẵn thì ngược lại: một tệp hỏng ở đây là lỗi lúc dựng bản
+	// phát hành, phải nổ ngay chứ không được lặng lẽ biến mất khỏi chợ.
+	return load(builtinCatalog, "catalog", "icons", true)
 }
 
 // LoadDir nạp thêm định nghĩa ứng dụng từ một thư mục trên đĩa.
 //
 // Thư mục không tồn tại không phải lỗi: đa số máy chủ chỉ dùng danh mục sẵn có.
+//
+// Một tệp hỏng cũng không phải lỗi: nó bị bỏ qua và ghi vào Problems. Panel
+// quản trị cả máy chủ, nên để một tệp YAML gõ sai của quản trị viên chặn cả
+// panel khởi động là đổi một ứng dụng lấy toàn bộ khả năng vào sửa nó.
 func LoadDir(dir string) (*Catalog, error) {
 	if _, err := os.Stat(dir); err != nil {
 		if os.IsNotExist(err) {
@@ -45,11 +57,13 @@ func LoadDir(dir string) (*Catalog, error) {
 		}
 		return nil, fmt.Errorf("đọc thư mục danh mục: %w", err)
 	}
-	return load(os.DirFS(dir), ".", "icons")
+	return load(os.DirFS(dir), ".", "icons", false)
 }
 
 // load nạp mọi tệp .yaml trong dir, và gắn biểu trưng tìm được ở iconDir.
-func load(fsys fs.FS, dir, iconDir string) (*Catalog, error) {
+//
+// strict quyết định tệp hỏng làm dừng cả việc nạp hay chỉ bị bỏ qua.
+func load(fsys fs.FS, dir, iconDir string, strict bool) (*Catalog, error) {
 	entries, err := fs.ReadDir(fsys, dir)
 	if err != nil {
 		return nil, fmt.Errorf("đọc danh mục ứng dụng: %w", err)
@@ -63,11 +77,19 @@ func load(fsys fs.FS, dir, iconDir string) (*Catalog, error) {
 
 		content, err := fs.ReadFile(fsys, filepath.ToSlash(filepath.Join(dir, entry.Name())))
 		if err != nil {
+			if !strict {
+				catalog.skip(entry.Name(), err)
+				continue
+			}
 			return nil, fmt.Errorf("đọc %s: %w", entry.Name(), err)
 		}
 
 		var app App
 		if err := yaml.Unmarshal(content, &app); err != nil {
+			if !strict {
+				catalog.skip(entry.Name(), err)
+				continue
+			}
 			return nil, fmt.Errorf("đọc %s: %w", entry.Name(), err)
 		}
 		// Biểu trưng để rời thành tệp ảnh thay vì nhét vào YAML: thay logo bằng
@@ -80,9 +102,17 @@ func load(fsys fs.FS, dir, iconDir string) (*Catalog, error) {
 		}
 
 		if err := app.Validate(); err != nil {
+			if !strict {
+				catalog.skip(entry.Name(), err)
+				continue
+			}
 			return nil, fmt.Errorf("%s: %w", entry.Name(), err)
 		}
 		if _, duplicate := catalog.byKey[app.Key]; duplicate {
+			if !strict {
+				catalog.skip(entry.Name(), fmt.Errorf("định danh %q trùng tệp khác", app.Key))
+				continue
+			}
 			return nil, fmt.Errorf("%w: định danh %q xuất hiện hai lần", ErrInvalidApp, app.Key)
 		}
 
@@ -117,6 +147,11 @@ func readIcon(fsys fs.FS, dir, name string) string {
 		return "data:" + format.mime + ";base64," + base64.StdEncoding.EncodeToString(content)
 	}
 	return ""
+}
+
+// skip ghi lại một tệp bị bỏ qua kèm lý do.
+func (c *Catalog) skip(name string, err error) {
+	c.problems = append(c.problems, fmt.Sprintf("%s: %v", name, err))
 }
 
 // Merge gộp một danh mục khác vào, ứng dụng trùng định danh sẽ bị ghi đè.

@@ -1,0 +1,40 @@
+key: loki
+name:
+  vi: Loki
+  en: Loki
+description:
+  vi: "Kho nhật ký gọn nhẹ, tra cứu ngay trong Grafana bằng cùng một truy vấn."
+  en: "A lightweight log store you query straight from Grafana."
+category: monitoring
+website: https://grafana.com/oss/loki
+portField: HTTP_PORT
+versions:
+  - name: "3.7.6"
+    images:
+      - grafana/loki:3.7.6
+    values:
+      IMAGE: "grafana/loki:3.7.6"
+  - name: "3.6.15"
+    images:
+      - grafana/loki:3.6.15
+    values:
+      IMAGE: "grafana/loki:3.6.15"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng API, en: API port}
+    type: port
+    default: "3100"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:3100"
+      volumes:
+        - data:/loki
+
+  volumes:
+    data:

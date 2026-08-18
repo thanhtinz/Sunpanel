@@ -6,11 +6,24 @@ description:
   vi: "Giao diện quản lý Docker: container, ngăn xếp, image và nhật ký trong một chỗ."
   en: "A Docker management UI for containers, stacks, images and logs in one place."
 category: tool
-version: "1"
 website: https://portainer.io
-images:
-  - portainer/portainer-ce:2.21.0
 portField: HTTP_PORT
+versions:
+  - name: "2.44.0"
+    images:
+      - portainer/portainer-ce:2.44.0
+    values:
+      IMAGE: "portainer/portainer-ce:2.44.0"
+  - name: "2.43.0"
+    images:
+      - portainer/portainer-ce:2.43.0
+    values:
+      IMAGE: "portainer/portainer-ce:2.43.0"
+  - name: "2.42.0"
+    images:
+      - portainer/portainer-ce:2.42.0
+    values:
+      IMAGE: "portainer/portainer-ce:2.42.0"
 fields:
   - key: HTTP_PORT
     label: {vi: Cổng web, en: Web port}
@@ -22,8 +35,8 @@ fields:
     required: true
 compose: |
   services:
-    portainer:
-      image: portainer/portainer-ce:2.21.0
+    app:
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       ports:

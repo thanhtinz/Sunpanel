@@ -1,0 +1,54 @@
+key: navidrome
+name:
+  vi: Navidrome
+  en: Navidrome
+description:
+  vi: "Máy chủ nhạc cá nhân, phát qua trình duyệt và mọi ứng dụng Subsonic."
+  en: "A personal music server that streams to browsers and any Subsonic app."
+category: media
+website: https://navidrome.org
+portField: HTTP_PORT
+versions:
+  - name: "0.63.2"
+    images:
+      - deluan/navidrome:0.63.2
+    values:
+      IMAGE: "deluan/navidrome:0.63.2"
+  - name: "0.62.0"
+    images:
+      - deluan/navidrome:0.62.0
+    values:
+      IMAGE: "deluan/navidrome:0.62.0"
+  - name: "0.61.2"
+    images:
+      - deluan/navidrome:0.61.2
+    values:
+      IMAGE: "deluan/navidrome:0.61.2"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "4533"
+    required: true
+  - key: MUSIC_DIR
+    label: {vi: Thư mục nhạc, en: Music folder}
+    help:
+      vi: "Thư mục sẵn có trên máy chủ, được gắn vào ứng dụng."
+      en: "An existing folder on the host, mounted into the app."
+    type: text
+    default: "/srv/music"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:4533"
+      volumes:
+        - data:/data
+        - ${MUSIC_DIR}:/music:ro
+
+  volumes:
+    data:

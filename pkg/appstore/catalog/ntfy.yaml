@@ -1,0 +1,51 @@
+key: ntfy
+name:
+  vi: ntfy
+  en: ntfy
+description:
+  vi: "Gửi thông báo về điện thoại bằng một lệnh curl, không cần đăng ký tài khoản."
+  en: "Push notifications to your phone with a single curl call — no account needed."
+category: monitoring
+website: https://ntfy.sh
+portField: HTTP_PORT
+versions:
+  - name: "v2.27"
+    images:
+      - binwiederhier/ntfy:v2.27
+    values:
+      IMAGE: "binwiederhier/ntfy:v2.27"
+  - name: "v2.26.3"
+    images:
+      - binwiederhier/ntfy:v2.26.3
+    values:
+      IMAGE: "binwiederhier/ntfy:v2.26.3"
+  - name: "v2.25"
+    images:
+      - binwiederhier/ntfy:v2.25
+    values:
+      IMAGE: "binwiederhier/ntfy:v2.25"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8097"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: serve
+      environment:
+        NTFY_BASE_URL: "http://localhost"
+        NTFY_CACHE_FILE: "/var/cache/ntfy/cache.db"
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - cache:/var/cache/ntfy
+        - etc:/etc/ntfy
+
+  volumes:
+    cache:
+    etc:

@@ -1,0 +1,71 @@
+key: rocketchat
+name:
+  vi: Rocket.Chat
+  en: Rocket.Chat
+description:
+  vi: "Nền tảng nhắn tin nhóm đầy đủ: kênh, gọi thoại, cầu nối với các mạng khác."
+  en: "A complete team messaging platform: channels, calls and bridges to other networks."
+category: productivity
+website: https://rocket.chat
+portField: HTTP_PORT
+versions:
+  - name: "8.7.0"
+    images:
+      - rocketchat/rocket.chat:8.7.0
+      - mongo:7
+    values:
+      IMAGE: "rocketchat/rocket.chat:8.7.0"
+      DB_IMAGE: "mongo:7"
+  - name: "8.6.1"
+    images:
+      - rocketchat/rocket.chat:8.6.1
+      - mongo:7
+    values:
+      IMAGE: "rocketchat/rocket.chat:8.6.1"
+      DB_IMAGE: "mongo:7"
+  - name: "7.13.9"
+    images:
+      - rocketchat/rocket.chat:7.13.9
+      - mongo:7
+    values:
+      IMAGE: "rocketchat/rocket.chat:7.13.9"
+      DB_IMAGE: "mongo:7"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3040"
+    required: true
+  - key: ROOT_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:3040"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        ROOT_URL: ${ROOT_URL}
+        MONGO_URL: mongodb://db:27017/rocketchat?replicaSet=rs0
+        MONGO_OPLOG_URL: mongodb://db:27017/local?replicaSet=rs0
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - uploads:/app/uploads
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      command: mongod --replSet rs0 --oplogSize 128
+      volumes:
+        - db:/data/db
+
+  volumes:
+    uploads:
+    db:

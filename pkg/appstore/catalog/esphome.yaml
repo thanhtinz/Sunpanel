@@ -1,0 +1,45 @@
+key: esphome
+name:
+  vi: ESPHome
+  en: ESPHome
+description:
+  vi: "Nạp phần mềm cho vi điều khiển ESP bằng tệp cấu hình, không phải viết mã C."
+  en: "Flashes ESP microcontrollers from a config file instead of writing C."
+category: automation
+website: https://esphome.io
+portField: HTTP_PORT
+versions:
+  - name: "2026.7.4"
+    images:
+      - esphome/esphome:2026.7.4
+    values:
+      IMAGE: "esphome/esphome:2026.7.4"
+  - name: "2026.6.5"
+    images:
+      - esphome/esphome:2026.6.5
+    values:
+      IMAGE: "esphome/esphome:2026.6.5"
+  - name: "2025.12.7"
+    images:
+      - esphome/esphome:2025.12.7
+    values:
+      IMAGE: "esphome/esphome:2025.12.7"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "6052"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:6052"
+      volumes:
+        - config:/config
+
+  volumes:
+    config:

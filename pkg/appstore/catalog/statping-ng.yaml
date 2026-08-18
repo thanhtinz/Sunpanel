@@ -1,0 +1,35 @@
+key: statping-ng
+name:
+  vi: Statping-ng
+  en: Statping-ng
+description:
+  vi: "Trang trạng thái công khai cho dịch vụ của bạn, kèm biểu đồ thời gian phản hồi."
+  en: "A public status page for your services, with response-time charts."
+category: monitoring
+website: https://github.com/statping-ng/statping-ng
+portField: HTTP_PORT
+versions:
+  - name: "v0.90.78"
+    images:
+      - adamboutcher/statping-ng:v0.90.78
+    values:
+      IMAGE: "adamboutcher/statping-ng:v0.90.78"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8098"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - data:/app
+
+  volumes:
+    data:

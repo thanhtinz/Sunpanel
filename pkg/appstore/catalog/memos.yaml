@@ -6,11 +6,24 @@ description:
   vi: "Sổ ghi chú nhanh dạng dòng thời gian, gõ là lưu, tìm lại bằng thẻ."
   en: "A quick note timeline: type, save, and find things again by tag."
 category: productivity
-version: "1"
 website: https://usememos.com
-images:
-  - neosmemo/memos:0.22.5
 portField: HTTP_PORT
+versions:
+  - name: "0.30"
+    images:
+      - neosmemo/memos:0.30
+    values:
+      IMAGE: "neosmemo/memos:0.30"
+  - name: "0.29.1"
+    images:
+      - neosmemo/memos:0.29.1
+    values:
+      IMAGE: "neosmemo/memos:0.29.1"
+  - name: "0.28"
+    images:
+      - neosmemo/memos:0.28
+    values:
+      IMAGE: "neosmemo/memos:0.28"
 fields:
   - key: HTTP_PORT
     label: {vi: Cổng web, en: Web port}
@@ -19,8 +32,8 @@ fields:
     required: true
 compose: |
   services:
-    memos:
-      image: neosmemo/memos:0.22.5
+    app:
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       ports:

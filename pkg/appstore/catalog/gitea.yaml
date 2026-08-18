@@ -4,14 +4,32 @@ name:
   en: Gitea
 description:
   vi: "Máy chủ Git tự quản, nhẹ và đầy đủ: kho mã, pull request, issue và CI."
-  en: A lightweight self-hosted Git service with repositories, pull requests, issues and CI.
+  en: "A lightweight self-hosted Git service with repositories, pull requests, issues and CI."
 category: development
-version: "1"
 website: https://gitea.io
-images:
-  - gitea/gitea:1
-  - postgres:16-alpine
 portField: HTTP_PORT
+versions:
+  - name: "1.27.2"
+    images:
+      - gitea/gitea:1.27.2
+      - postgres:16-alpine
+    values:
+      IMAGE: "gitea/gitea:1.27.2"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "1.26.4"
+    images:
+      - gitea/gitea:1.26.4
+      - postgres:16-alpine
+    values:
+      IMAGE: "gitea/gitea:1.26.4"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "1.25.5"
+    images:
+      - gitea/gitea:1.25.5
+      - postgres:16-alpine
+    values:
+      IMAGE: "gitea/gitea:1.25.5"
+      DB_IMAGE: "postgres:16-alpine"
 fields:
   - key: HTTP_PORT
     label: {vi: Cổng web, en: Web port}
@@ -32,8 +50,8 @@ fields:
     generate: true
 compose: |
   services:
-    gitea:
-      image: gitea/gitea:1
+    app:
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       depends_on:
@@ -51,7 +69,7 @@ compose: |
         - data:/data
 
     db:
-      image: postgres:16-alpine
+      image: ${DB_IMAGE}
       container_name: ${CONTAINER_NAME}-db
       restart: unless-stopped
       environment:

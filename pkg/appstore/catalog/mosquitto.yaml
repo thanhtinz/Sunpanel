@@ -1,0 +1,37 @@
+key: mosquitto
+name:
+  vi: Mosquitto
+  en: Mosquitto
+description:
+  vi: "Máy chủ MQTT, nơi mọi thiết bị nhà thông minh gửi và nhận tin nhắn."
+  en: "An MQTT broker — where smart-home devices publish and receive messages."
+category: automation
+website: https://mosquitto.org
+portField: MQTT_PORT
+versions:
+  - name: "2.0.22"
+    images:
+      - eclipse-mosquitto:2.0.22
+    values:
+      IMAGE: "eclipse-mosquitto:2.0.22"
+fields:
+  - key: MQTT_PORT
+    label: {vi: Cổng MQTT, en: MQTT port}
+    type: port
+    default: "1883"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${MQTT_PORT}:1883"
+      volumes:
+        - config:/mosquitto/config
+        - data:/mosquitto/data
+
+  volumes:
+    config:
+    data:

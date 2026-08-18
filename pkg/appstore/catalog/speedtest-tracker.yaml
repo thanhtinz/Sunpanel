@@ -1,0 +1,48 @@
+key: speedtest-tracker
+name:
+  vi: Speedtest Tracker
+  en: Speedtest Tracker
+description:
+  vi: "Đo tốc độ mạng theo lịch và vẽ biểu đồ để có bằng chứng khi khiếu nại nhà mạng."
+  en: "Runs scheduled speed tests and charts them — evidence for the complaint to your ISP."
+category: monitoring
+website: https://speedtest-tracker.dev
+portField: HTTP_PORT
+versions:
+  - name: "latest"
+    note:
+      vi: "Dự án chỉ phát hành thẻ latest, nên mỗi lần cài lại sẽ lấy bản mới nhất lúc đó."
+      en: "The project only publishes a latest tag, so each install pulls whatever is newest then."
+    images:
+      - lscr.io/linuxserver/speedtest-tracker:latest
+    values:
+      IMAGE: "lscr.io/linuxserver/speedtest-tracker:latest"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8086"
+    required: true
+  - key: SECRET_KEY
+    label: {vi: Khóa ứng dụng, en: App key}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+        APP_KEY: "${SECRET_KEY}"
+        DB_CONNECTION: "sqlite"
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - config:/config
+
+  volumes:
+    config:

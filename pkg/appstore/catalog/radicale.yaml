@@ -1,0 +1,45 @@
+key: radicale
+name:
+  vi: Radicale
+  en: Radicale
+description:
+  vi: "Máy chủ lịch và danh bạ tối giản, chạy được trên máy chủ nhỏ nhất."
+  en: "A minimal calendar and contacts server that runs on the smallest of machines."
+category: productivity
+website: https://radicale.org
+portField: HTTP_PORT
+versions:
+  - name: "3.7.6.0"
+    images:
+      - tomsquest/docker-radicale:3.7.6.0
+    values:
+      IMAGE: "tomsquest/docker-radicale:3.7.6.0"
+  - name: "3.6.1.0"
+    images:
+      - tomsquest/docker-radicale:3.6.1.0
+    values:
+      IMAGE: "tomsquest/docker-radicale:3.6.1.0"
+  - name: "3.5.10.0"
+    images:
+      - tomsquest/docker-radicale:3.5.10.0
+    values:
+      IMAGE: "tomsquest/docker-radicale:3.5.10.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5232"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:5232"
+      volumes:
+        - data:/data
+
+  volumes:
+    data:

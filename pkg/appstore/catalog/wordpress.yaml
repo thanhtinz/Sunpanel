@@ -3,36 +3,40 @@ name:
   vi: WordPress
   en: WordPress
 description:
-  vi: Nền tảng viết blog và làm website phổ biến nhất, kèm sẵn cơ sở dữ liệu MariaDB.
-  en: The most widely used blogging and website platform, bundled with a MariaDB database.
+  vi: "Nền tảng viết blog và làm website phổ biến nhất, kèm sẵn cơ sở dữ liệu MariaDB."
+  en: "The most widely used blogging and website platform, with a MariaDB database included."
 category: website
-version: "6"
 website: https://wordpress.org
-images:
-  - wordpress:6-apache
-  - mariadb:11
-portField: PORT
+portField: HTTP_PORT
+versions:
+  - name: "7.0.4"
+    images:
+      - wordpress:7.0.4-apache
+      - mariadb:11
+    values:
+      IMAGE: "wordpress:7.0.4-apache"
+      DB_IMAGE: "mariadb:11"
+  - name: "6.9.4"
+    images:
+      - wordpress:6.9.4-apache
+      - mariadb:11
+    values:
+      IMAGE: "wordpress:6.9.4-apache"
+      DB_IMAGE: "mariadb:11"
 fields:
-  - key: PORT
-    label: {vi: Cổng, en: Port}
-    help:
-      vi: "Nên đặt cổng nội bộ rồi tạo website dạng chuyển tiếp trỏ tên miền vào đây."
-      en: "Use an internal port, then create a reverse-proxy website pointing your domain here."
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
     type: port
-    default: "8080"
+    default: "8090"
     required: true
   - key: DB_PASSWORD
     label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
     type: password
     generate: true
-  - key: DB_ROOT_PASSWORD
-    label: {vi: Mật khẩu root cơ sở dữ liệu, en: Database root password}
-    type: password
-    generate: true
 compose: |
   services:
-    wordpress:
-      image: wordpress:6-apache
+    app:
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       depends_on:
@@ -43,19 +47,19 @@ compose: |
         WORDPRESS_DB_USER: wordpress
         WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
       ports:
-        - "${PORT}:80"
+        - "${HTTP_PORT}:80"
       volumes:
         - data:/var/www/html
 
     db:
-      image: mariadb:11
+      image: ${DB_IMAGE}
       container_name: ${CONTAINER_NAME}-db
       restart: unless-stopped
       environment:
         MARIADB_DATABASE: wordpress
         MARIADB_USER: wordpress
         MARIADB_PASSWORD: ${DB_PASSWORD}
-        MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+        MARIADB_RANDOM_ROOT_PASSWORD: "1"
       volumes:
         - db:/var/lib/mysql
 

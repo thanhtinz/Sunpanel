@@ -1,0 +1,63 @@
+key: rabbitmq
+name:
+  vi: RabbitMQ
+  en: RabbitMQ
+description:
+  vi: "Hàng đợi tin nhắn cho hệ thống nhiều dịch vụ, kèm giao diện quản trị."
+  en: "A message queue for multi-service systems, with a management UI."
+category: database
+website: https://rabbitmq.com
+portField: HTTP_PORT
+versions:
+  - name: "4.3.4"
+    images:
+      - rabbitmq:4.3.4-management-alpine
+    values:
+      IMAGE: "rabbitmq:4.3.4-management-alpine"
+  - name: "4.2.9"
+    images:
+      - rabbitmq:4.2.9-management-alpine
+    values:
+      IMAGE: "rabbitmq:4.2.9-management-alpine"
+  - name: "3.13.7"
+    images:
+      - rabbitmq:3.13.7-management-alpine
+    values:
+      IMAGE: "rabbitmq:3.13.7-management-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng quản trị, en: Management port}
+    type: port
+    default: "15672"
+    required: true
+  - key: AMQP_PORT
+    label: {vi: Cổng AMQP, en: AMQP port}
+    type: port
+    default: "5672"
+    required: true
+  - key: USER
+    label: {vi: Tài khoản, en: User}
+    type: text
+    default: "admin"
+    required: true
+  - key: PASSWORD
+    label: {vi: Mật khẩu, en: Password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        RABBITMQ_DEFAULT_USER: "${USER}"
+        RABBITMQ_DEFAULT_PASS: "${PASSWORD}"
+      ports:
+        - "${HTTP_PORT}:15672"
+        - "${AMQP_PORT}:5672"
+      volumes:
+        - data:/var/lib/rabbitmq
+
+  volumes:
+    data:

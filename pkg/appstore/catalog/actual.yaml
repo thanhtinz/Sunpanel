@@ -1,0 +1,45 @@
+key: actual
+name:
+  vi: Actual Budget
+  en: Actual Budget
+description:
+  vi: "Ghi chép chi tiêu theo phương pháp phong bì, đồng bộ giữa các thiết bị."
+  en: "Envelope-method budgeting that syncs across your devices."
+category: productivity
+website: https://actualbudget.org
+portField: HTTP_PORT
+versions:
+  - name: "26.8.1"
+    images:
+      - actualbudget/actual-server:26.8.1
+    values:
+      IMAGE: "actualbudget/actual-server:26.8.1"
+  - name: "26.7.0"
+    images:
+      - actualbudget/actual-server:26.7.0
+    values:
+      IMAGE: "actualbudget/actual-server:26.7.0"
+  - name: "26.6.0"
+    images:
+      - actualbudget/actual-server:26.6.0
+    values:
+      IMAGE: "actualbudget/actual-server:26.6.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5006"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:5006"
+      volumes:
+        - data:/data
+
+  volumes:
+    data:

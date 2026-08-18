@@ -1,0 +1,60 @@
+key: vikunja
+name:
+  vi: Vikunja
+  en: Vikunja
+description:
+  vi: "Quản lý công việc theo danh sách, bảng Kanban và lịch, dùng được cho cả nhóm."
+  en: "Task management as lists, Kanban boards and calendars, for teams as well as one person."
+category: productivity
+website: https://vikunja.io
+portField: HTTP_PORT
+versions:
+  - name: "2.5"
+    images:
+      - vikunja/vikunja:2.5
+    values:
+      IMAGE: "vikunja/vikunja:2.5"
+  - name: "1.1"
+    images:
+      - vikunja/vikunja:1.1
+    values:
+      IMAGE: "vikunja/vikunja:1.1"
+  - name: "0.24.6"
+    images:
+      - vikunja/vikunja:0.24.6
+    values:
+      IMAGE: "vikunja/vikunja:0.24.6"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3456"
+    required: true
+  - key: PUBLIC_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:3456"
+    required: true
+  - key: JWT_SECRET
+    label: {vi: Khóa ký phiên, en: Session secret}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        VIKUNJA_SERVICE_PUBLICURL: "${PUBLIC_URL}"
+        VIKUNJA_SERVICE_JWTSECRET: "${JWT_SECRET}"
+        VIKUNJA_DATABASE_PATH: "/db/vikunja.db"
+      ports:
+        - "${HTTP_PORT}:3456"
+      volumes:
+        - files:/app/vikunja/files
+        - db:/db
+
+  volumes:
+    files:
+    db:

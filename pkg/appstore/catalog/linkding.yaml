@@ -1,0 +1,57 @@
+key: linkding
+name:
+  vi: linkding
+  en: linkding
+description:
+  vi: "Kho dấu trang gọn nhẹ, có gắn thẻ và tiện ích cho trình duyệt."
+  en: "A lightweight bookmark manager with tags and browser extensions."
+category: productivity
+website: https://github.com/sissbruecker/linkding
+portField: HTTP_PORT
+versions:
+  - name: "1.46.1"
+    images:
+      - sissbruecker/linkding:1.46.1
+    values:
+      IMAGE: "sissbruecker/linkding:1.46.1"
+  - name: "1.45.0"
+    images:
+      - sissbruecker/linkding:1.45.0
+    values:
+      IMAGE: "sissbruecker/linkding:1.45.0"
+  - name: "1.44.2"
+    images:
+      - sissbruecker/linkding:1.44.2
+    values:
+      IMAGE: "sissbruecker/linkding:1.44.2"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "9092"
+    required: true
+  - key: ADMIN_USER
+    label: {vi: Tài khoản quản trị, en: Admin user}
+    type: text
+    default: "admin"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        LD_SUPERUSER_NAME: "${ADMIN_USER}"
+        LD_SUPERUSER_PASSWORD: "${ADMIN_PASSWORD}"
+      ports:
+        - "${HTTP_PORT}:9090"
+      volumes:
+        - data:/etc/linkding/data
+
+  volumes:
+    data:

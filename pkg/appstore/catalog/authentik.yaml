@@ -1,0 +1,114 @@
+key: authentik
+name:
+  vi: Authentik
+  en: Authentik
+description:
+  vi: "Máy chủ đăng nhập một lần cho mọi ứng dụng nội bộ, hỗ trợ OAuth, SAML và LDAP."
+  en: "A single sign-on server for all your internal apps, speaking OAuth, SAML and LDAP."
+category: security
+website: https://goauthentik.io
+portField: HTTP_PORT
+versions:
+  - name: "2026.5.6"
+    images:
+      - ghcr.io/goauthentik/server:2026.5.6
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "ghcr.io/goauthentik/server:2026.5.6"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "2025.12.6"
+    images:
+      - ghcr.io/goauthentik/server:2025.12.6
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "ghcr.io/goauthentik/server:2025.12.6"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "2024.12.5"
+    images:
+      - ghcr.io/goauthentik/server:2024.12.5
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "ghcr.io/goauthentik/server:2024.12.5"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "9100"
+    required: true
+  - key: SECRET_KEY
+    label: {vi: Khóa bí mật, en: Secret key}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: server
+      depends_on:
+        - db
+        - redis
+      environment:
+        AUTHENTIK_SECRET_KEY: ${SECRET_KEY}
+        AUTHENTIK_REDIS__HOST: redis
+        AUTHENTIK_POSTGRESQL__HOST: db
+        AUTHENTIK_POSTGRESQL__USER: authentik
+        AUTHENTIK_POSTGRESQL__NAME: authentik
+        AUTHENTIK_POSTGRESQL__PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:9000"
+      volumes:
+        - media:/media
+        - templates:/templates
+
+    worker:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}-worker
+      restart: unless-stopped
+      command: worker
+      depends_on:
+        - db
+        - redis
+      environment:
+        AUTHENTIK_SECRET_KEY: ${SECRET_KEY}
+        AUTHENTIK_REDIS__HOST: redis
+        AUTHENTIK_POSTGRESQL__HOST: db
+        AUTHENTIK_POSTGRESQL__USER: authentik
+        AUTHENTIK_POSTGRESQL__NAME: authentik
+        AUTHENTIK_POSTGRESQL__PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - media:/media
+        - templates:/templates
+
+    redis:
+      image: ${REDIS_IMAGE}
+      container_name: ${CONTAINER_NAME}-redis
+      restart: unless-stopped
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: authentik
+        POSTGRES_USER: authentik
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    media:
+    templates:
+    db:

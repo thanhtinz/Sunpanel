@@ -1,0 +1,44 @@
+key: glances
+name:
+  vi: Glances
+  en: Glances
+description:
+  vi: "Bảng theo dõi tài nguyên máy chủ gọn trong một trang, xem được cả tiến trình."
+  en: "A one-page server resource dashboard that also lists processes."
+category: monitoring
+website: https://nicolargo.github.io/glances
+portField: HTTP_PORT
+versions:
+  - name: "4.5.6"
+    images:
+      - nicolargo/glances:4.5.6-full
+    values:
+      IMAGE: "nicolargo/glances:4.5.6-full"
+  - name: "4.4.1"
+    images:
+      - nicolargo/glances:4.4.1
+    values:
+      IMAGE: "nicolargo/glances:4.4.1"
+  - name: "3.4.0.5"
+    images:
+      - nicolargo/glances:3.4.0.5-full
+    values:
+      IMAGE: "nicolargo/glances:3.4.0.5-full"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "61208"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        GLANCES_OPT: "-w"
+      ports:
+        - "${HTTP_PORT}:61208"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock:ro

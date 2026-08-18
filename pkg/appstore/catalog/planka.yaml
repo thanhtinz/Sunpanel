@@ -1,0 +1,97 @@
+key: planka
+name:
+  vi: Planka
+  en: Planka
+description:
+  vi: "Bảng Kanban thời gian thực cho nhóm nhỏ, nhẹ và không phụ thuộc dịch vụ ngoài."
+  en: "A real-time Kanban board for small teams, light and free of outside services."
+category: productivity
+website: https://planka.app
+portField: HTTP_PORT
+versions:
+  - name: "2.2.1"
+    images:
+      - ghcr.io/plankanban/planka:2.2.1
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/plankanban/planka:2.2.1"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "2.1.1"
+    images:
+      - ghcr.io/plankanban/planka:2.1.1
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/plankanban/planka:2.1.1"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "1.26.3"
+    images:
+      - ghcr.io/plankanban/planka:1.26.3
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/plankanban/planka:1.26.3"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3030"
+    required: true
+  - key: BASE_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:3030"
+    required: true
+  - key: ADMIN_EMAIL
+    label: {vi: Email quản trị, en: Admin email}
+    type: text
+    default: "admin@example.com"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+  - key: SECRET_KEY
+    label: {vi: Khóa bí mật, en: Secret key}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        BASE_URL: ${BASE_URL}
+        DATABASE_URL: postgresql://planka:${DB_PASSWORD}@db/planka
+        SECRET_KEY: ${SECRET_KEY}
+        DEFAULT_ADMIN_EMAIL: ${ADMIN_EMAIL}
+        DEFAULT_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+        DEFAULT_ADMIN_NAME: Admin
+        DEFAULT_ADMIN_USERNAME: admin
+      ports:
+        - "${HTTP_PORT}:1337"
+      volumes:
+        - avatars:/app/public/user-avatars
+        - attachments:/app/private/attachments
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: planka
+        POSTGRES_USER: planka
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    avatars:
+    attachments:
+    db:

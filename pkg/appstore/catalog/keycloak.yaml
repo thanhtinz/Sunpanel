@@ -1,0 +1,48 @@
+key: keycloak
+name:
+  vi: Keycloak
+  en: Keycloak
+description:
+  vi: "Máy chủ định danh cấp doanh nghiệp: đăng nhập một lần, liên kết LDAP và xác thực hai lớp."
+  en: "An enterprise identity server: single sign-on, LDAP federation and two-factor auth."
+category: security
+website: https://keycloak.org
+portField: HTTP_PORT
+versions:
+  - name: "26.0.7"
+    images:
+      - quay.io/keycloak/keycloak:26.0.7
+    values:
+      IMAGE: "quay.io/keycloak/keycloak:26.0.7"
+  - name: "25.0.6"
+    images:
+      - quay.io/keycloak/keycloak:25.0.6
+    values:
+      IMAGE: "quay.io/keycloak/keycloak:25.0.6"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8380"
+    required: true
+  - key: ADMIN_USER
+    label: {vi: Tài khoản quản trị, en: Admin user}
+    type: text
+    default: "admin"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: start-dev
+      environment:
+        KEYCLOAK_ADMIN: "${ADMIN_USER}"
+        KEYCLOAK_ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
+      ports:
+        - "${HTTP_PORT}:8080"

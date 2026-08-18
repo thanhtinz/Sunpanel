@@ -1,0 +1,47 @@
+key: homeassistant
+name:
+  vi: Home Assistant
+  en: Home Assistant
+description:
+  vi: "Trung tâm nhà thông minh, gom đèn, cảm biến và camera của mọi hãng về một chỗ."
+  en: "A smart-home hub that gathers lights, sensors and cameras from every brand in one place."
+category: automation
+website: https://home-assistant.io
+portField: HTTP_PORT
+versions:
+  - name: "2026.8.2"
+    images:
+      - homeassistant/home-assistant:2026.8.2
+    values:
+      IMAGE: "homeassistant/home-assistant:2026.8.2"
+  - name: "2026.7.4"
+    images:
+      - homeassistant/home-assistant:2026.7.4
+    values:
+      IMAGE: "homeassistant/home-assistant:2026.7.4"
+  - name: "2025.12.5"
+    images:
+      - homeassistant/home-assistant:2025.12.5
+    values:
+      IMAGE: "homeassistant/home-assistant:2025.12.5"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8123"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:8123"
+      volumes:
+        - config:/config
+
+  volumes:
+    config:

@@ -1,0 +1,105 @@
+key: tubearchivist
+name:
+  vi: Tube Archivist
+  en: Tube Archivist
+description:
+  vi: "Lưu lại kênh YouTube về máy chủ, có tìm kiếm toàn văn phụ đề."
+  en: "Archives YouTube channels onto your server with full-text subtitle search."
+category: media
+website: https://tubearchivist.com
+portField: HTTP_PORT
+versions:
+  - name: "v0.5.11"
+    images:
+      - bbilly1/tubearchivist:v0.5.11
+      - redis:7-alpine
+      - bbilly1/tubearchivist-es:8.14.3
+    values:
+      IMAGE: "bbilly1/tubearchivist:v0.5.11"
+      REDIS_IMAGE: "redis:7-alpine"
+      ES_IMAGE: "bbilly1/tubearchivist-es:8.14.3"
+  - name: "v0.4.13"
+    images:
+      - bbilly1/tubearchivist:v0.4.13
+      - redis:7-alpine
+      - bbilly1/tubearchivist-es:8.14.3
+    values:
+      IMAGE: "bbilly1/tubearchivist:v0.4.13"
+      REDIS_IMAGE: "redis:7-alpine"
+      ES_IMAGE: "bbilly1/tubearchivist-es:8.14.3"
+  - name: "v0.3.6"
+    images:
+      - bbilly1/tubearchivist:v0.3.6
+      - redis:7-alpine
+      - bbilly1/tubearchivist-es:8.14.3
+    values:
+      IMAGE: "bbilly1/tubearchivist:v0.3.6"
+      REDIS_IMAGE: "redis:7-alpine"
+      ES_IMAGE: "bbilly1/tubearchivist-es:8.14.3"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8088"
+    required: true
+  - key: MEDIA_DIR
+    label: {vi: Thư mục lưu video, en: Video folder}
+    type: text
+    default: "/srv/youtube"
+    required: true
+  - key: ADMIN_USER
+    label: {vi: Tài khoản quản trị, en: Admin user}
+    type: text
+    default: "admin"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - es
+        - redis
+      environment:
+        ES_URL: http://es:9200
+        REDIS_CON: redis://redis:6379
+        HOST_UID: "1000"
+        HOST_GID: "1000"
+        TA_HOST: http://localhost
+        TA_USERNAME: ${ADMIN_USER}
+        TA_PASSWORD: ${ADMIN_PASSWORD}
+        ELASTIC_PASSWORD: ${ADMIN_PASSWORD}
+        TZ: Asia/Ho_Chi_Minh
+      ports:
+        - "${HTTP_PORT}:8000"
+      volumes:
+        - ${MEDIA_DIR}:/youtube
+        - cache:/cache
+
+    es:
+      image: ${ES_IMAGE}
+      container_name: ${CONTAINER_NAME}-es
+      restart: unless-stopped
+      environment:
+        ELASTIC_PASSWORD: ${ADMIN_PASSWORD}
+        discovery.type: single-node
+        xpack.security.enabled: "true"
+      volumes:
+        - es:/usr/share/elasticsearch/data
+
+    redis:
+      image: ${REDIS_IMAGE}
+      container_name: ${CONTAINER_NAME}-redis
+      restart: unless-stopped
+      volumes:
+        - redis:/data
+
+  volumes:
+    cache:
+    es:
+    redis:

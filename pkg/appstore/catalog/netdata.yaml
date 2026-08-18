@@ -1,0 +1,53 @@
+key: netdata
+name:
+  vi: Netdata
+  en: Netdata
+description:
+  vi: "Giám sát máy chủ theo giây, hàng nghìn chỉ số dựng sẵn không cần cấu hình."
+  en: "Per-second server monitoring with thousands of metrics out of the box."
+category: monitoring
+website: https://netdata.cloud
+portField: HTTP_PORT
+versions:
+  - name: "v2.11.0"
+    images:
+      - netdata/netdata:v2.11.0
+    values:
+      IMAGE: "netdata/netdata:v2.11.0"
+  - name: "v2.10.4"
+    images:
+      - netdata/netdata:v2.10.4
+    values:
+      IMAGE: "netdata/netdata:v2.10.4"
+  - name: "v1.47.5"
+    images:
+      - netdata/netdata:v1.47.5
+    values:
+      IMAGE: "netdata/netdata:v1.47.5"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "19999"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:19999"
+      volumes:
+        - config:/etc/netdata
+        - lib:/var/lib/netdata
+        - cache:/var/cache/netdata
+        - /etc/passwd:/host/etc/passwd:ro
+        - /etc/group:/host/etc/group:ro
+        - /proc:/host/proc:ro
+        - /sys:/host/sys:ro
+
+  volumes:
+    config:
+    lib:
+    cache:

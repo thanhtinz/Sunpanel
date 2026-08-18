@@ -97,9 +97,12 @@ func TestInstallDetectsPortInUse(t *testing.T) {
 	}
 	defer listener.Close()
 
+	// Điền đúng tên biến cổng của ứng dụng. Trước đây kiểm thử điền "PORT",
+	// một biến Uptime Kuma không có, nên phép kiểm cổng luôn thấy cổng mặc định
+	// còn trống và kiểm thử chỉ xanh khi tình cờ có thứ khác chiếm cổng đó.
 	_, err = svc.Install(ctx, InstallRequest{
 		AppKey: "uptime-kuma", Name: "cong-ban",
-		Values: map[string]string{"PORT": listener.port},
+		Values: map[string]string{"HTTP_PORT": listener.port},
 	})
 	if !errors.Is(err, apperr.AppPortInUse) {
 		t.Errorf("cổng đang bị chiếm phải bị từ chối, nhận: %v", err)

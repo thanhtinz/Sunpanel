@@ -1,0 +1,95 @@
+key: docmost
+name:
+  vi: Docmost
+  en: Docmost
+description:
+  vi: "Wiki và tài liệu nội bộ soạn cùng lúc nhiều người, có bình luận và không gian riêng theo nhóm."
+  en: "Collaborative internal docs and wiki with comments and per-team spaces."
+category: productivity
+website: https://docmost.com
+portField: HTTP_PORT
+versions:
+  - name: "0.95"
+    images:
+      - docmost/docmost:0.95
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "docmost/docmost:0.95"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "0.90.1"
+    images:
+      - docmost/docmost:0.90.1
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "docmost/docmost:0.90.1"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "0.80.2"
+    images:
+      - docmost/docmost:0.80.2
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "docmost/docmost:0.80.2"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3012"
+    required: true
+  - key: APP_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:3012"
+    required: true
+  - key: SECRET_KEY
+    label: {vi: Khóa bí mật, en: Secret key}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+        - redis
+      environment:
+        APP_URL: ${APP_URL}
+        APP_SECRET: ${SECRET_KEY}
+        DATABASE_URL: postgresql://docmost:${DB_PASSWORD}@db:5432/docmost?schema=public
+        REDIS_URL: redis://redis:6379
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - data:/app/data/storage
+
+    redis:
+      image: ${REDIS_IMAGE}
+      container_name: ${CONTAINER_NAME}-redis
+      restart: unless-stopped
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: docmost
+        POSTGRES_USER: docmost
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    data:
+    db:

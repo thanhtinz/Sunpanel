@@ -1,0 +1,44 @@
+key: jupyter
+name:
+  vi: JupyterLab
+  en: JupyterLab
+description:
+  vi: "Sổ tay tính toán cho Python: chạy mã, vẽ biểu đồ và ghi chú trong cùng một trang."
+  en: "A computational notebook for Python: run code, plot and take notes on one page."
+category: development
+website: https://jupyter.org
+portField: HTTP_PORT
+versions:
+  - name: "latest"
+    note:
+      vi: "Dự án chỉ phát hành thẻ latest, nên mỗi lần cài lại sẽ lấy bản mới nhất lúc đó."
+      en: "The project only publishes a latest tag, so each install pulls whatever is newest then."
+    images:
+      - jupyter/base-notebook:latest
+    values:
+      IMAGE: "jupyter/base-notebook:latest"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8888"
+    required: true
+  - key: TOKEN
+    label: {vi: Mã truy cập, en: Access token}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        JUPYTER_TOKEN: "${TOKEN}"
+      ports:
+        - "${HTTP_PORT}:8888"
+      volumes:
+        - work:/home/jovyan/work
+
+  volumes:
+    work:

@@ -1,0 +1,81 @@
+key: miniflux
+name:
+  vi: Miniflux
+  en: Miniflux
+description:
+  vi: "Đọc tin RSS tối giản, nhanh, chỉ có đúng những gì cần để đọc."
+  en: "A minimalist RSS reader — fast, with only what reading actually needs."
+category: productivity
+website: https://miniflux.app
+portField: HTTP_PORT
+versions:
+  - name: "2.3.3"
+    images:
+      - miniflux/miniflux:2.3.3
+      - postgres:16-alpine
+    values:
+      IMAGE: "miniflux/miniflux:2.3.3"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "2.2.19"
+    images:
+      - miniflux/miniflux:2.2.19
+      - postgres:16-alpine
+    values:
+      IMAGE: "miniflux/miniflux:2.2.19"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "2.1.4"
+    images:
+      - miniflux/miniflux:2.1.4
+      - postgres:16-alpine
+    values:
+      IMAGE: "miniflux/miniflux:2.1.4"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3061"
+    required: true
+  - key: ADMIN_USER
+    label: {vi: Tài khoản quản trị, en: Admin user}
+    type: text
+    default: "admin"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        DATABASE_URL: postgres://miniflux:${DB_PASSWORD}@db/miniflux?sslmode=disable
+        RUN_MIGRATIONS: "1"
+        CREATE_ADMIN: "1"
+        ADMIN_USERNAME: ${ADMIN_USER}
+        ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:8080"
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: miniflux
+        POSTGRES_USER: miniflux
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    db:

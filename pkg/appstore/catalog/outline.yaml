@@ -1,0 +1,98 @@
+key: outline
+name:
+  vi: Outline
+  en: Outline
+description:
+  vi: "Cơ sở tri thức cho đội nhóm, soạn thảo cùng lúc nhiều người như Notion."
+  en: "A team knowledge base with real-time collaborative editing, in the Notion vein."
+category: productivity
+website: https://getoutline.com
+portField: HTTP_PORT
+versions:
+  - name: "1.9.2"
+    images:
+      - outlinewiki/outline:1.9.2
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "outlinewiki/outline:1.9.2"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "1.8.1"
+    images:
+      - outlinewiki/outline:1.8.1
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "outlinewiki/outline:1.8.1"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "0.87.4"
+    images:
+      - outlinewiki/outline:0.87.4
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "outlinewiki/outline:0.87.4"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3011"
+    required: true
+  - key: APP_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:3011"
+    required: true
+  - key: SECRET_KEY
+    label: {vi: Khóa bí mật, en: Secret key}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+        - redis
+      environment:
+        NODE_ENV: production
+        URL: ${APP_URL}
+        SECRET_KEY: ${SECRET_KEY}
+        UTILS_SECRET: ${SECRET_KEY}
+        DATABASE_URL: postgres://outline:${DB_PASSWORD}@db:5432/outline
+        REDIS_URL: redis://redis:6379
+        PGSSLMODE: disable
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - data:/var/lib/outline/data
+
+    redis:
+      image: ${REDIS_IMAGE}
+      container_name: ${CONTAINER_NAME}-redis
+      restart: unless-stopped
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: outline
+        POSTGRES_USER: outline
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    data:
+    db:

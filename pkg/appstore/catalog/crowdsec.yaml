@@ -1,0 +1,53 @@
+key: crowdsec
+name:
+  vi: CrowdSec
+  en: CrowdSec
+description:
+  vi: "Phát hiện và chặn IP tấn công dựa trên nhật ký, chia sẻ danh sách đen với cộng đồng."
+  en: "Detects and blocks attacking IPs from your logs, sharing blocklists with the community."
+category: security
+website: https://crowdsec.net
+portField: API_PORT
+versions:
+  - name: "v1.7.8"
+    images:
+      - crowdsecurity/crowdsec:v1.7.8
+    values:
+      IMAGE: "crowdsecurity/crowdsec:v1.7.8"
+  - name: "v1.6.11"
+    images:
+      - crowdsecurity/crowdsec:v1.6.11
+    values:
+      IMAGE: "crowdsecurity/crowdsec:v1.6.11"
+  - name: "v1.5.5"
+    images:
+      - crowdsecurity/crowdsec:v1.5.5
+    values:
+      IMAGE: "crowdsecurity/crowdsec:v1.5.5"
+fields:
+  - key: API_PORT
+    label: {vi: Cổng API, en: API port}
+    type: port
+    default: "8480"
+    required: true
+  - key: LOG_DIR
+    label: {vi: Thư mục nhật ký, en: Log folder}
+    type: text
+    default: "/var/log"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${API_PORT}:8080"
+      volumes:
+        - config:/etc/crowdsec
+        - data:/var/lib/crowdsec/data
+        - ${LOG_DIR}:/var/log:ro
+
+  volumes:
+    config:
+    data:

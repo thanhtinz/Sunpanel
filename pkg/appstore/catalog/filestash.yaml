@@ -1,0 +1,42 @@
+key: filestash
+name:
+  vi: Filestash
+  en: Filestash
+description:
+  vi: "Một giao diện tệp chung cho S3, FTP, SFTP, WebDAV và Google Drive."
+  en: "One file UI across S3, FTP, SFTP, WebDAV and Google Drive."
+category: storage
+website: https://filestash.app
+portField: HTTP_PORT
+versions:
+  - name: "latest"
+    note:
+      vi: "Dự án chỉ phát hành thẻ latest, nên mỗi lần cài lại sẽ lấy bản mới nhất lúc đó."
+      en: "The project only publishes a latest tag, so each install pulls whatever is newest then."
+    images:
+      - machines/filestash:latest
+    values:
+      IMAGE: "machines/filestash:latest"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8334"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        APPLICATION_URL: ""
+        GDRIVE_CLIENT_ID: ""
+        GDRIVE_CLIENT_SECRET: ""
+      ports:
+        - "${HTTP_PORT}:8334"
+      volumes:
+        - state:/app/data/state
+
+  volumes:
+    state:

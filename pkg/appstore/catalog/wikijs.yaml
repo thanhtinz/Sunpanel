@@ -1,0 +1,59 @@
+key: wikijs
+name:
+  vi: Wiki.js
+  en: Wiki.js
+description:
+  vi: "Wiki hiện đại soạn bằng Markdown, phân quyền theo trang và tìm kiếm toàn văn."
+  en: "A modern Markdown wiki with per-page permissions and full-text search."
+category: development
+website: https://js.wiki
+portField: HTTP_PORT
+versions:
+  - name: "2.5.314"
+    images:
+      - ghcr.io/requarks/wiki:2.5.314
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/requarks/wiki:2.5.314"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3010"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        DB_TYPE: postgres
+        DB_HOST: db
+        DB_PORT: "5432"
+        DB_NAME: wiki
+        DB_USER: wiki
+        DB_PASS: ${DB_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:3000"
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: wiki
+        POSTGRES_USER: wiki
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    db:

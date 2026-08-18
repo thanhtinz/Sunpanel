@@ -6,11 +6,24 @@ description:
   vi: "Đồng bộ thư mục giữa các máy theo kiểu ngang hàng, không đi qua máy chủ trung gian."
   en: "Peer-to-peer folder sync between machines with no server in the middle."
 category: storage
-version: "1"
 website: https://syncthing.net
-images:
-  - syncthing/syncthing:1.27
 portField: HTTP_PORT
+versions:
+  - name: "2.1.3"
+    images:
+      - syncthing/syncthing:2.1.3
+    values:
+      IMAGE: "syncthing/syncthing:2.1.3"
+  - name: "2.0.16"
+    images:
+      - syncthing/syncthing:2.0.16
+    values:
+      IMAGE: "syncthing/syncthing:2.0.16"
+  - name: "1.30"
+    images:
+      - syncthing/syncthing:1.30
+    values:
+      IMAGE: "syncthing/syncthing:1.30"
 fields:
   - key: HTTP_PORT
     label: {vi: Cổng giao diện, en: Web UI port}
@@ -32,8 +45,8 @@ fields:
     required: true
 compose: |
   services:
-    syncthing:
-      image: syncthing/syncthing:1.27
+    app:
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       ports:

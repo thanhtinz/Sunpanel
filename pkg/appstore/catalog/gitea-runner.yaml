@@ -1,0 +1,53 @@
+key: gitea-runner
+name:
+  vi: Gitea Actions Runner
+  en: Gitea Actions Runner
+description:
+  vi: "Máy chạy lệnh cho Gitea Actions, nhận việc CI từ máy chủ Gitea của bạn."
+  en: "The runner for Gitea Actions — picks up CI jobs from your Gitea server."
+category: development
+website: https://gitea.com/gitea/act_runner
+versions:
+  - name: "0.6.1"
+    images:
+      - gitea/act_runner:0.6.1
+    values:
+      IMAGE: "gitea/act_runner:0.6.1"
+  - name: "0.5"
+    images:
+      - gitea/act_runner:0.5
+    values:
+      IMAGE: "gitea/act_runner:0.5"
+  - name: "0.4.1"
+    images:
+      - gitea/act_runner:0.4.1
+    values:
+      IMAGE: "gitea/act_runner:0.4.1"
+fields:
+  - key: GITEA_URL
+    label: {vi: Địa chỉ Gitea, en: Gitea URL}
+    type: text
+    default: "http://localhost:3000"
+    required: true
+  - key: RUNNER_TOKEN
+    label: {vi: Mã đăng ký, en: Registration token}
+    help:
+      vi: "Lấy trong Gitea ở mục Cài đặt › Actions › Runners."
+      en: "Copy it from Gitea under Settings › Actions › Runners."
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        GITEA_INSTANCE_URL: "${GITEA_URL}"
+        GITEA_RUNNER_REGISTRATION_TOKEN: "${RUNNER_TOKEN}"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - data:/data
+
+  volumes:
+    data:

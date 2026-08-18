@@ -1,0 +1,65 @@
+key: kopia
+name:
+  vi: Kopia
+  en: Kopia
+description:
+  vi: "Sao lưu có khử trùng lặp và mã hóa, gửi lên bất kỳ kho đối tượng nào."
+  en: "Deduplicated, encrypted backups to any object store."
+category: storage
+website: https://kopia.io
+portField: HTTP_PORT
+versions:
+  - name: "20260623.0.3052"
+    images:
+      - kopia/kopia:20260623.0.3052
+    values:
+      IMAGE: "kopia/kopia:20260623.0.3052"
+  - name: "20260622.0.222427"
+    images:
+      - kopia/kopia:20260622.0.222427
+    values:
+      IMAGE: "kopia/kopia:20260622.0.222427"
+  - name: "20260619.0.12641"
+    images:
+      - kopia/kopia:20260619.0.12641
+    values:
+      IMAGE: "kopia/kopia:20260619.0.12641"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "51515"
+    required: true
+  - key: SOURCE_DIR
+    label: {vi: Thư mục cần sao lưu, en: Folder to back up}
+    type: text
+    default: "/srv"
+    required: true
+  - key: ADMIN_USER
+    label: {vi: Tài khoản, en: User}
+    type: text
+    default: "admin"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu, en: Password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: server start --insecure --address=0.0.0.0:51515 --server-username=${ADMIN_USER} --server-password=${ADMIN_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:51515"
+      volumes:
+        - config:/app/config
+        - cache:/app/cache
+        - ${SOURCE_DIR}:/data:ro
+        - repo:/repository
+
+  volumes:
+    config:
+    cache:
+    repo:

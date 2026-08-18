@@ -1,0 +1,53 @@
+key: zigbee2mqtt
+name:
+  vi: Zigbee2MQTT
+  en: Zigbee2MQTT
+description:
+  vi: "Đưa thiết bị Zigbee lên MQTT, dùng được với mọi trung tâm nhà thông minh."
+  en: "Bridges Zigbee devices onto MQTT so any smart-home hub can use them."
+category: automation
+website: https://zigbee2mqtt.io
+portField: HTTP_PORT
+versions:
+  - name: "2.13"
+    images:
+      - koenkk/zigbee2mqtt:2.13
+    values:
+      IMAGE: "koenkk/zigbee2mqtt:2.13"
+  - name: "2.12.1"
+    images:
+      - koenkk/zigbee2mqtt:2.12.1
+    values:
+      IMAGE: "koenkk/zigbee2mqtt:2.12.1"
+  - name: "1.42.0"
+    images:
+      - koenkk/zigbee2mqtt:1.42.0
+    values:
+      IMAGE: "koenkk/zigbee2mqtt:1.42.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8380"
+    required: true
+  - key: MQTT_SERVER
+    label: {vi: Địa chỉ máy chủ MQTT, en: MQTT server}
+    type: text
+    default: "mqtt://localhost:1883"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        ZIGBEE2MQTT_CONFIG_MQTT_SERVER: "${MQTT_SERVER}"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - data:/app/data
+
+  volumes:
+    data:

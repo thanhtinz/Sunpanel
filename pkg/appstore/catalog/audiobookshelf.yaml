@@ -1,0 +1,56 @@
+key: audiobookshelf
+name:
+  vi: Audiobookshelf
+  en: Audiobookshelf
+description:
+  vi: "Máy chủ sách nói và podcast, nhớ đúng chỗ đang nghe trên mọi thiết bị."
+  en: "An audiobook and podcast server that remembers where you stopped on every device."
+category: media
+website: https://audiobookshelf.org
+portField: HTTP_PORT
+versions:
+  - name: "2.36.0"
+    images:
+      - advplyr/audiobookshelf:2.36.0
+    values:
+      IMAGE: "advplyr/audiobookshelf:2.36.0"
+  - name: "2.35.1"
+    images:
+      - advplyr/audiobookshelf:2.35.1
+    values:
+      IMAGE: "advplyr/audiobookshelf:2.35.1"
+  - name: "1.7.2"
+    images:
+      - advplyr/audiobookshelf:1.7.2
+    values:
+      IMAGE: "advplyr/audiobookshelf:1.7.2"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "13378"
+    required: true
+  - key: BOOKS_DIR
+    label: {vi: Thư mục sách nói, en: Audiobook folder}
+    help:
+      vi: "Thư mục sẵn có trên máy chủ, được gắn vào ứng dụng."
+      en: "An existing folder on the host, mounted into the app."
+    type: text
+    default: "/srv/audiobooks"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - config:/config
+        - metadata:/metadata
+        - ${BOOKS_DIR}:/audiobooks
+
+  volumes:
+    config:
+    metadata:

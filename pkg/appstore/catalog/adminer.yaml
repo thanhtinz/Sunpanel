@@ -1,0 +1,40 @@
+key: adminer
+name:
+  vi: Adminer
+  en: Adminer
+description:
+  vi: "Công cụ quản trị cơ sở dữ liệu gói trong một tệp, hỗ trợ MySQL, PostgreSQL và nhiều loại khác."
+  en: "A single-file database admin tool for MySQL, PostgreSQL and many others."
+category: database
+website: https://adminer.org
+portField: HTTP_PORT
+versions:
+  - name: "5.5.1"
+    images:
+      - adminer:5.5.1
+    values:
+      IMAGE: "adminer:5.5.1"
+  - name: "5.4.2"
+    images:
+      - adminer:5.4.2
+    values:
+      IMAGE: "adminer:5.4.2"
+  - name: "4.17.1"
+    images:
+      - adminer:4.17.1
+    values:
+      IMAGE: "adminer:4.17.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8091"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8080"

@@ -1,0 +1,57 @@
+key: wallabag
+name:
+  vi: Wallabag
+  en: Wallabag
+description:
+  vi: "Lưu bài viết để đọc sau, giữ lại nội dung ngay cả khi trang gốc biến mất."
+  en: "Saves articles for later and keeps the text even if the original page disappears."
+category: productivity
+website: https://wallabag.org
+portField: HTTP_PORT
+versions:
+  - name: "2.6.14"
+    images:
+      - wallabag/wallabag:2.6.14
+    values:
+      IMAGE: "wallabag/wallabag:2.6.14"
+  - name: "2.5.4"
+    images:
+      - wallabag/wallabag:2.5.4
+    values:
+      IMAGE: "wallabag/wallabag:2.5.4"
+  - name: "2.4.3"
+    images:
+      - wallabag/wallabag:2.4.3
+    values:
+      IMAGE: "wallabag/wallabag:2.4.3"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3062"
+    required: true
+  - key: SITE_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:3062"
+    required: true
+  - key: SECRET
+    label: {vi: Khóa bí mật, en: Secret}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        SYMFONY__ENV__DOMAIN_NAME: "${SITE_URL}"
+        SYMFONY__ENV__SECRET: "${SECRET}"
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - data:/var/www/wallabag/data
+
+  volumes:
+    data:

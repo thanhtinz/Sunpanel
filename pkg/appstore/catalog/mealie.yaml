@@ -1,0 +1,49 @@
+key: mealie
+name:
+  vi: Mealie
+  en: Mealie
+description:
+  vi: "Lưu công thức nấu ăn, lên thực đơn tuần và tự dựng danh sách đi chợ."
+  en: "Saves recipes, plans the week's meals and builds the shopping list for you."
+category: productivity
+website: https://mealie.io
+portField: HTTP_PORT
+versions:
+  - name: "v3.22.0"
+    images:
+      - ghcr.io/mealie-recipes/mealie:v3.22.0
+    values:
+      IMAGE: "ghcr.io/mealie-recipes/mealie:v3.22.0"
+  - name: "v2.8.0"
+    images:
+      - ghcr.io/mealie-recipes/mealie:v2.8.0
+    values:
+      IMAGE: "ghcr.io/mealie-recipes/mealie:v2.8.0"
+  - name: "v1.12.0"
+    images:
+      - ghcr.io/mealie-recipes/mealie:v1.12.0
+    values:
+      IMAGE: "ghcr.io/mealie-recipes/mealie:v1.12.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "9925"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        ALLOW_SIGNUP: "false"
+        TZ: "Asia/Ho_Chi_Minh"
+        BASE_URL: "http://localhost"
+      ports:
+        - "${HTTP_PORT}:9000"
+      volumes:
+        - data:/app/data
+
+  volumes:
+    data:

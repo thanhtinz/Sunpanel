@@ -1,0 +1,51 @@
+key: photoprism
+name:
+  vi: PhotoPrism
+  en: PhotoPrism
+description:
+  vi: "Quản lý ảnh có tìm kiếm bằng nội dung, tự gắn thẻ và xếp theo địa điểm."
+  en: "Photo management with content search, automatic tagging and map view."
+category: media
+website: https://photoprism.app
+portField: HTTP_PORT
+versions:
+  - name: "240915"
+    images:
+      - photoprism/photoprism:240915
+    values:
+      IMAGE: "photoprism/photoprism:240915"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "2342"
+    required: true
+  - key: PHOTOS_DIR
+    label: {vi: Thư mục ảnh, en: Photos folder}
+    help:
+      vi: "Thư mục sẵn có trên máy chủ, được gắn vào ứng dụng."
+      en: "An existing folder on the host, mounted into the app."
+    type: text
+    default: "/srv/photos"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PHOTOPRISM_ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
+        PHOTOPRISM_HTTP_PORT: "2342"
+      ports:
+        - "${HTTP_PORT}:2342"
+      volumes:
+        - ${PHOTOS_DIR}:/photoprism/originals
+        - storage:/photoprism/storage
+
+  volumes:
+    storage:

@@ -1,0 +1,51 @@
+key: sonarr
+name:
+  vi: Sonarr
+  en: Sonarr
+description:
+  vi: "Theo dõi phim bộ: tự tải tập mới, đổi tên và xếp vào đúng thư mục."
+  en: "Follows TV series: grabs new episodes, renames them and files them away."
+category: media
+website: https://sonarr.tv
+portField: HTTP_PORT
+versions:
+  - name: "4.0.19"
+    images:
+      - linuxserver/sonarr:4.0.19
+    values:
+      IMAGE: "linuxserver/sonarr:4.0.19"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8989"
+    required: true
+  - key: MEDIA_DIR
+    label: {vi: Thư mục phim bộ, en: TV folder}
+    type: text
+    default: "/srv/media/tv"
+    required: true
+  - key: DOWNLOAD_DIR
+    label: {vi: Thư mục tải về, en: Download folder}
+    type: text
+    default: "/srv/downloads"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:8989"
+      volumes:
+        - config:/config
+        - ${MEDIA_DIR}:/tv
+        - ${DOWNLOAD_DIR}:/downloads
+
+  volumes:
+    config:

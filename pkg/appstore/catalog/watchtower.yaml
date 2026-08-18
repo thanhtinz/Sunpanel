@@ -1,0 +1,57 @@
+key: watchtower
+name:
+  vi: Watchtower
+  en: Watchtower
+description:
+  vi: "Tự theo dõi và cập nhật image của các container đang chạy."
+  en: "Watches running containers and updates their images automatically."
+category: monitoring
+website: https://containrrr.dev/watchtower
+versions:
+  - name: "1.7.1"
+    images:
+      - containrrr/watchtower:1.7.1
+    values:
+      IMAGE: "containrrr/watchtower:1.7.1"
+  - name: "1.6.0"
+    images:
+      - containrrr/watchtower:1.6.0
+    values:
+      IMAGE: "containrrr/watchtower:1.6.0"
+  - name: "1.5.3"
+    images:
+      - containrrr/watchtower:1.5.3
+    values:
+      IMAGE: "containrrr/watchtower:1.5.3"
+fields:
+  - key: SCHEDULE
+    label: {vi: Tần suất kiểm tra, en: Check interval}
+    type: select
+    default: "0 0 4 * * *"
+    options:
+      - value: "0 0 4 * * *"
+        label: {vi: Mỗi ngày lúc 4 giờ sáng, en: Daily at 4am}
+      - value: "0 0 4 * * 0"
+        label: {vi: Mỗi tuần, en: Weekly}
+      - value: "0 0 */6 * * *"
+        label: {vi: Mỗi 6 giờ, en: Every 6 hours}
+  - key: CLEANUP
+    label: {vi: Xóa image cũ sau khi cập nhật, en: Remove old images after update}
+    type: select
+    default: "true"
+    options:
+      - value: "true"
+        label: {vi: Có, en: Yes}
+      - value: "false"
+        label: {vi: Không, en: No}
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        WATCHTOWER_SCHEDULE: "${SCHEDULE}"
+        WATCHTOWER_CLEANUP: "${CLEANUP}"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock

@@ -530,7 +530,10 @@
     "searchPlaceholder": "Search by name or purpose",
     "countShown": "Showing {shown} of {total} apps",
     "noMatch": "No app matches your search",
-    "homepage": "Homepage"
+    "homepage": "Homepage",
+    "version": "Version",
+    "versionHelp": "You can run several versions side by side — give each install its own name.",
+    "versionCount": "{count} versions"
   },
   "appErr": {
     "not_found": "Installed application not found.",

@@ -1,0 +1,54 @@
+key: komga
+name:
+  vi: Komga
+  en: Komga
+description:
+  vi: "Máy chủ truyện tranh và manga, đọc ngay trên trình duyệt hoặc ứng dụng OPDS."
+  en: "A comics and manga server you can read in the browser or any OPDS app."
+category: media
+website: https://komga.org
+portField: HTTP_PORT
+versions:
+  - name: "1.26.3"
+    images:
+      - gotson/komga:1.26.3
+    values:
+      IMAGE: "gotson/komga:1.26.3"
+  - name: "1.25.0"
+    images:
+      - gotson/komga:1.25.0
+    values:
+      IMAGE: "gotson/komga:1.25.0"
+  - name: "0.165.0"
+    images:
+      - gotson/komga:0.165.0
+    values:
+      IMAGE: "gotson/komga:0.165.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "25600"
+    required: true
+  - key: COMICS_DIR
+    label: {vi: Thư mục truyện, en: Comics folder}
+    help:
+      vi: "Thư mục sẵn có trên máy chủ, được gắn vào ứng dụng."
+      en: "An existing folder on the host, mounted into the app."
+    type: text
+    default: "/srv/comics"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:25600"
+      volumes:
+        - config:/config
+        - ${COMICS_DIR}:/data
+
+  volumes:
+    config:

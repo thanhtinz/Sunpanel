@@ -1,0 +1,74 @@
+key: mattermost
+name:
+  vi: Mattermost
+  en: Mattermost
+description:
+  vi: "Nhắn tin nhóm theo kênh, thay Slack mà dữ liệu nằm trên máy chủ của bạn."
+  en: "Channel-based team chat — a Slack replacement with your data on your server."
+category: productivity
+website: https://mattermost.com
+portField: HTTP_PORT
+versions:
+  - name: "11.10"
+    images:
+      - mattermost/mattermost-team-edition:11.10
+      - postgres:16-alpine
+    values:
+      IMAGE: "mattermost/mattermost-team-edition:11.10"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "11.9.1"
+    images:
+      - mattermost/mattermost-team-edition:11.9.1
+      - postgres:16-alpine
+    values:
+      IMAGE: "mattermost/mattermost-team-edition:11.9.1"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "10.12.4"
+    images:
+      - mattermost/mattermost-team-edition:10.12.4
+      - postgres:16-alpine
+    values:
+      IMAGE: "mattermost/mattermost-team-edition:10.12.4"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8065"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        MM_SQLSETTINGS_DRIVERNAME: postgres
+        MM_SQLSETTINGS_DATASOURCE: postgres://mattermost:${DB_PASSWORD}@db:5432/mattermost?sslmode=disable
+      ports:
+        - "${HTTP_PORT}:8065"
+      volumes:
+        - data:/mattermost/data
+        - config:/mattermost/config
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: mattermost
+        POSTGRES_USER: mattermost
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    data:
+    config:
+    db:

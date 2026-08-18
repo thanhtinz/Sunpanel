@@ -1,0 +1,63 @@
+key: plex
+name:
+  vi: Plex
+  en: Plex
+description:
+  vi: "Máy chủ phim nhạc có ứng dụng trên gần như mọi TV và điện thoại."
+  en: "A media server with apps on nearly every TV and phone."
+category: media
+website: https://plex.tv
+portField: HTTP_PORT
+versions:
+  - name: "1.43.3.10861-07dfddaeb"
+    images:
+      - plexinc/pms-docker:1.43.3.10861-07dfddaeb
+    values:
+      IMAGE: "plexinc/pms-docker:1.43.3.10861-07dfddaeb"
+  - name: "1.42.2.10156-f737b826c"
+    images:
+      - plexinc/pms-docker:1.42.2.10156-f737b826c
+    values:
+      IMAGE: "plexinc/pms-docker:1.42.2.10156-f737b826c"
+  - name: "1.41.6.9685-d301f511a"
+    images:
+      - plexinc/pms-docker:1.41.6.9685-d301f511a
+    values:
+      IMAGE: "plexinc/pms-docker:1.41.6.9685-d301f511a"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "32400"
+    required: true
+  - key: MEDIA_DIR
+    label: {vi: Thư mục phim nhạc, en: Media folder}
+    help:
+      vi: "Thư mục sẵn có trên máy chủ, được gắn vào ứng dụng."
+      en: "An existing folder on the host, mounted into the app."
+    type: text
+    default: "/srv/media"
+    required: true
+  - key: CLAIM_TOKEN
+    label: {vi: Mã liên kết tài khoản, en: Claim token}
+    help:
+      vi: "Lấy ở plex.tv/claim, dùng trong 4 phút để gắn máy chủ vào tài khoản của bạn."
+      en: "Get one at plex.tv/claim; it is valid for 4 minutes and links the server to your account."
+    type: text
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PLEX_CLAIM: "${CLAIM_TOKEN}"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:32400"
+      volumes:
+        - config:/config
+        - ${MEDIA_DIR}:/media
+
+  volumes:
+    config:

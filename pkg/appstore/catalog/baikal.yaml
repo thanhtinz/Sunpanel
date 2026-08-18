@@ -1,0 +1,37 @@
+key: baikal
+name:
+  vi: Baikal
+  en: Baikal
+description:
+  vi: "Máy chủ lịch và danh bạ theo chuẩn CalDAV/CardDAV, đồng bộ với iPhone và Android."
+  en: "A CalDAV/CardDAV calendar and contacts server that syncs with iPhone and Android."
+category: productivity
+website: https://sabre.io/baikal
+portField: HTTP_PORT
+versions:
+  - name: "nginx"
+    images:
+      - ckulka/baikal:nginx
+    values:
+      IMAGE: "ckulka/baikal:nginx"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8095"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - config:/var/www/baikal/config
+        - data:/var/www/baikal/Specific
+
+  volumes:
+    config:
+    data:

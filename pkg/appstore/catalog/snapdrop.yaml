@@ -1,0 +1,42 @@
+key: snapdrop
+name:
+  vi: Snapdrop
+  en: Snapdrop
+description:
+  vi: "Gửi tệp giữa các máy trong cùng mạng LAN bằng trình duyệt, không cần cài gì."
+  en: "Sends files between devices on the same network from the browser, with nothing installed."
+category: tool
+website: https://snapdrop.net
+portField: HTTP_PORT
+versions:
+  - name: "latest"
+    note:
+      vi: "Dự án chỉ phát hành thẻ latest, nên mỗi lần cài lại sẽ lấy bản mới nhất lúc đó."
+      en: "The project only publishes a latest tag, so each install pulls whatever is newest then."
+    images:
+      - linuxserver/snapdrop:latest
+    values:
+      IMAGE: "linuxserver/snapdrop:latest"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8092"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - config:/config
+
+  volumes:
+    config:

@@ -1,0 +1,48 @@
+key: ollama
+name:
+  vi: Ollama
+  en: Ollama
+description:
+  vi: "Chạy mô hình ngôn ngữ ngay trên máy chủ, tải mô hình bằng một lệnh."
+  en: "Runs language models on your own server; pull a model with one command."
+category: development
+website: https://ollama.com
+portField: API_PORT
+versions:
+  - name: "0.32.14"
+    images:
+      - ollama/ollama:0.32.14
+    values:
+      IMAGE: "ollama/ollama:0.32.14"
+  - name: "0.31.2"
+    images:
+      - ollama/ollama:0.31.2
+    values:
+      IMAGE: "ollama/ollama:0.31.2"
+  - name: "0.30.11"
+    images:
+      - ollama/ollama:0.30.11
+    values:
+      IMAGE: "ollama/ollama:0.30.11"
+fields:
+  - key: API_PORT
+    label: {vi: Cổng API, en: API port}
+    help:
+      vi: "Mô hình ngôn ngữ ăn rất nhiều RAM; máy dưới 8 GB chỉ chạy nổi mô hình nhỏ."
+      en: "Language models are memory hungry; under 8 GB only small models will run."
+    type: port
+    default: "11434"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${API_PORT}:11434"
+      volumes:
+        - models:/root/.ollama
+
+  volumes:
+    models:

@@ -3,31 +3,41 @@ name:
   vi: Uptime Kuma
   en: Uptime Kuma
 description:
-  vi: Giám sát website và dịch vụ, báo động qua Telegram, email và hàng chục kênh khác.
-  en: Monitor websites and services, with alerts over Telegram, email and dozens more.
+  vi: "Giám sát website và dịch vụ, báo động qua Telegram, email và hàng chục kênh khác."
+  en: "Monitors websites and services and alerts through Telegram, email and dozens more channels."
 category: monitoring
-version: "1"
 website: https://uptime.kuma.pet
-images:
-  - louislam/uptime-kuma:1
-portField: PORT
+portField: HTTP_PORT
+versions:
+  - name: "2.5.0"
+    images:
+      - louislam/uptime-kuma:2.5.0
+    values:
+      IMAGE: "louislam/uptime-kuma:2.5.0"
+  - name: "2.4.0"
+    images:
+      - louislam/uptime-kuma:2.4.0
+    values:
+      IMAGE: "louislam/uptime-kuma:2.4.0"
+  - name: "1.23.17"
+    images:
+      - louislam/uptime-kuma:1.23.17
+    values:
+      IMAGE: "louislam/uptime-kuma:1.23.17"
 fields:
-  - key: PORT
-    label: {vi: Cổng, en: Port}
-    help:
-      vi: "Cổng để mở giao diện Uptime Kuma trên trình duyệt."
-      en: "Port where the Uptime Kuma interface is served."
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
     type: port
     default: "3001"
     required: true
 compose: |
   services:
-    uptime-kuma:
-      image: louislam/uptime-kuma:1
+    app:
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       ports:
-        - "${PORT}:3001"
+        - "${HTTP_PORT}:3001"
       volumes:
         - data:/app/data
 

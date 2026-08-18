@@ -1,0 +1,69 @@
+key: invidious
+name:
+  vi: Invidious
+  en: Invidious
+description:
+  vi: "Xem YouTube qua giao diện nhẹ, không quảng cáo và không bị theo dõi."
+  en: "Watches YouTube through a lightweight front end with no ads and no tracking."
+category: media
+website: https://invidious.io
+portField: HTTP_PORT
+versions:
+  - name: "latest"
+    note:
+      vi: "Dự án chỉ phát hành thẻ latest, nên mỗi lần cài lại sẽ lấy bản mới nhất lúc đó."
+      en: "The project only publishes a latest tag, so each install pulls whatever is newest then."
+    images:
+      - quay.io/invidious/invidious:latest
+      - postgres:16-alpine
+    values:
+      IMAGE: "quay.io/invidious/invidious:latest"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3021"
+    required: true
+  - key: HMAC_KEY
+    label: {vi: Khóa ký, en: HMAC key}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        INVIDIOUS_CONFIG: |
+          db:
+            dbname: invidious
+            user: invidious
+            password: ${DB_PASSWORD}
+            host: db
+            port: 5432
+          check_tables: true
+          hmac_key: ${HMAC_KEY}
+      ports:
+        - "${HTTP_PORT}:3000"
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: invidious
+        POSTGRES_USER: invidious
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    db:

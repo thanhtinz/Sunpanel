@@ -1,0 +1,45 @@
+key: prometheus
+name:
+  vi: Prometheus
+  en: Prometheus
+description:
+  vi: "Bộ thu số liệu theo chuỗi thời gian, nền tảng của hầu hết hệ giám sát hiện nay."
+  en: "The time-series metrics collector most monitoring stacks are built on."
+category: monitoring
+website: https://prometheus.io
+portField: HTTP_PORT
+versions:
+  - name: "v3.14.0"
+    images:
+      - prom/prometheus:v3.14.0
+    values:
+      IMAGE: "prom/prometheus:v3.14.0"
+  - name: "v3.13.2"
+    images:
+      - prom/prometheus:v3.13.2
+    values:
+      IMAGE: "prom/prometheus:v3.13.2"
+  - name: "v2.55.1"
+    images:
+      - prom/prometheus:v2.55.1
+    values:
+      IMAGE: "prom/prometheus:v2.55.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "9091"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:9090"
+      volumes:
+        - data:/prometheus
+
+  volumes:
+    data:

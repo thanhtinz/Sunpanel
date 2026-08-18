@@ -1,0 +1,48 @@
+key: homepage
+name:
+  vi: Homepage
+  en: Homepage
+description:
+  vi: "Trang chủ cho máy chủ: gom liên kết mọi dịch vụ và hiện trạng thái của chúng."
+  en: "A start page for your server: every service in one place, with live status."
+category: tool
+website: https://gethomepage.dev
+portField: HTTP_PORT
+versions:
+  - name: "v2.0.0"
+    images:
+      - ghcr.io/gethomepage/homepage:v2.0.0
+    values:
+      IMAGE: "ghcr.io/gethomepage/homepage:v2.0.0"
+  - name: "v1.13.2"
+    images:
+      - ghcr.io/gethomepage/homepage:v1.13.2
+    values:
+      IMAGE: "ghcr.io/gethomepage/homepage:v1.13.2"
+  - name: "v0.10.9"
+    images:
+      - ghcr.io/gethomepage/homepage:v0.10.9
+    values:
+      IMAGE: "ghcr.io/gethomepage/homepage:v0.10.9"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3020"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        HOMEPAGE_ALLOWED_HOSTS: "*"
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - config:/app/config
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  volumes:
+    config:

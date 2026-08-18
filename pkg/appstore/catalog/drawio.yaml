@@ -1,0 +1,40 @@
+key: drawio
+name:
+  vi: draw.io
+  en: draw.io
+description:
+  vi: "Vẽ sơ đồ khối, sơ đồ mạng và lưu đồ ngay trong trình duyệt."
+  en: "Draw block diagrams, network maps and flowcharts in the browser."
+category: productivity
+website: https://drawio.com
+portField: HTTP_PORT
+versions:
+  - name: "31.1.8"
+    images:
+      - jgraph/drawio:31.1.8
+    values:
+      IMAGE: "jgraph/drawio:31.1.8"
+  - name: "30.4.3"
+    images:
+      - jgraph/drawio:30.4.3
+    values:
+      IMAGE: "jgraph/drawio:30.4.3"
+  - name: "29.7.12"
+    images:
+      - jgraph/drawio:29.7.12
+    values:
+      IMAGE: "jgraph/drawio:29.7.12"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3051"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8080"

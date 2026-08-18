@@ -1,0 +1,53 @@
+key: traefik
+name:
+  vi: Traefik
+  en: Traefik
+description:
+  vi: "Reverse proxy tự phát hiện container mới và tự xin chứng chỉ cho chúng."
+  en: "A reverse proxy that discovers new containers and gets certificates for them automatically."
+category: tool
+website: https://traefik.io
+portField: DASHBOARD_PORT
+versions:
+  - name: "v3.7.10"
+    images:
+      - traefik:v3.7.10
+    values:
+      IMAGE: "traefik:v3.7.10"
+  - name: "v3.6.25"
+    images:
+      - traefik:v3.6.25
+    values:
+      IMAGE: "traefik:v3.6.25"
+  - name: "v2.11.54"
+    images:
+      - traefik:v2.11.54
+    values:
+      IMAGE: "traefik:v2.11.54"
+fields:
+  - key: DASHBOARD_PORT
+    label: {vi: Cổng bảng điều khiển, en: Dashboard port}
+    type: port
+    default: "8280"
+    required: true
+  - key: PROXY_HTTP_PORT
+    label: {vi: Cổng HTTP, en: HTTP port}
+    type: port
+    default: "80"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: --api.dashboard=true --providers.docker=true --entrypoints.web.address=:80
+      ports:
+        - "${DASHBOARD_PORT}:8080"
+        - "${PROXY_HTTP_PORT}:80"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+        - letsencrypt:/letsencrypt
+
+  volumes:
+    letsencrypt:

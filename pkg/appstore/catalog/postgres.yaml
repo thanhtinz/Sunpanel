@@ -1,0 +1,66 @@
+key: postgres
+name:
+  vi: PostgreSQL
+  en: PostgreSQL
+description:
+  vi: "Cơ sở dữ liệu quan hệ mạnh nhất trong nhóm nguồn mở, hợp cho mọi ứng dụng nghiêm túc."
+  en: "The most capable open-source relational database, fit for anything serious."
+category: database
+website: https://postgresql.org
+portField: PORT
+versions:
+  - name: "18.6"
+    images:
+      - postgres:18.6-alpine
+    values:
+      IMAGE: "postgres:18.6-alpine"
+  - name: "17.11"
+    images:
+      - postgres:17.11-alpine
+    values:
+      IMAGE: "postgres:17.11-alpine"
+  - name: "16.15"
+    images:
+      - postgres:16.15-alpine
+    values:
+      IMAGE: "postgres:16.15-alpine"
+fields:
+  - key: PORT
+    label: {vi: Cổng, en: Port}
+    help:
+      vi: "Chỉ mở ra Internet khi thật sự cần thiết."
+      en: "Only expose this to the Internet when you truly need to."
+    type: port
+    default: "5433"
+    required: true
+  - key: DB_NAME
+    label: {vi: Tên cơ sở dữ liệu, en: Database name}
+    type: text
+    default: "app"
+    required: true
+  - key: DB_USER
+    label: {vi: Tên người dùng, en: User name}
+    type: text
+    default: "app"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu, en: Password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: "${DB_NAME}"
+        POSTGRES_USER: "${DB_USER}"
+        POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      ports:
+        - "${PORT}:5432"
+      volumes:
+        - data:/var/lib/postgresql/data
+
+  volumes:
+    data:

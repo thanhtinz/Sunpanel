@@ -1,0 +1,53 @@
+key: shlink
+name:
+  vi: Shlink
+  en: Shlink
+description:
+  vi: "Máy rút gọn liên kết của riêng bạn, kèm thống kê lượt bấm theo nguồn."
+  en: "Your own link shortener, with per-source click statistics."
+category: tool
+website: https://shlink.io
+portField: HTTP_PORT
+versions:
+  - name: "5.1.5"
+    images:
+      - shlinkio/shlink:5.1.5
+    values:
+      IMAGE: "shlinkio/shlink:5.1.5"
+  - name: "4.6"
+    images:
+      - shlinkio/shlink:4.6
+    values:
+      IMAGE: "shlinkio/shlink:4.6"
+  - name: "3.7.4"
+    images:
+      - shlinkio/shlink:3.7.4
+    values:
+      IMAGE: "shlinkio/shlink:3.7.4"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8089"
+    required: true
+  - key: DOMAIN
+    label: {vi: Tên miền rút gọn, en: Short domain}
+    type: text
+    default: "links.example.com"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        DEFAULT_DOMAIN: "${DOMAIN}"
+        IS_HTTPS_ENABLED: "false"
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - data:/etc/shlink/data
+
+  volumes:
+    data:

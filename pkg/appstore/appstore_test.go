@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -25,8 +26,8 @@ func TestBuiltinCatalogIsValid(t *testing.T) {
 		if err := app.Validate(); err != nil {
 			t.Errorf("ứng dụng %s không hợp lệ: %v", app.Key, err)
 		}
-		if len(app.Images) == 0 {
-			t.Errorf("ứng dụng %s không khai báo image nào", app.Key)
+		if len(app.Versions) == 0 {
+			t.Errorf("ứng dụng %s không khai báo phiên bản nào", app.Key)
 		}
 		// Mọi ứng dụng phải đặt tên container qua biến dành riêng, nếu không panel
 		// không tìm lại được container của nó để hiện trạng thái.
@@ -220,43 +221,48 @@ func TestBuiltinComposeTemplatesParse(t *testing.T) {
 		t.Fatalf("nạp danh mục sẵn có: %v", err)
 	}
 
+	// Mọi phiên bản đều phải dựng ra được một tệp compose hợp lệ: một phiên bản
+	// cũ hỏng cũng khó chịu ngang một phiên bản mới hỏng.
 	for _, app := range catalog.Apps() {
-		values, err := app.Resolve(defaultsOf(app))
-		if err != nil {
-			t.Errorf("%s: điền giá trị mặc định: %v", app.Key, err)
-			continue
-		}
-		values["CONTAINER_NAME"] = app.Key
-		values["APP_KEY"] = app.Key
-		values["DATA_DIR"] = "/opt/sunpanel/apps/" + app.Key
-
-		rendered := os.Expand(app.Compose, func(name string) string { return values[name] })
-
-		var file struct {
-			Services map[string]struct {
-				Image string `yaml:"image"`
-			} `yaml:"services"`
-		}
-		if err := yaml.Unmarshal([]byte(rendered), &file); err != nil {
-			t.Errorf("%s: khuôn compose không phải YAML hợp lệ: %v", app.Key, err)
-			continue
-		}
-		if len(file.Services) == 0 {
-			t.Errorf("%s: khuôn compose không khai báo dịch vụ nào", app.Key)
-		}
-
-		declared := make(map[string]bool, len(app.Images))
-		for _, image := range app.Images {
-			declared[image] = true
-		}
-		for name, service := range file.Services {
-			if service.Image == "" {
-				t.Errorf("%s: dịch vụ %s không có image", app.Key, name)
+		for _, version := range app.Versions {
+			_, values, err := app.ResolveVersion(version.Name, defaultsOf(app))
+			if err != nil {
+				t.Errorf("%s %s: điền giá trị mặc định: %v", app.Key, version.Name, err)
 				continue
 			}
-			if !declared[service.Image] {
-				t.Errorf("%s: dịch vụ %s dùng image %q không có trong trường images",
-					app.Key, name, service.Image)
+			values["CONTAINER_NAME"] = app.Key
+			values["APP_KEY"] = app.Key
+			values["DATA_DIR"] = "/opt/sunpanel/apps/" + app.Key
+
+			rendered := os.Expand(app.Compose, func(name string) string { return values[name] })
+
+			var file struct {
+				Services map[string]struct {
+					Image string `yaml:"image"`
+				} `yaml:"services"`
+			}
+			if err := yaml.Unmarshal([]byte(rendered), &file); err != nil {
+				t.Errorf("%s %s: khuôn compose không phải YAML hợp lệ: %v",
+					app.Key, version.Name, err)
+				continue
+			}
+			if len(file.Services) == 0 {
+				t.Errorf("%s %s: khuôn compose không khai báo dịch vụ nào", app.Key, version.Name)
+			}
+
+			declared := make(map[string]bool, len(version.Images))
+			for _, image := range version.Images {
+				declared[image] = true
+			}
+			for name, service := range file.Services {
+				if service.Image == "" {
+					t.Errorf("%s %s: dịch vụ %s không có image", app.Key, version.Name, name)
+					continue
+				}
+				if !declared[service.Image] {
+					t.Errorf("%s %s: dịch vụ %s dùng image %q không có trong trường images",
+						app.Key, version.Name, name, service.Image)
+				}
 			}
 		}
 	}
@@ -267,7 +273,42 @@ func TestBuiltinComposeTemplatesParse(t *testing.T) {
 func defaultsOf(app App) map[string]string {
 	values := make(map[string]string, len(app.Fields))
 	for _, field := range app.Fields {
-		values[field.Key] = field.Default
+		value := field.Default
+		// Ô bắt buộc mà không có sẵn mặc định — mã đường hầm, client ID — thì
+		// người dùng phải tự điền; điền hộ ở đây để kiểm được phần còn lại.
+		if value == "" && field.Required {
+			value = "x"
+		}
+		values[field.Key] = value
 	}
 	return values
+}
+
+// Một tệp YAML gõ sai trong thư mục danh mục của quản trị viên phải bị bỏ qua,
+// không được làm chết cả panel: panel là thứ dùng để vào sửa chính tệp đó.
+func TestLoadDirSkipsBrokenFile(t *testing.T) {
+	dir := t.TempDir()
+
+	// Thiếu phiên bản — đúng dạng tệp viết theo lược đồ cũ.
+	broken := "key: hong\nname:\n  vi: Hỏng\n  en: Broken\ncompose: |\n  services:\n    app:\n      image: ${CONTAINER_NAME}\n"
+	if err := os.WriteFile(filepath.Join(dir, "hong.yaml"), []byte(broken), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	good := "key: tot\nname:\n  vi: Tốt\n  en: Fine\nversions:\n  - name: \"1\"\n    images:\n      - alpine:3\n    values:\n      IMAGE: alpine:3\ncompose: |\n  services:\n    app:\n      image: ${IMAGE}\n      container_name: ${CONTAINER_NAME}\n"
+	if err := os.WriteFile(filepath.Join(dir, "tot.yaml"), []byte(good), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	catalog, err := LoadDir(dir)
+	if err != nil {
+		t.Fatalf("nạp thư mục danh mục: %v", err)
+	}
+
+	if len(catalog.Apps()) != 1 || catalog.Apps()[0].Key != "tot" {
+		t.Fatalf("mong đợi giữ lại đúng ứng dụng hợp lệ, nhận %v", keysOf(catalog))
+	}
+	if len(catalog.Problems()) != 1 || !strings.Contains(catalog.Problems()[0], "hong.yaml") {
+		t.Errorf("mong đợi báo lại tệp hỏng, nhận %v", catalog.Problems())
+	}
 }

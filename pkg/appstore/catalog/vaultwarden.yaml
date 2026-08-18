@@ -6,16 +6,29 @@ description:
   vi: "Máy chủ kho mật khẩu tương thích Bitwarden, nhẹ và chạy được trên máy cấu hình thấp."
   en: "A lightweight Bitwarden-compatible password vault server that runs on small machines."
 category: security
-version: "1"
 website: https://github.com/dani-garcia/vaultwarden
-images:
-  - vaultwarden/server:1.32.0
 portField: HTTP_PORT
+versions:
+  - name: "1.37.1"
+    images:
+      - vaultwarden/server:1.37.1
+    values:
+      IMAGE: "vaultwarden/server:1.37.1"
+  - name: "1.36.0"
+    images:
+      - vaultwarden/server:1.36.0
+    values:
+      IMAGE: "vaultwarden/server:1.36.0"
+  - name: "1.35.8"
+    images:
+      - vaultwarden/server:1.35.8
+    values:
+      IMAGE: "vaultwarden/server:1.35.8"
 fields:
   - key: HTTP_PORT
     label: {vi: Cổng web, en: Web port}
     type: port
-    default: "8081"
+    default: "8082"
     required: true
   - key: ADMIN_TOKEN
     label: {vi: Khóa trang quản trị, en: Admin page token}
@@ -35,13 +48,13 @@ fields:
         label: {vi: Không, en: No}
 compose: |
   services:
-    vaultwarden:
-      image: vaultwarden/server:1.32.0
+    app:
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       environment:
-        ADMIN_TOKEN: ${ADMIN_TOKEN}
-        SIGNUPS_ALLOWED: ${SIGNUPS_ALLOWED}
+        ADMIN_TOKEN: "${ADMIN_TOKEN}"
+        SIGNUPS_ALLOWED: "${SIGNUPS_ALLOWED}"
       ports:
         - "${HTTP_PORT}:80"
       volumes:

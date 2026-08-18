@@ -1,0 +1,49 @@
+key: grocy
+name:
+  vi: Grocy
+  en: Grocy
+description:
+  vi: "Quản lý kho thực phẩm trong nhà: hạn dùng, danh sách đi chợ và công thức nấu ăn."
+  en: "Household groceries: expiry dates, shopping lists and recipes."
+category: productivity
+website: https://grocy.info
+portField: HTTP_PORT
+versions:
+  - name: "4.6.0"
+    images:
+      - linuxserver/grocy:4.6.0
+    values:
+      IMAGE: "linuxserver/grocy:4.6.0"
+  - name: "4.5.0"
+    images:
+      - linuxserver/grocy:4.5.0
+    values:
+      IMAGE: "linuxserver/grocy:4.5.0"
+  - name: "4.4.2"
+    images:
+      - linuxserver/grocy:4.4.2
+    values:
+      IMAGE: "linuxserver/grocy:4.4.2"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "9283"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - config:/config
+
+  volumes:
+    config:

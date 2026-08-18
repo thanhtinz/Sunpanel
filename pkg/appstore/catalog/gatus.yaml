@@ -1,0 +1,47 @@
+key: gatus
+name:
+  vi: Gatus
+  en: Gatus
+description:
+  vi: "Theo dõi dịch vụ theo điều kiện tự đặt và hiện trang trạng thái gọn nhẹ."
+  en: "Monitors services against conditions you define and shows a compact status page."
+category: monitoring
+website: https://gatus.io
+portField: HTTP_PORT
+versions:
+  - name: "v5.36.0"
+    images:
+      - twinproduction/gatus:v5.36.0
+    values:
+      IMAGE: "twinproduction/gatus:v5.36.0"
+  - name: "v5.35.0"
+    images:
+      - twinproduction/gatus:v5.35.0
+    values:
+      IMAGE: "twinproduction/gatus:v5.35.0"
+  - name: "v5.34.0"
+    images:
+      - twinproduction/gatus:v5.34.0
+    values:
+      IMAGE: "twinproduction/gatus:v5.34.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8085"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - config:/config
+        - data:/data
+
+  volumes:
+    config:
+    data:

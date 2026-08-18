@@ -1,0 +1,57 @@
+key: searxng
+name:
+  vi: SearXNG
+  en: SearXNG
+description:
+  vi: "Máy tìm kiếm tổng hợp không theo dõi, gộp kết quả từ nhiều nguồn."
+  en: "A privacy-respecting metasearch engine that merges results from many sources."
+category: tool
+website: https://searxng.org
+portField: HTTP_PORT
+versions:
+  - name: "2026.8.17-374939b88"
+    images:
+      - searxng/searxng:2026.8.17-374939b88
+    values:
+      IMAGE: "searxng/searxng:2026.8.17-374939b88"
+  - name: "2026.7.31-6bfd82705"
+    images:
+      - searxng/searxng:2026.7.31-6bfd82705
+    values:
+      IMAGE: "searxng/searxng:2026.7.31-6bfd82705"
+  - name: "2025.12.30-a5c946a32"
+    images:
+      - searxng/searxng:2025.12.30-a5c946a32
+    values:
+      IMAGE: "searxng/searxng:2025.12.30-a5c946a32"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8088"
+    required: true
+  - key: BASE_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:8088/"
+    required: true
+  - key: SECRET_KEY
+    label: {vi: Khóa bí mật, en: Secret key}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        SEARXNG_BASE_URL: "${BASE_URL}"
+        SEARXNG_SECRET: "${SECRET_KEY}"
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - config:/etc/searxng
+
+  volumes:
+    config:

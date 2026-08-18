@@ -6,16 +6,29 @@ description:
   vi: "Trình quản lý tệp qua web cho một thư mục cụ thể, chia sẻ được cho người ngoài."
   en: "A web file manager scoped to one folder, with share links for outsiders."
 category: tool
-version: "1"
 website: https://filebrowser.org
-images:
-  - filebrowser/filebrowser:v2.31.2
 portField: HTTP_PORT
+versions:
+  - name: "v2.63.23"
+    images:
+      - filebrowser/filebrowser:v2.63.23
+    values:
+      IMAGE: "filebrowser/filebrowser:v2.63.23"
+  - name: "v2.62.2"
+    images:
+      - filebrowser/filebrowser:v2.62.2
+    values:
+      IMAGE: "filebrowser/filebrowser:v2.62.2"
+  - name: "v2.61.2"
+    images:
+      - filebrowser/filebrowser:v2.61.2
+    values:
+      IMAGE: "filebrowser/filebrowser:v2.61.2"
 fields:
   - key: HTTP_PORT
     label: {vi: Cổng web, en: Web port}
     type: port
-    default: "8082"
+    default: "8083"
     required: true
   - key: ROOT_DIR
     label: {vi: Thư mục gốc, en: Root folder}
@@ -27,8 +40,8 @@ fields:
     required: true
 compose: |
   services:
-    filebrowser:
-      image: filebrowser/filebrowser:v2.31.2
+    app:
+      image: ${IMAGE}
       container_name: ${CONTAINER_NAME}
       restart: unless-stopped
       ports:

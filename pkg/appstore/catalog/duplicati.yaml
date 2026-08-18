@@ -1,0 +1,57 @@
+key: duplicati
+name:
+  vi: Duplicati
+  en: Duplicati
+description:
+  vi: "Sao lưu có mã hóa lên S3, Google Drive, WebDAV và hàng chục dịch vụ khác."
+  en: "Encrypted backups to S3, Google Drive, WebDAV and dozens of other services."
+category: storage
+website: https://duplicati.com
+portField: HTTP_PORT
+versions:
+  - name: "2.3.0"
+    images:
+      - linuxserver/duplicati:2.3.0
+    values:
+      IMAGE: "linuxserver/duplicati:2.3.0"
+  - name: "2.2.0"
+    images:
+      - linuxserver/duplicati:2.2.0
+    values:
+      IMAGE: "linuxserver/duplicati:2.2.0"
+  - name: "2.1.0"
+    images:
+      - linuxserver/duplicati:2.1.0
+    values:
+      IMAGE: "linuxserver/duplicati:2.1.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8200"
+    required: true
+  - key: SOURCE_DIR
+    label: {vi: Thư mục cần sao lưu, en: Folder to back up}
+    type: text
+    default: "/srv"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:8200"
+      volumes:
+        - config:/config
+        - ${SOURCE_DIR}:/source:ro
+        - backups:/backups
+
+  volumes:
+    config:
+    backups:

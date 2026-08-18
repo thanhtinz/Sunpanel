@@ -1,0 +1,62 @@
+key: nginx-proxy-manager
+name:
+  vi: Nginx Proxy Manager
+  en: Nginx Proxy Manager
+description:
+  vi: "Dựng reverse proxy và xin chứng chỉ Let's Encrypt bằng giao diện, không phải sửa tệp cấu hình."
+  en: "Set up reverse proxies and Let's Encrypt certificates from a UI instead of editing config files."
+category: tool
+website: https://nginxproxymanager.com
+portField: ADMIN_PORT
+versions:
+  - name: "2.15.1"
+    images:
+      - jc21/nginx-proxy-manager:2.15.1
+    values:
+      IMAGE: "jc21/nginx-proxy-manager:2.15.1"
+  - name: "2.14.0"
+    images:
+      - jc21/nginx-proxy-manager:2.14.0
+    values:
+      IMAGE: "jc21/nginx-proxy-manager:2.14.0"
+  - name: "2.13.7"
+    images:
+      - jc21/nginx-proxy-manager:2.13.7
+    values:
+      IMAGE: "jc21/nginx-proxy-manager:2.13.7"
+fields:
+  - key: ADMIN_PORT
+    label: {vi: Cổng quản trị, en: Admin port}
+    type: port
+    default: "8181"
+    required: true
+  - key: PROXY_HTTP_PORT
+    label: {vi: Cổng HTTP, en: HTTP port}
+    help:
+      vi: "Cổng 80 và 443 phải trống thì Let's Encrypt mới xác minh được tên miền."
+      en: "Ports 80 and 443 must be free for Let's Encrypt to verify your domain."
+    type: port
+    default: "80"
+    required: true
+  - key: PROXY_HTTPS_PORT
+    label: {vi: Cổng HTTPS, en: HTTPS port}
+    type: port
+    default: "443"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${ADMIN_PORT}:81"
+        - "${PROXY_HTTP_PORT}:80"
+        - "${PROXY_HTTPS_PORT}:443"
+      volumes:
+        - data:/data
+        - letsencrypt:/etc/letsencrypt
+
+  volumes:
+    data:
+    letsencrypt:
