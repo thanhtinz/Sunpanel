@@ -2,6 +2,8 @@ import { baseUrl, request } from './client'
 import type {
   ArchiveFormat,
   AuditLog,
+  CertPayload,
+  Certificate,
   CronJob,
   CronJobPayload,
   CronRun,
@@ -31,6 +33,9 @@ import type {
   TokenPair,
   TotpSetup,
   User,
+  WebServerStatus,
+  Website,
+  WebsitePayload,
 } from './types'
 
 /** Các endpoint xác thực. */
@@ -192,6 +197,44 @@ export const cronApi = {
 
   validate: (schedule: string) =>
     request<{ next: string[] }>('/api/v1/cron/validate', { method: 'POST', body: { schedule } }),
+}
+
+/** Các endpoint website. */
+export const websiteApi = {
+  status: () => request<WebServerStatus>('/api/v1/websites/status'),
+
+  list: () => request<Website[]>('/api/v1/websites'),
+
+  config: (id: number) => request<{ content: string }>(`/api/v1/websites/${id}/config`),
+
+  create: (payload: WebsitePayload) =>
+    request<Website>('/api/v1/websites', { method: 'POST', body: payload }),
+
+  update: (id: number, payload: WebsitePayload) =>
+    request<Website>(`/api/v1/websites/${id}`, { method: 'PUT', body: payload }),
+
+  remove: (id: number) => request<void>(`/api/v1/websites/${id}`, { method: 'DELETE' }),
+
+  setEnabled: (id: number, enabled: boolean) =>
+    request<Website>(`/api/v1/websites/${id}/enabled`, { method: 'POST', body: { enabled } }),
+
+  reload: () => request<{ reloaded: boolean }>('/api/v1/websites/reload', { method: 'POST' }),
+}
+
+/** Các endpoint chứng chỉ TLS. */
+export const certApi = {
+  list: () => request<Certificate[]>('/api/v1/certificates'),
+
+  issue: (payload: CertPayload) =>
+    request<Certificate>('/api/v1/certificates', { method: 'POST', body: payload }),
+
+  renew: (name: string) =>
+    request<Certificate>(`/api/v1/certificates/${encodeURIComponent(name)}/renew`, {
+      method: 'POST',
+    }),
+
+  remove: (name: string) =>
+    request<void>(`/api/v1/certificates/${encodeURIComponent(name)}`, { method: 'DELETE' }),
 }
 
 /** Các endpoint tường lửa. */

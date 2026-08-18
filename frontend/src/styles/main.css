@@ -1,5 +1,9 @@
 :root {
   color-scheme: light;
+  /* DejaVu Sans Mono — phông đẳng khoảng mặc định trên phần lớn bản Linux —
+     dựng sai dấu tiếng Việt: "để" hiện thành "đê`". Liệt kê trước các phông
+     dựng đúng rồi mới rơi về monospace chung. */
+  --sp-font-mono: 'Cascadia Mono', Consolas, Menlo, 'Liberation Mono', 'Courier New', monospace;
   --sp-bg: #f5f6f8;
   --sp-bg-elevated: #ffffff;
   --sp-border: #e5e7eb;
@@ -35,6 +39,15 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Mọi chỗ hiển thị chữ đẳng khoảng đều phải dùng phông dựng đúng dấu tiếng Việt:
+   cấu hình máy chủ web và lệnh của tác vụ định kỳ đều có chú thích tiếng Việt. */
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--sp-font-mono);
+}
+
 /* Số liệu đo lường dùng chữ đẳng khoảng để cột số không nhảy khi giá trị đổi. */
 .sp-metric {
   font-variant-numeric: tabular-nums;
@@ -54,6 +67,23 @@ body {
 
   .n-data-table .n-data-table-table {
     min-width: 640px;
+  }
+
+  /* Tiêu đề thẻ và nhóm nút bên phải nằm cùng một hàng flex. Trên màn hình hẹp,
+     nhóm nút chiếm hết chỗ và ép tiêu đề co lại tới mức mỗi ký tự xuống một
+     dòng. Xếp chúng thành hai hàng thay vì để tiêu đề vỡ. */
+  .n-card > .n-card-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .n-card > .n-card-header > .n-card-header__main {
+    min-width: 0;
+    flex: 1 0 100%;
+  }
+
+  .n-card > .n-card-header > .n-card-header__extra {
+    margin-left: 0;
   }
 
   /* Hộp thoại chiếm gần trọn màn hình: viền rộng trên điện thoại chỉ tổ phí chỗ. */

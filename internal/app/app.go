@@ -19,11 +19,13 @@ import (
 	"github.com/thanhtinz/sunpanel/internal/database"
 	"github.com/thanhtinz/sunpanel/internal/router"
 	"github.com/thanhtinz/sunpanel/internal/service"
+	"github.com/thanhtinz/sunpanel/pkg/certs"
 	"github.com/thanhtinz/sunpanel/pkg/crypto"
 	"github.com/thanhtinz/sunpanel/pkg/dockerx"
 	"github.com/thanhtinz/sunpanel/pkg/firewall"
 	"github.com/thanhtinz/sunpanel/pkg/host"
 	"github.com/thanhtinz/sunpanel/pkg/sysservice"
+	"github.com/thanhtinz/sunpanel/pkg/webserver"
 )
 
 // sessionCleanupInterval là chu kỳ dọn các phiên đăng nhập đã hết hạn.
@@ -90,6 +92,25 @@ func New(cfg config.Config) (*App, error) {
 	cronHost := host.NewLocalHost(cfg.Server.FileRoot, nil)
 	cronJobs := service.NewCronService(db, cronHost, cfg.Server.FileRoot, audit)
 
+	// Chứng chỉ và website: kho chứng chỉ nằm trong thư mục dữ liệu của panel,
+	// còn tệp vhost ghi vào thư mục nginx đọc.
+	certStore := certs.NewStore(cfg.CertDir())
+	solver := certs.NewWebrootSolver(cfg.Website.ACMEWebroot)
+	certificates := service.NewCertificateService(
+		db, certStore, solver, cfg.ACMEAccountKeyPath(), audit,
+	)
+
+	// Thư mục gốc của website do quản trị viên chọn và thường nằm ngoài phạm vi
+	// trình quản lý tệp, nên dịch vụ website dùng host riêng không giới hạn.
+	websiteHost := host.NewLocalHost("/", nil)
+	nginxHost := host.NewLocalHost(cfg.Server.FileRoot, []string{"nginx"})
+	websites := service.NewWebsiteService(
+		db, webserver.NewNginx(nginxHost, cfg.Website.NginxConfDir), certificates,
+		websiteHost, cfg.Website.ACMEWebroot, audit,
+	)
+	// Chứng chỉ mới chỉ có tác dụng sau khi máy chủ web đọc lại tệp.
+	certificates.SetReloader(websites.Reload)
+
 	// Dò công cụ tường lửa một lần lúc khởi động: việc dò phải chạy vài lệnh, và
 	// công cụ trên máy không đổi giữa chừng.
 	firewallManager := firewall.Detect(context.Background(), localHost)
@@ -107,6 +128,8 @@ func New(cfg config.Config) (*App, error) {
 		Terminal: terminal,
 		Services: sysServices,
 		Cron:     cronJobs,
+		Websites: websites,
+		Certs:    certificates,
 		Firewall: firewallSvc,
 		Docker:   dockerSvc,
 		Tokens:   tokens,
@@ -148,6 +171,8 @@ func (a *App) Run() error {
 		return fmt.Errorf("khởi động bộ lập lịch: %w", err)
 	}
 	defer a.svc.Cron.Stop()
+
+	go a.svc.Certs.RunRenewal(ctx)
 
 	go a.runSessionCleanup(ctx)
 

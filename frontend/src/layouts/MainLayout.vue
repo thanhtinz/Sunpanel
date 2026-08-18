@@ -28,6 +28,7 @@ import IconServices from '@/components/icons/IconServices.vue'
 import IconClock from '@/components/icons/IconClock.vue'
 import IconShield from '@/components/icons/IconShield.vue'
 import IconDocker from '@/components/icons/IconDocker.vue'
+import IconSite from '@/components/icons/IconSite.vue'
 import IconMenu from '@/components/icons/IconMenu.vue'
 import IconSearch from '@/components/icons/IconSearch.vue'
 import CommandPalette from '@/components/CommandPalette.vue'
@@ -71,6 +72,11 @@ const menuOptions = computed<MenuOption[]>(() => {
       label: renderLink('files', t('nav.files')),
       key: 'files',
       icon: renderIcon(IconFolder),
+    },
+    {
+      label: renderLink('websites', t('nav.websites')),
+      key: 'websites',
+      icon: renderIcon(IconSite),
     },
     {
       label: renderLink('docker', t('nav.docker')),

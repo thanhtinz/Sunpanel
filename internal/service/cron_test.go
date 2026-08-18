@@ -350,3 +350,30 @@ func TestCronCreateReturnsNextRun(t *testing.T) {
 		t.Error("bật lại phải có thời điểm chạy kế tiếp")
 	}
 }
+
+// GORM bỏ qua trường mang giá trị zero khi cột có giá trị mặc định. Với tác vụ
+// định kỳ, hậu quả là một tác vụ được tạo ở trạng thái tắt sẽ tự bật và chạy
+// lệnh mà người tạo chưa muốn chạy.
+func TestCronCreateDisabledStaysDisabled(t *testing.T) {
+	db := newMemoryDB(t)
+	svc := NewCronService(db, nil, t.TempDir(), NewAuditService(db))
+	disabled := false
+	job, err := svc.Create(context.Background(), CronJobRequest{
+		Name: "tat", Schedule: "0 3 * * *", Command: "echo hi", Enabled: &disabled,
+	})
+	if err != nil {
+		t.Fatalf("tao: %v", err)
+	}
+	if job.Enabled {
+		t.Error("tác vụ tạo ở trạng thái tắt nhưng lại báo là đang bật")
+	}
+
+	// Đọc lại từ cơ sở dữ liệu: giá trị mặc định của cột chỉ lộ ra sau khi ghi.
+	stored, err := svc.Get(context.Background(), job.ID)
+	if err != nil {
+		t.Fatalf("đọc lại tác vụ: %v", err)
+	}
+	if stored.Enabled {
+		t.Error("trạng thái tắt không được lưu xuống cơ sở dữ liệu")
+	}
+}

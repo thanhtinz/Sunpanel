@@ -344,3 +344,81 @@ export interface DockerStats {
 }
 
 export type DockerAction = 'start' | 'stop' | 'restart' | 'pause' | 'unpause' | 'remove'
+
+export type WebsiteType = 'static' | 'proxy' | 'php'
+
+export interface Website {
+  id: number
+  name: string
+  /** Danh sách tên miền, ngăn cách bằng dấu phẩy. */
+  domains: string
+  type: WebsiteType
+  root: string
+  proxyTarget: string
+  phpSocket: string
+  port: number
+  sslPort: number
+  sslEnabled: boolean
+  forceHttps: boolean
+  certName: string
+  extraConfig: string
+  enabled: boolean
+  remark: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface WebsitePayload {
+  name: string
+  domains: string[]
+  type: WebsiteType
+  root?: string
+  proxyTarget?: string
+  phpSocket?: string
+  port?: number
+  sslPort?: number
+  sslEnabled?: boolean
+  forceHttps?: boolean
+  certName?: string
+  extraConfig?: string
+  enabled?: boolean
+  remark?: string
+}
+
+export interface WebServerStatus {
+  server: string
+  available: boolean
+}
+
+export type CertSource = 'self' | 'acme' | 'upload'
+
+export interface Certificate {
+  id: number
+  name: string
+  domains: string
+  source: CertSource
+  email: string
+  staging: boolean
+  autoRenew: boolean
+  issuedAt: string
+  expiresAt: string
+  lastRenewAt?: string
+  lastError?: string
+  issuer: string
+  daysRemaining: number
+  /** Bản ghi còn trong cơ sở dữ liệu nhưng tệp chứng chỉ đã biến mất. */
+  missing: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CertPayload {
+  name: string
+  domains: string[]
+  source: CertSource
+  email?: string
+  staging?: boolean
+  autoRenew?: boolean
+  certPem?: string
+  keyPem?: string
+}

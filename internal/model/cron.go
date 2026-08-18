@@ -18,8 +18,11 @@ type CronJob struct {
 	// WorkDir là thư mục làm việc; để trống thì dùng gốc quản lý tệp.
 	WorkDir string `gorm:"size:512" json:"workDir"`
 	// TimeoutSeconds giới hạn thời gian chạy; 0 nghĩa là dùng mặc định.
-	TimeoutSeconds int  `gorm:"not null;default:0" json:"timeoutSeconds"`
-	Enabled        bool `gorm:"not null;default:true" json:"enabled"`
+	TimeoutSeconds int `gorm:"not null;default:0" json:"timeoutSeconds"`
+	// Enabled không đặt giá trị mặc định cho cột: GORM bỏ qua trường mang giá trị
+	// zero khi cột có mặc định, nên một tác vụ được tạo ở trạng thái tắt sẽ lặng
+	// lẽ bật lên và chạy lệnh mà người tạo chưa muốn chạy.
+	Enabled bool `gorm:"not null" json:"enabled"`
 
 	// LastRunAt, LastSuccess và LastExitCode tóm tắt lần chạy gần nhất để danh
 	// sách hiển thị được ngay mà không phải truy vấn bảng lịch sử.

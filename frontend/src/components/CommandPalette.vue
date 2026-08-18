@@ -33,6 +33,7 @@ const navigationCommands = computed<Command[]>(() => {
   const routes: { name: string; adminOnly?: boolean; writeOnly?: boolean; keywords?: string }[] = [
     { name: 'dashboard', keywords: 'tong quan overview home' },
     { name: 'files', keywords: 'tep file quan ly tep' },
+    { name: 'websites', keywords: 'trang web site domain ten mien ssl chung chi nginx vhost' },
     { name: 'docker', keywords: 'container image volume' },
     { name: 'services', keywords: 'dich vu systemd service' },
     { name: 'cron', keywords: 'tac vu dinh ky schedule job' },

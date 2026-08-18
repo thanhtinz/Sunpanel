@@ -9,3 +9,18 @@ func defaultDataDir() string { return "/opt/sunpanel" }
 // Mặc định là toàn bộ hệ thống tệp vì đây là công cụ quản trị máy chủ;
 // quản trị viên có thể thu hẹp lại trong cấu hình.
 func defaultFileRoot() string { return "/" }
+
+// defaultNginxConfDir là nơi panel ghi tệp vhost.
+//
+// Cả Debian/Ubuntu lẫn RHEL/Rocky đều include sẵn thư mục này trong nginx.conf,
+// nên panel không phải sửa cấu hình gốc của hệ thống.
+func defaultNginxConfDir() string { return "/etc/nginx/conf.d" }
+
+// defaultWebRoot là thư mục mặc định chứa mã nguồn các website.
+func defaultWebRoot() string { return "/www/wwwroot" }
+
+// defaultACMEWebroot là thư mục phục vụ tệp xác thực ACME.
+//
+// Nằm dưới /var/www chứ không phải thư mục dữ liệu của panel, vì máy chủ web
+// chạy dưới người dùng khác và phải đọc được thư mục này.
+func defaultACMEWebroot() string { return "/var/www/sunpanel-acme" }

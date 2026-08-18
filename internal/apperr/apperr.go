@@ -187,6 +187,46 @@ var (
 	FirewallCriticalPort = New(http.StatusForbidden, "firewall.critical_port")
 )
 
+// Các lỗi của website.
+var (
+	// WebsiteNotFound là không tìm thấy website.
+	WebsiteNotFound = New(http.StatusNotFound, "website.not_found")
+	// WebsiteNameExists là tên website đã được dùng.
+	WebsiteNameExists = New(http.StatusConflict, "website.name_exists")
+	// WebsiteInvalidName là tên website không hợp lệ.
+	WebsiteInvalidName = New(http.StatusBadRequest, "website.invalid_name")
+	// WebsiteInvalidDomain là tên miền không hợp lệ.
+	WebsiteInvalidDomain = New(http.StatusBadRequest, "website.invalid_domain")
+	// WebsiteDomainTaken là tên miền đã thuộc về một website khác.
+	WebsiteDomainTaken = New(http.StatusConflict, "website.domain_taken")
+	// WebsiteInvalidConfig là cấu hình website không hợp lệ.
+	WebsiteInvalidConfig = New(http.StatusBadRequest, "website.invalid_config")
+	// WebsiteServerUnavailable là máy chủ không có phần mềm web server khả dụng.
+	WebsiteServerUnavailable = New(http.StatusServiceUnavailable, "website.server_unavailable")
+	// WebsiteApplyFailed là máy chủ web từ chối cấu hình sinh ra.
+	WebsiteApplyFailed = New(http.StatusInternalServerError, "website.apply_failed")
+)
+
+// Các lỗi của chứng chỉ TLS.
+var (
+	// CertNotFound là không tìm thấy chứng chỉ.
+	CertNotFound = New(http.StatusNotFound, "cert.not_found")
+	// CertNameExists là tên chứng chỉ đã được dùng.
+	CertNameExists = New(http.StatusConflict, "cert.name_exists")
+	// CertInvalidName là tên chứng chỉ không hợp lệ.
+	CertInvalidName = New(http.StatusBadRequest, "cert.invalid_name")
+	// CertInvalid là dữ liệu chứng chỉ hoặc khóa không hợp lệ.
+	CertInvalid = New(http.StatusBadRequest, "cert.invalid")
+	// CertKeyMismatch là khóa riêng không khớp với chứng chỉ.
+	CertKeyMismatch = New(http.StatusBadRequest, "cert.key_mismatch")
+	// CertInvalidEmail là địa chỉ email đăng ký ACME không hợp lệ.
+	CertInvalidEmail = New(http.StatusBadRequest, "cert.invalid_email")
+	// CertIssueFailed là việc xin chứng chỉ từ máy chủ ACME thất bại.
+	CertIssueFailed = New(http.StatusBadGateway, "cert.issue_failed")
+	// CertInUse là chứng chỉ đang được website sử dụng nên không xóa được.
+	CertInUse = New(http.StatusConflict, "cert.in_use")
+)
+
 // Các lỗi của Docker.
 var (
 	// DockerUnavailable là không kết nối được tới Docker.

@@ -32,6 +32,8 @@ type Services struct {
 	Terminal *service.TerminalService
 	Services *service.SystemServiceManager
 	Cron     *service.CronService
+	Websites *service.WebsiteService
+	Certs    *service.CertificateService
 	Firewall *service.FirewallService
 	Docker   *service.DockerService
 	Tokens   *service.TokenIssuer
@@ -84,6 +86,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	terminalHandler := v1.NewTerminalHandler(svc.Terminal)
 	sysServiceHandler := v1.NewSysServiceHandler(svc.Services)
 	cronHandler := v1.NewCronHandler(svc.Cron, svc.Audit)
+	websiteHandler := v1.NewWebsiteHandler(svc.Websites, svc.Certs, svc.Audit)
 	firewallHandler := v1.NewFirewallHandler(svc.Firewall)
 	dockerHandler := v1.NewDockerHandler(svc.Docker)
 
@@ -180,6 +183,38 @@ func registerAPI(engine *gin.Engine, svc Services) {
 				cronWrite.DELETE("/:id", cronHandler.Delete)
 				cronWrite.POST("/:id/enabled", cronHandler.SetEnabled)
 				cronWrite.POST("/:id/run", cronHandler.RunNow)
+			}
+		}
+
+		// Website và chứng chỉ: xem thì ai đăng nhập cũng được, còn sửa cấu hình
+		// máy chủ web thì phải có quyền vận hành — một khối server sai đủ để làm
+		// mọi website trên máy ngừng phục vụ.
+		websites := authenticated.Group("/websites")
+		{
+			websites.GET("/status", websiteHandler.Status)
+			websites.GET("", websiteHandler.List)
+			websites.GET("/:id", websiteHandler.Get)
+			websites.GET("/:id/config", websiteHandler.Config)
+
+			websiteWrite := websites.Group("", middleware.RequireWrite())
+			{
+				websiteWrite.POST("", websiteHandler.Create)
+				websiteWrite.POST("/reload", websiteHandler.Reload)
+				websiteWrite.PUT("/:id", websiteHandler.Update)
+				websiteWrite.DELETE("/:id", websiteHandler.Delete)
+				websiteWrite.POST("/:id/enabled", websiteHandler.SetEnabled)
+			}
+		}
+
+		certificates := authenticated.Group("/certificates")
+		{
+			certificates.GET("", websiteHandler.ListCerts)
+
+			certWrite := certificates.Group("", middleware.RequireWrite())
+			{
+				certWrite.POST("", websiteHandler.IssueCert)
+				certWrite.POST("/:name/renew", websiteHandler.RenewCert)
+				certWrite.DELETE("/:name", websiteHandler.DeleteCert)
 			}
 		}
 
