@@ -126,7 +126,12 @@ async function reload(): Promise<void> {
     ></iframe>
   </NCard>
 
-  <NCard v-else :title="t('plugin.title')" size="small">
+  <!-- Thẻ không đặt tiêu đề: thanh tiêu đề của panel đã nói đây là trang nào.
+       Khe tiêu đề rỗng vì Naive UI bỏ luôn thanh tiêu đề — kéo theo cả nhóm nút
+       bên phải — khi thẻ không có tiêu đề. -->
+  <NCard v-else size="small">
+    <template #header><span /></template>
+
     <template #header-extra>
       <NSpace :size="8">
         <NButton size="small" :loading="loading" @click="load">{{ t('common.refresh') }}</NButton>

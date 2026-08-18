@@ -111,7 +111,9 @@ const loginColumns = computed<DataTableColumns<LoginLog>>(() => [
 </script>
 
 <template>
-  <NCard :title="t('audit.title')" size="small">
+  <!-- Thẻ không đặt tiêu đề: thanh tiêu đề của panel đã nói đây là trang nào,
+       nhắc lại lần nữa chỉ tốn một dòng ngay chỗ cần cho nội dung. -->
+  <NCard size="small">
     <NTabs v-model:value="tab" type="line" animated>
       <NTabPane name="actions" :tab="t('audit.actions')">
         <NDataTable

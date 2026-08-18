@@ -190,7 +190,13 @@ const columns = computed<DataTableColumns<User>>(() => [
 </script>
 
 <template>
-  <NCard :title="t('users.title')" size="small">
+  <!-- Thẻ không đặt tiêu đề: thanh tiêu đề của panel đã nói đây là trang nào,
+       nhắc lại lần nữa chỉ tốn một dòng ngay chỗ cần cho nội dung. -->
+  <NCard size="small">
+    <!-- Naive UI bỏ luôn thanh tiêu đề khi thẻ không có tiêu đề, kéo theo cả
+         nhóm nút bên phải. Khe tiêu đề rỗng giữ thanh đó lại cho nhóm nút. -->
+    <template #header><span /></template>
+
     <template #header-extra>
       <NButton type="primary" size="small" @click="createModal = true">
         {{ t('common.create') }}
