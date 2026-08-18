@@ -28,6 +28,7 @@ type Services struct {
 	Users   *service.UserService
 	Audit   *service.AuditService
 	Monitor *service.MonitorService
+	Files   *service.FileService
 	Tokens  *service.TokenIssuer
 }
 
@@ -74,6 +75,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	authHandler := v1.NewAuthHandler(svc.Auth, svc.Users)
 	userHandler := v1.NewUserHandler(svc.Users, svc.Audit)
 	monitorHandler := v1.NewMonitorHandler(svc.Monitor)
+	fileHandler := v1.NewFileHandler(svc.Files, svc.Audit, svc.Tokens)
 
 	api := engine.Group("/api/v1")
 
@@ -89,6 +91,10 @@ func registerAPI(engine *gin.Engine, svc Services) {
 		public.POST("/refresh", authHandler.Refresh)
 		public.POST("/logout", authHandler.Logout)
 	}
+
+	// Tải tệp dùng vé ngắn hạn thay vì header Authorization, vì trình duyệt không
+	// gửi được header khi điều hướng tới một URL tải tệp.
+	api.GET("/files/download", fileHandler.Download)
 
 	authenticated := api.Group("", middleware.Auth(svc.Tokens, svc.Auth))
 	{
@@ -112,6 +118,27 @@ func registerAPI(engine *gin.Engine, svc Services) {
 		}
 
 		authenticated.PATCH("/users/me/preferences", userHandler.UpdatePreferences)
+
+		// Đọc tệp thì ai đăng nhập cũng được; mọi thao tác ghi đòi quyền vận hành.
+		files := authenticated.Group("/files")
+		{
+			files.GET("", fileHandler.List)
+			files.GET("/stat", fileHandler.Stat)
+			files.GET("/content", fileHandler.Read)
+			files.POST("/ticket", fileHandler.Ticket)
+
+			write := files.Group("", middleware.RequireWrite())
+			{
+				write.PUT("/content", fileHandler.Write)
+				write.POST("/upload", fileHandler.Upload)
+				write.POST("/mkdir", fileHandler.Mkdir)
+				write.POST("/remove", fileHandler.Remove)
+				write.POST("/move", fileHandler.Move)
+				write.POST("/chmod", fileHandler.Chmod)
+				write.POST("/compress", fileHandler.Compress)
+				write.POST("/extract", fileHandler.Extract)
+			}
+		}
 
 		// Quản lý người dùng và nhật ký kiểm toán chỉ dành cho quản trị viên.
 		admin := authenticated.Group("", middleware.RequireAdmin())

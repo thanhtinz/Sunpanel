@@ -143,3 +143,32 @@ export interface PageResult<T> {
   page: number
   pageSize: number
 }
+
+export interface FileInfo {
+  name: string
+  path: string
+  size: number
+  mode: string
+  isDir: boolean
+  isLink: boolean
+  linkTarget?: string
+  modTime: string
+  owner?: string
+  group?: string
+}
+
+export interface FileList {
+  path: string
+  parent: string
+  items: FileInfo[]
+  total: number
+}
+
+export interface FileContent {
+  path: string
+  content: string
+  size: number
+  mode: string
+}
+
+export type ArchiveFormat = 'zip' | 'tar.gz'

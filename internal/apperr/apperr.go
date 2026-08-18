@@ -116,3 +116,31 @@ var (
 	// LastAdmin ngăn xóa hoặc hạ quyền quản trị viên cuối cùng, tránh khóa chính mình ra ngoài.
 	LastAdmin = New(http.StatusBadRequest, "user.last_admin")
 )
+
+// Các lỗi của trình quản lý tệp.
+var (
+	// FileNotFound là không tìm thấy tệp hoặc thư mục.
+	FileNotFound = New(http.StatusNotFound, "file.not_found")
+	// FilePermissionDenied là hệ điều hành từ chối thao tác.
+	FilePermissionDenied = New(http.StatusForbidden, "file.permission_denied")
+	// FileAlreadyExists là mục đích đã tồn tại.
+	FileAlreadyExists = New(http.StatusConflict, "file.already_exists")
+	// FileIsDirectory là thao tác chỉ áp dụng cho tệp nhưng đối tượng là thư mục.
+	FileIsDirectory = New(http.StatusBadRequest, "file.is_directory")
+	// FileDirectoryNotEmpty là thư mục còn nội dung bên trong.
+	FileDirectoryNotEmpty = New(http.StatusConflict, "file.directory_not_empty")
+	// FileTooLarge là tệp vượt quá giới hạn cho phép.
+	FileTooLarge = New(http.StatusRequestEntityTooLarge, "file.too_large")
+	// FileNotText là tệp nhị phân, không mở được bằng trình soạn thảo văn bản.
+	FileNotText = New(http.StatusBadRequest, "file.not_text")
+	// FileInvalidName là tên tệp không hợp lệ.
+	FileInvalidName = New(http.StatusBadRequest, "file.invalid_name")
+	// FileInvalidMode là chuỗi quyền truy cập không hợp lệ.
+	FileInvalidMode = New(http.StatusBadRequest, "file.invalid_mode")
+	// FileUnsupportedFormat là định dạng nén không được hỗ trợ.
+	FileUnsupportedFormat = New(http.StatusBadRequest, "file.unsupported_format")
+	// FileCorruptArchive là tệp nén hỏng hoặc sai định dạng.
+	FileCorruptArchive = New(http.StatusBadRequest, "file.corrupt_archive")
+	// FileUnsafeArchive là tệp nén chứa mục cố ghi ra ngoài thư mục đích.
+	FileUnsafeArchive = New(http.StatusBadRequest, "file.unsafe_archive")
+)

@@ -23,6 +23,11 @@ const router = createRouter({
           component: () => import('@/views/DashboardView.vue'),
         },
         {
+          path: 'files',
+          name: 'files',
+          component: () => import('@/views/FilesView.vue'),
+        },
+        {
           path: 'profile',
           name: 'profile',
           component: () => import('@/views/ProfileView.vue'),

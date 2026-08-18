@@ -19,6 +19,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import { SUPPORTED_LOCALES, setLocale, type Locale } from '@/locales'
 import IconGauge from '@/components/icons/IconGauge.vue'
+import IconFolder from '@/components/icons/IconFolder.vue'
 import IconUsers from '@/components/icons/IconUsers.vue'
 import IconLogs from '@/components/icons/IconLogs.vue'
 import IconMoon from '@/components/icons/IconMoon.vue'
@@ -47,6 +48,11 @@ const menuOptions = computed<MenuOption[]>(() => {
       label: renderLink('dashboard', t('nav.dashboard')),
       key: 'dashboard',
       icon: renderIcon(IconGauge),
+    },
+    {
+      label: renderLink('files', t('nav.files')),
+      key: 'files',
+      icon: renderIcon(IconFolder),
     },
   ]
 
