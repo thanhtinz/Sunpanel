@@ -1,0 +1,86 @@
+key: zitadel
+name:
+  vi: Zitadel
+  en: Zitadel
+description:
+  vi: "Máy chủ định danh hiện đại: đăng nhập một lần, khóa bảo mật và quản lý nhiều tổ chức."
+  en: "A modern identity server: single sign-on, passkeys and multi-organisation management."
+category: security
+website: https://zitadel.com
+portField: HTTP_PORT
+versions:
+  - name: "4.17.1"
+    images:
+      - ghcr.io/zitadel/zitadel:v4.17.1
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/zitadel/zitadel:v4.17.1"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "3.4.15"
+    images:
+      - ghcr.io/zitadel/zitadel:v3.4.15
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/zitadel/zitadel:v3.4.15"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "2.71.19"
+    images:
+      - ghcr.io/zitadel/zitadel:v2.71.19
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/zitadel/zitadel:v2.71.19"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8500"
+    required: true
+  - key: MASTERKEY
+    label: {vi: Khóa chủ, en: Master key}
+    help:
+      vi: "Zitadel yêu cầu khóa dài đúng 32 ký tự."
+      en: "Zitadel requires a key of exactly 32 characters."
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: start-from-init --masterkeyFromEnv --tlsMode disabled
+      depends_on:
+        - db
+      environment:
+        ZITADEL_MASTERKEY: ${MASTERKEY}
+        ZITADEL_DATABASE_POSTGRES_HOST: db
+        ZITADEL_DATABASE_POSTGRES_PORT: "5432"
+        ZITADEL_DATABASE_POSTGRES_DATABASE: zitadel
+        ZITADEL_DATABASE_POSTGRES_USER_USERNAME: zitadel
+        ZITADEL_DATABASE_POSTGRES_USER_PASSWORD: ${DB_PASSWORD}
+        ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE: disable
+        ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: zitadel
+        ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: ${DB_PASSWORD}
+        ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
+        ZITADEL_EXTERNALSECURE: "false"
+      ports:
+        - "${HTTP_PORT}:8080"
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: zitadel
+        POSTGRES_USER: zitadel
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    db:

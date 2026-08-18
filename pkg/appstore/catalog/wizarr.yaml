@@ -1,0 +1,45 @@
+key: wizarr
+name:
+  vi: Wizarr
+  en: Wizarr
+description:
+  vi: "Trang mời người thân vào máy chủ phim: gửi liên kết, họ tự tạo tài khoản."
+  en: "An invitation page for your media server: send a link and they create their own account."
+category: media
+website: https://github.com/wizarrrr/wizarr
+portField: HTTP_PORT
+versions:
+  - name: "2026.7.1"
+    images:
+      - ghcr.io/wizarrrr/wizarr:v2026.7.1
+    values:
+      IMAGE: "ghcr.io/wizarrrr/wizarr:v2026.7.1"
+  - name: "2025.12.0"
+    images:
+      - ghcr.io/wizarrrr/wizarr:v2025.12.0
+    values:
+      IMAGE: "ghcr.io/wizarrrr/wizarr:v2025.12.0"
+  - name: "4.2.0"
+    images:
+      - ghcr.io/wizarrrr/wizarr:4.2.0
+    values:
+      IMAGE: "ghcr.io/wizarrrr/wizarr:4.2.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5690"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:5690"
+      volumes:
+        - data:/data/database
+
+  volumes:
+    data:

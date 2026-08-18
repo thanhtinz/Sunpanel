@@ -1,0 +1,53 @@
+key: lldap
+name:
+  vi: LLDAP
+  en: LLDAP
+description:
+  vi: "Máy chủ LDAP nhẹ có giao diện, đủ dùng làm nơi lưu tài khoản chung cho các ứng dụng."
+  en: "A light LDAP server with a UI — enough to hold shared accounts for your apps."
+category: security
+website: https://github.com/lldap/lldap
+portField: HTTP_PORT
+versions:
+  - name: "0.6.3-debian"
+    images:
+      - lldap/lldap:v0.6.3-debian
+    values:
+      IMAGE: "lldap/lldap:v0.6.3-debian"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "17170"
+    required: true
+  - key: LDAP_PORT
+    label: {vi: Cổng LDAP, en: LDAP port}
+    type: port
+    default: "3890"
+    required: true
+  - key: JWT_SECRET
+    label: {vi: Khóa ký phiên, en: Session secret}
+    type: password
+    generate: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        LLDAP_JWT_SECRET: "${JWT_SECRET}"
+        LLDAP_LDAP_USER_PASS: "${ADMIN_PASSWORD}"
+        LLDAP_LDAP_BASE_DN: "dc=example,dc=com"
+      ports:
+        - "${HTTP_PORT}:17170"
+        - "${LDAP_PORT}:3890"
+      volumes:
+        - data:/data
+
+  volumes:
+    data:

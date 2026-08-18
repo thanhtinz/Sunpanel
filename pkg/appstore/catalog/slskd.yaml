@@ -1,0 +1,59 @@
+key: slskd
+name:
+  vi: slskd
+  en: slskd
+description:
+  vi: "Ứng dụng mạng chia sẻ nhạc Soulseek qua giao diện web, chạy nền trên máy chủ."
+  en: "A web-based client for the Soulseek music-sharing network that runs headless on a server."
+category: media
+website: https://github.com/slskd/slskd
+portField: HTTP_PORT
+versions:
+  - name: "0.26.0"
+    images:
+      - slskd/slskd:0.26.0
+    values:
+      IMAGE: "slskd/slskd:0.26.0"
+  - name: "0.25.1"
+    images:
+      - slskd/slskd:0.25.1
+    values:
+      IMAGE: "slskd/slskd:0.25.1"
+  - name: "0.24.5"
+    images:
+      - slskd/slskd:0.24.5
+    values:
+      IMAGE: "slskd/slskd:0.24.5"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5031"
+    required: true
+  - key: DOWNLOAD_DIR
+    label: {vi: Thư mục tải về, en: Download folder}
+    type: text
+    default: "/srv/downloads"
+    required: true
+  - key: SHARE_DIR
+    label: {vi: Thư mục chia sẻ, en: Shared folder}
+    type: text
+    default: "/srv/music"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        SLSKD_REMOTE_CONFIGURATION: "true"
+      ports:
+        - "${HTTP_PORT}:5030"
+      volumes:
+        - config:/app
+        - ${DOWNLOAD_DIR}:/downloads
+        - ${SHARE_DIR}:/shared
+
+  volumes:
+    config:

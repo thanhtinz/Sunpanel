@@ -1,0 +1,83 @@
+key: castopod
+name:
+  vi: Castopod
+  en: Castopod
+description:
+  vi: "Nền tảng đăng podcast tự quản, có thống kê lượt nghe và liên kết ActivityPub."
+  en: "A self-hosted podcast platform with listener stats and ActivityPub federation."
+category: media
+website: https://castopod.org
+portField: HTTP_PORT
+versions:
+  - name: "1.15.5"
+    images:
+      - castopod/castopod:1.15.5
+      - mariadb:11
+    values:
+      IMAGE: "castopod/castopod:1.15.5"
+      DB_IMAGE: "mariadb:11"
+  - name: "1.14.1"
+    images:
+      - castopod/castopod:1.14.1
+      - mariadb:11
+    values:
+      IMAGE: "castopod/castopod:1.14.1"
+      DB_IMAGE: "mariadb:11"
+  - name: "1.13.8"
+    images:
+      - castopod/castopod:1.13.8
+      - mariadb:11
+    values:
+      IMAGE: "castopod/castopod:1.13.8"
+      DB_IMAGE: "mariadb:11"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8481"
+    required: true
+  - key: BASE_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:8481"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        CP_BASEURL: ${BASE_URL}
+        CP_ANALYTICS_SALT: ${DB_PASSWORD}
+        CP_DATABASE_HOSTNAME: db
+        CP_DATABASE_NAME: castopod
+        CP_DATABASE_USERNAME: castopod
+        CP_DATABASE_PASSWORD: ${DB_PASSWORD}
+        CP_CACHE_HANDLER: file
+      ports:
+        - "${HTTP_PORT}:8000"
+      volumes:
+        - media:/var/www/castopod/public/media
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        MARIADB_DATABASE: castopod
+        MARIADB_USER: castopod
+        MARIADB_PASSWORD: ${DB_PASSWORD}
+        MARIADB_RANDOM_ROOT_PASSWORD: "1"
+      volumes:
+        - db:/var/lib/mysql
+
+  volumes:
+    media:
+    db:

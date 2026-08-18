@@ -1,0 +1,52 @@
+key: lobe-chat
+name:
+  vi: Lobe Chat
+  en: Lobe Chat
+description:
+  vi: "Giao diện trò chuyện với mô hình ngôn ngữ, có kho trợ lý dựng sẵn và nhận diện giọng nói."
+  en: "A chat UI for language models with a prebuilt assistant store and speech recognition."
+category: development
+website: https://lobehub.com
+portField: HTTP_PORT
+versions:
+  - name: "1.143.3"
+    images:
+      - lobehub/lobe-chat:1.143.3
+    values:
+      IMAGE: "lobehub/lobe-chat:1.143.3"
+  - name: "1.142.9"
+    images:
+      - lobehub/lobe-chat:1.142.9
+    values:
+      IMAGE: "lobehub/lobe-chat:1.142.9"
+  - name: "1.141.10"
+    images:
+      - lobehub/lobe-chat:1.141.10
+    values:
+      IMAGE: "lobehub/lobe-chat:1.141.10"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3211"
+    required: true
+  - key: OLLAMA_URL
+    label: {vi: Địa chỉ Ollama, en: Ollama URL}
+    type: text
+    default: "http://localhost:11434"
+    required: true
+  - key: ACCESS_CODE
+    label: {vi: Mã truy cập, en: Access code}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        OLLAMA_PROXY_URL: "${OLLAMA_URL}"
+        ACCESS_CODE: "${ACCESS_CODE}"
+      ports:
+        - "${HTTP_PORT}:3210"

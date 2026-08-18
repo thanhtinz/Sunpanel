@@ -1,0 +1,73 @@
+key: jellystat
+name:
+  vi: Jellystat
+  en: Jellystat
+description:
+  vi: "Thống kê lượt xem cho Jellyfin: ai xem gì, xem bao lâu và phim nào được xem nhiều nhất."
+  en: "Viewing statistics for Jellyfin: who watched what, for how long, and what is most popular."
+category: monitoring
+website: https://github.com/CyferShepard/Jellystat
+portField: HTTP_PORT
+versions:
+  - name: "1.1.11"
+    images:
+      - cyfershepard/jellystat:1.1.11
+      - postgres:16-alpine
+    values:
+      IMAGE: "cyfershepard/jellystat:1.1.11"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "1.0.9"
+    images:
+      - cyfershepard/jellystat:1.0.9
+      - postgres:16-alpine
+    values:
+      IMAGE: "cyfershepard/jellystat:1.0.9"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3230"
+    required: true
+  - key: JWT_SECRET
+    label: {vi: Khóa ký phiên, en: Session secret}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        POSTGRES_USER: jellystat
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+        POSTGRES_IP: db
+        POSTGRES_PORT: "5432"
+        JWT_SECRET: ${JWT_SECRET}
+        TZ: Asia/Ho_Chi_Minh
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - backup:/app/backend/backup-data
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: jfstat
+        POSTGRES_USER: jellystat
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    backup:
+    db:

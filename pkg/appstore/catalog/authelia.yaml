@@ -1,0 +1,50 @@
+key: authelia
+name:
+  vi: Authelia
+  en: Authelia
+description:
+  vi: "Cổng đăng nhập và xác thực hai lớp đặt trước mọi dịch vụ nội bộ."
+  en: "A login portal and two-factor gate placed in front of every internal service."
+category: security
+website: https://authelia.com
+portField: HTTP_PORT
+versions:
+  - name: "4.39.20"
+    images:
+      - authelia/authelia:4.39.20
+    values:
+      IMAGE: "authelia/authelia:4.39.20"
+  - name: "4.38.19"
+    images:
+      - authelia/authelia:4.38.19
+    values:
+      IMAGE: "authelia/authelia:4.38.19"
+  - name: "4.37.5"
+    images:
+      - authelia/authelia:4.37.5
+    values:
+      IMAGE: "authelia/authelia:4.37.5"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng, en: Port}
+    help:
+      vi: "Authelia cần tệp cấu hình trong thư mục config trước khi chạy được; xem tài liệu dự án."
+      en: "Authelia needs a configuration file in the config folder before it will start; see the project docs."
+    type: port
+    default: "9091"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:9091"
+      volumes:
+        - config:/config
+
+  volumes:
+    config:

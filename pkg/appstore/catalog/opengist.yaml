@@ -1,0 +1,45 @@
+key: opengist
+name:
+  vi: Opengist
+  en: Opengist
+description:
+  vi: "Kho đoạn mã tự quản kiểu GitHub Gist, mỗi đoạn là một kho Git thật."
+  en: "A self-hosted GitHub Gist: every snippet is a real Git repository."
+category: development
+website: https://opengist.io
+portField: HTTP_PORT
+versions:
+  - name: "1.15.1"
+    images:
+      - ghcr.io/thomiceli/opengist:1.15.1
+    values:
+      IMAGE: "ghcr.io/thomiceli/opengist:1.15.1"
+  - name: "1.14"
+    images:
+      - ghcr.io/thomiceli/opengist:1.14
+    values:
+      IMAGE: "ghcr.io/thomiceli/opengist:1.14"
+  - name: "1.13.1"
+    images:
+      - ghcr.io/thomiceli/opengist:1.13.1
+    values:
+      IMAGE: "ghcr.io/thomiceli/opengist:1.13.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "6157"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:6157"
+      volumes:
+        - data:/opengist
+
+  volumes:
+    data:

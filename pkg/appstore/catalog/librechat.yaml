@@ -1,0 +1,75 @@
+key: librechat
+name:
+  vi: LibreChat
+  en: LibreChat
+description:
+  vi: "Giao diện trò chuyện cho nhiều mô hình ngôn ngữ cùng lúc, có lưu hội thoại và chia sẻ."
+  en: "A chat interface across many language models at once, with saved and shareable conversations."
+category: development
+website: https://librechat.ai
+portField: HTTP_PORT
+versions:
+  - name: "0.8.7"
+    images:
+      - ghcr.io/danny-avila/librechat:v0.8.7
+      - mongo:7
+    values:
+      IMAGE: "ghcr.io/danny-avila/librechat:v0.8.7"
+      DB_IMAGE: "mongo:7"
+  - name: "0.7.9"
+    images:
+      - ghcr.io/danny-avila/librechat:v0.7.9
+      - mongo:7
+    values:
+      IMAGE: "ghcr.io/danny-avila/librechat:v0.7.9"
+      DB_IMAGE: "mongo:7"
+  - name: "0.6.10"
+    images:
+      - ghcr.io/danny-avila/librechat:v0.6.10
+      - mongo:7
+    values:
+      IMAGE: "ghcr.io/danny-avila/librechat:v0.6.10"
+      DB_IMAGE: "mongo:7"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3210"
+    required: true
+  - key: CREDS_KEY
+    label: {vi: Khóa mã hóa, en: Encryption key}
+    type: password
+    generate: true
+  - key: JWT_SECRET
+    label: {vi: Khóa ký phiên, en: Session secret}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        HOST: 0.0.0.0
+        MONGO_URI: mongodb://db:27017/LibreChat
+        CREDS_KEY: ${CREDS_KEY}
+        JWT_SECRET: ${JWT_SECRET}
+        JWT_REFRESH_SECRET: ${JWT_SECRET}
+      ports:
+        - "${HTTP_PORT}:3080"
+      volumes:
+        - images:/app/client/public/images
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      volumes:
+        - db:/data/db
+
+  volumes:
+    images:
+    db:

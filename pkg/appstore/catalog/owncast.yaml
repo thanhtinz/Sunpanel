@@ -1,0 +1,54 @@
+key: owncast
+name:
+  vi: Owncast
+  en: Owncast
+description:
+  vi: "Máy chủ phát trực tiếp của riêng bạn, thay Twitch mà không ai chen quảng cáo vào."
+  en: "Your own live streaming server — a Twitch replacement with nobody inserting ads."
+category: media
+website: https://owncast.online
+portField: HTTP_PORT
+versions:
+  - name: "0.2.5"
+    images:
+      - owncast/owncast:0.2.5
+    values:
+      IMAGE: "owncast/owncast:0.2.5"
+  - name: "0.1.3"
+    images:
+      - owncast/owncast:0.1.3
+    values:
+      IMAGE: "owncast/owncast:0.1.3"
+  - name: "0.0.13"
+    images:
+      - owncast/owncast:0.0.13
+    values:
+      IMAGE: "owncast/owncast:0.0.13"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8480"
+    required: true
+  - key: RTMP_PORT
+    label: {vi: Cổng nhận luồng, en: Stream ingest port}
+    help:
+      vi: "Cổng phần mềm phát như OBS đẩy luồng vào."
+      en: "The port streaming software such as OBS pushes to."
+    type: port
+    default: "1935"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8080"
+        - "${RTMP_PORT}:1935"
+      volumes:
+        - data:/app/data
+
+  volumes:
+    data:

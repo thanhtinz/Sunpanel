@@ -1,0 +1,47 @@
+key: pingvin-share
+name:
+  vi: Pingvin Share
+  en: Pingvin Share
+description:
+  vi: "Gửi tệp lớn qua liên kết có hạn dùng và mật khẩu, thay WeTransfer."
+  en: "Sends large files through links with an expiry and a password — a WeTransfer replacement."
+category: storage
+website: https://github.com/stonith404/pingvin-share
+portField: HTTP_PORT
+versions:
+  - name: "1.13"
+    images:
+      - stonith404/pingvin-share:v1.13
+    values:
+      IMAGE: "stonith404/pingvin-share:v1.13"
+  - name: "1.12"
+    images:
+      - stonith404/pingvin-share:v1.12
+    values:
+      IMAGE: "stonith404/pingvin-share:v1.12"
+  - name: "0.29.0"
+    images:
+      - stonith404/pingvin-share:v0.29.0
+    values:
+      IMAGE: "stonith404/pingvin-share:v0.29.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8490"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - data:/opt/app/backend/data
+        - images:/opt/app/frontend/public/img
+
+  volumes:
+    data:
+    images:

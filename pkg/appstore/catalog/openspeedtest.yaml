@@ -1,0 +1,35 @@
+key: openspeedtest
+name:
+  vi: OpenSpeedTest
+  en: OpenSpeedTest
+description:
+  vi: "Đo tốc độ mạng nội bộ ngay trong trình duyệt, không cần cài gì trên máy khách."
+  en: "Measures local network speed in the browser with nothing installed on the client."
+category: monitoring
+website: https://openspeedtest.com
+portField: HTTP_PORT
+versions:
+  - name: "2.0.6"
+    images:
+      - openspeedtest/latest:v2.0.6
+    values:
+      IMAGE: "openspeedtest/latest:v2.0.6"
+  - name: "0.0.1"
+    images:
+      - openspeedtest/latest:v0.0.1
+    values:
+      IMAGE: "openspeedtest/latest:v0.0.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3231"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:3000"

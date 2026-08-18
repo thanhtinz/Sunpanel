@@ -1,0 +1,47 @@
+key: chibisafe
+name:
+  vi: Chibisafe
+  en: Chibisafe
+description:
+  vi: "Máy chủ nhận tệp tải lên và trả về liên kết chia sẻ, kèm tiện ích chụp màn hình."
+  en: "An upload server that hands back share links, with screenshot tooling included."
+category: storage
+website: https://chibisafe.app
+portField: HTTP_PORT
+versions:
+  - name: "6.5.5"
+    images:
+      - chibisafe/chibisafe:v6.5.5
+    values:
+      IMAGE: "chibisafe/chibisafe:v6.5.5"
+  - name: "6.4.5"
+    images:
+      - chibisafe/chibisafe:v6.4.5
+    values:
+      IMAGE: "chibisafe/chibisafe:v6.4.5"
+  - name: "5.6.10"
+    images:
+      - chibisafe/chibisafe:v5.6.10
+    values:
+      IMAGE: "chibisafe/chibisafe:v5.6.10"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8488"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8000"
+      volumes:
+        - uploads:/app/uploads
+        - database:/app/database
+
+  volumes:
+    uploads:
+    database:

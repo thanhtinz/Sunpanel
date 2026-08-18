@@ -1,0 +1,55 @@
+key: libretranslate
+name:
+  vi: LibreTranslate
+  en: LibreTranslate
+description:
+  vi: "Máy dịch chạy hoàn toàn nội bộ, không gửi câu chữ của bạn ra dịch vụ nào."
+  en: "A translation engine that runs entirely locally and sends your text to nobody."
+category: tool
+website: https://libretranslate.com
+portField: HTTP_PORT
+versions:
+  - name: "1.9.6"
+    images:
+      - libretranslate/libretranslate:v1.9.6
+    values:
+      IMAGE: "libretranslate/libretranslate:v1.9.6"
+  - name: "1.8.4"
+    images:
+      - libretranslate/libretranslate:v1.8.4
+    values:
+      IMAGE: "libretranslate/libretranslate:v1.8.4"
+  - name: "1.7.3"
+    images:
+      - libretranslate/libretranslate:v1.7.3
+    values:
+      IMAGE: "libretranslate/libretranslate:v1.7.3"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5500"
+    required: true
+  - key: LANGUAGES
+    label: {vi: Ngôn ngữ tải về, en: Languages to load}
+    help:
+      vi: "Danh sách mã ngôn ngữ, cách nhau bằng dấu phẩy. Càng nhiều càng tốn RAM và thời gian tải."
+      en: "Comma-separated language codes. More languages means more memory and a longer first start."
+    type: text
+    default: "en,vi"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        LT_LOAD_ONLY: "${LANGUAGES}"
+      ports:
+        - "${HTTP_PORT}:5000"
+      volumes:
+        - models:/home/libretranslate/.local
+
+  volumes:
+    models:

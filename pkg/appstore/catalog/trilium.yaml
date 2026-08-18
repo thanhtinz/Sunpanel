@@ -1,0 +1,45 @@
+key: trilium
+name:
+  vi: Trilium Notes
+  en: Trilium Notes
+description:
+  vi: "Ghi chú dạng cây phân cấp cho kho tri thức cá nhân lớn, có liên kết chéo giữa các ghi chú."
+  en: "Hierarchical notes for a large personal knowledge base, with cross-links between notes."
+category: productivity
+website: https://github.com/TriliumNext/Notes
+portField: HTTP_PORT
+versions:
+  - name: "0.95.0"
+    images:
+      - triliumnext/notes:v0.95.0
+    values:
+      IMAGE: "triliumnext/notes:v0.95.0"
+  - name: "0.94.1"
+    images:
+      - triliumnext/notes:v0.94.1
+    values:
+      IMAGE: "triliumnext/notes:v0.94.1"
+  - name: "0.93.0"
+    images:
+      - triliumnext/notes:v0.93.0
+    values:
+      IMAGE: "triliumnext/notes:v0.93.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8485"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - data:/home/node/trilium-data
+
+  volumes:
+    data:

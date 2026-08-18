@@ -1,0 +1,72 @@
+key: bitmagnet
+name:
+  vi: Bitmagnet
+  en: Bitmagnet
+description:
+  vi: "Bộ lập chỉ mục torrent tự quản, thu thập metadata thẳng từ mạng DHT."
+  en: "A self-hosted torrent indexer that collects metadata straight from the DHT network."
+category: media
+website: https://bitmagnet.io
+portField: HTTP_PORT
+versions:
+  - name: "0.10.1"
+    images:
+      - ghcr.io/bitmagnet-io/bitmagnet:v0.10.1
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/bitmagnet-io/bitmagnet:v0.10.1"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "0.9.5"
+    images:
+      - ghcr.io/bitmagnet-io/bitmagnet:v0.9.5
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/bitmagnet-io/bitmagnet:v0.9.5"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "0.8"
+    images:
+      - ghcr.io/bitmagnet-io/bitmagnet:v0.8
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/bitmagnet-io/bitmagnet:v0.8"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3333"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: worker run --keys=http_server --keys=queue_server --keys=dht_crawler
+      depends_on:
+        - db
+      environment:
+        POSTGRES_HOST: db
+        POSTGRES_NAME: bitmagnet
+        POSTGRES_USER: bitmagnet
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:3333"
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: bitmagnet
+        POSTGRES_USER: bitmagnet
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    db:

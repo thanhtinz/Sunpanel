@@ -1,0 +1,45 @@
+key: victorialogs
+name:
+  vi: VictoriaLogs
+  en: VictoriaLogs
+description:
+  vi: "Kho nhật ký nhẹ hơn hẳn Loki, truy vấn nhanh mà ăn ít RAM."
+  en: "A log store much lighter than Loki: fast queries on little memory."
+category: monitoring
+website: https://docs.victoriametrics.com/victorialogs
+portField: HTTP_PORT
+versions:
+  - name: "1.24.0"
+    images:
+      - victoriametrics/victoria-logs:v1.24.0-victorialogs
+    values:
+      IMAGE: "victoriametrics/victoria-logs:v1.24.0-victorialogs"
+  - name: "1.23.3"
+    images:
+      - victoriametrics/victoria-logs:v1.23.3-victorialogs
+    values:
+      IMAGE: "victoriametrics/victoria-logs:v1.23.3-victorialogs"
+  - name: "0.42.0"
+    images:
+      - victoriametrics/victoria-logs:v0.42.0-victorialogs
+    values:
+      IMAGE: "victoriametrics/victoria-logs:v0.42.0-victorialogs"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "9428"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:9428"
+      volumes:
+        - data:/victoria-logs-data
+
+  volumes:
+    data:

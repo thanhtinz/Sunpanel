@@ -1,0 +1,55 @@
+key: webtop
+name:
+  vi: Webtop
+  en: Webtop
+description:
+  vi: "Cả một môi trường desktop Linux chạy trong trình duyệt, dùng để thử phần mềm đồ họa."
+  en: "A full Linux desktop in the browser, handy for trying graphical software."
+category: tool
+website: https://github.com/linuxserver/docker-webtop
+portField: HTTP_PORT
+versions:
+  - name: "ubuntu-xfce"
+    images:
+      - linuxserver/webtop:ubuntu-xfce
+    values:
+      IMAGE: "linuxserver/webtop:ubuntu-xfce"
+  - name: "debian-xfce"
+    images:
+      - linuxserver/webtop:debian-xfce
+    values:
+      IMAGE: "linuxserver/webtop:debian-xfce"
+  - name: "alpine-xfce"
+    images:
+      - linuxserver/webtop:alpine-xfce
+    values:
+      IMAGE: "linuxserver/webtop:alpine-xfce"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3220"
+    required: true
+  - key: PASSWORD
+    label: {vi: Mật khẩu truy cập, en: Access password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+        CUSTOM_USER: "abc"
+        PASSWORD: "${PASSWORD}"
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - config:/config
+
+  volumes:
+    config:

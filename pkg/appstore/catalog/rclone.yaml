@@ -1,0 +1,61 @@
+key: rclone
+name:
+  vi: Rclone
+  en: Rclone
+description:
+  vi: "Đồng bộ tệp với hơn bảy mươi dịch vụ đám mây, kèm giao diện web để thao tác."
+  en: "Syncs files with over seventy cloud services, with a web UI to drive it."
+category: storage
+website: https://rclone.org
+portField: HTTP_PORT
+versions:
+  - name: "1.75"
+    images:
+      - rclone/rclone:1.75
+    values:
+      IMAGE: "rclone/rclone:1.75"
+  - name: "1.74.4"
+    images:
+      - rclone/rclone:1.74.4
+    values:
+      IMAGE: "rclone/rclone:1.74.4"
+  - name: "1.73.5"
+    images:
+      - rclone/rclone:1.73.5
+    values:
+      IMAGE: "rclone/rclone:1.73.5"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5572"
+    required: true
+  - key: SOURCE_DIR
+    label: {vi: Thư mục dữ liệu, en: Data folder}
+    type: text
+    default: "/srv"
+    required: true
+  - key: ADMIN_USER
+    label: {vi: Tài khoản, en: User}
+    type: text
+    default: "admin"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu, en: Password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: rcd --rc-web-gui --rc-addr :5572 --rc-user ${ADMIN_USER} --rc-pass ${ADMIN_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:5572"
+      volumes:
+        - config:/config/rclone
+        - ${SOURCE_DIR}:/data
+
+  volumes:
+    config:

@@ -1,0 +1,48 @@
+key: hugo
+name:
+  vi: Hugo
+  en: Hugo
+description:
+  vi: "Bộ dựng trang tĩnh rất nhanh, phục vụ luôn kết quả cho bạn xem thử."
+  en: "A very fast static site generator that also serves the result for preview."
+category: website
+website: https://gohugo.io
+portField: HTTP_PORT
+versions:
+  - name: "0.165.0"
+    images:
+      - hugomods/hugo:0.165.0
+    values:
+      IMAGE: "hugomods/hugo:0.165.0"
+  - name: "0.164.0"
+    images:
+      - hugomods/hugo:0.164.0
+    values:
+      IMAGE: "hugomods/hugo:0.164.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "1313"
+    required: true
+  - key: SITE_DIR
+    label: {vi: Thư mục dự án, en: Project folder}
+    type: text
+    default: "/srv/hugo"
+    required: true
+  - key: BASE_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:1313"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: server --bind 0.0.0.0 --baseURL ${BASE_URL} --appendPort=false
+      ports:
+        - "${HTTP_PORT}:1313"
+      volumes:
+        - ${SITE_DIR}:/src

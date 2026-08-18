@@ -1,0 +1,51 @@
+key: mumble
+name:
+  vi: Mumble
+  en: Mumble
+description:
+  vi: "Máy chủ thoại độ trễ thấp cho nhóm chơi game và họp nhóm, ăn rất ít băng thông."
+  en: "A low-latency voice server for gaming groups and meetings that sips bandwidth."
+category: productivity
+website: https://mumble.info
+portField: VOICE_PORT
+versions:
+  - name: "1.6.870-4-acme"
+    images:
+      - mumblevoip/mumble-server:v1.6.870-4-acme
+    values:
+      IMAGE: "mumblevoip/mumble-server:v1.6.870-4-acme"
+  - name: "1.5.915-1-acme"
+    images:
+      - mumblevoip/mumble-server:v1.5.915-1-acme
+    values:
+      IMAGE: "mumblevoip/mumble-server:v1.5.915-1-acme"
+  - name: "1.4.287-4"
+    images:
+      - mumblevoip/mumble-server:v1.4.287-4
+    values:
+      IMAGE: "mumblevoip/mumble-server:v1.4.287-4"
+fields:
+  - key: VOICE_PORT
+    label: {vi: Cổng thoại, en: Voice port}
+    type: port
+    default: "64738"
+    required: true
+  - key: SUPERUSER_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Superuser password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        MUMBLE_CONFIG_ICE_SECRET_WRITE: "${SUPERUSER_PASSWORD}"
+      ports:
+        - "${VOICE_PORT}:64738"
+      volumes:
+        - data:/data
+
+  volumes:
+    data:

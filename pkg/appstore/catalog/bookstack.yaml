@@ -1,0 +1,85 @@
+key: bookstack
+name:
+  vi: BookStack
+  en: BookStack
+description:
+  vi: "Cơ sở tri thức sắp theo sách, chương và trang — dễ tìm lại hơn một đống tài liệu rời."
+  en: "A knowledge base organised into books, chapters and pages — easier to navigate than loose docs."
+category: productivity
+website: https://bookstackapp.com
+portField: HTTP_PORT
+versions:
+  - name: "26.05.20260608"
+    images:
+      - linuxserver/bookstack:26.05.20260608
+      - mariadb:11
+    values:
+      IMAGE: "linuxserver/bookstack:26.05.20260608"
+      DB_IMAGE: "mariadb:11"
+  - name: "25.12.20251224"
+    images:
+      - linuxserver/bookstack:25.12.20251224
+      - mariadb:11
+    values:
+      IMAGE: "linuxserver/bookstack:25.12.20251224"
+      DB_IMAGE: "mariadb:11"
+  - name: "24.12.20241223"
+    images:
+      - linuxserver/bookstack:24.12.20241223
+      - mariadb:11
+    values:
+      IMAGE: "linuxserver/bookstack:24.12.20241223"
+      DB_IMAGE: "mariadb:11"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8484"
+    required: true
+  - key: APP_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:8484"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: Asia/Ho_Chi_Minh
+        APP_URL: ${APP_URL}
+        DB_HOST: db
+        DB_PORT: "3306"
+        DB_DATABASE: bookstack
+        DB_USERNAME: bookstack
+        DB_PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - config:/config
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        MARIADB_DATABASE: bookstack
+        MARIADB_USER: bookstack
+        MARIADB_PASSWORD: ${DB_PASSWORD}
+        MARIADB_RANDOM_ROOT_PASSWORD: "1"
+      volumes:
+        - db:/var/lib/mysql
+
+  volumes:
+    config:
+    db:

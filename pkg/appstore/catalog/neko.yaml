@@ -1,0 +1,52 @@
+key: neko
+name:
+  vi: Neko
+  en: Neko
+description:
+  vi: "Trình duyệt chạy trên máy chủ, nhiều người xem và điều khiển chung một phiên."
+  en: "A browser running on the server that several people can watch and drive together."
+category: tool
+website: https://neko.m1k1o.net
+portField: HTTP_PORT
+versions:
+  - name: "3.1.5"
+    images:
+      - ghcr.io/m1k1o/neko/firefox:3.1.5
+    values:
+      IMAGE: "ghcr.io/m1k1o/neko/firefox:3.1.5"
+  - name: "3.0.11"
+    images:
+      - ghcr.io/m1k1o/neko/firefox:3.0.11
+    values:
+      IMAGE: "ghcr.io/m1k1o/neko/firefox:3.0.11"
+  - name: "2.9.0"
+    images:
+      - ghcr.io/m1k1o/neko/firefox:2.9.0
+    values:
+      IMAGE: "ghcr.io/m1k1o/neko/firefox:2.9.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8502"
+    required: true
+  - key: USER_PASSWORD
+    label: {vi: Mật khẩu người xem, en: Viewer password}
+    type: password
+    generate: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        NEKO_MEMBER_MULTIUSER_USER_PASSWORD: "${USER_PASSWORD}"
+        NEKO_MEMBER_MULTIUSER_ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
+        NEKO_DESKTOP_SCREEN: "1280x720@30"
+      ports:
+        - "${HTTP_PORT}:8080"

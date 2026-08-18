@@ -1,0 +1,82 @@
+key: zipline
+name:
+  vi: Zipline
+  en: Zipline
+description:
+  vi: "Máy chủ nhận ảnh chụp màn hình và tệp, sinh liên kết ngắn để dán vào chỗ khác."
+  en: "A screenshot and file host that generates short links to paste elsewhere."
+category: storage
+website: https://zipline.diced.sh
+portField: HTTP_PORT
+versions:
+  - name: "4.7.0"
+    images:
+      - ghcr.io/diced/zipline:4.7.0
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/diced/zipline:4.7.0"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "4.6.5"
+    images:
+      - ghcr.io/diced/zipline:4.6.5
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/diced/zipline:4.6.5"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "3.7.13"
+    images:
+      - ghcr.io/diced/zipline:3.7.13
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/diced/zipline:3.7.13"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8489"
+    required: true
+  - key: CORE_RETURN_HTTPS
+    label: {vi: Dùng HTTPS trong liên kết, en: Use HTTPS in links}
+    type: text
+    default: "false"
+    required: true
+  - key: CORE_SECRET
+    label: {vi: Khóa bí mật, en: Secret}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        CORE_SECRET: ${CORE_SECRET}
+        CORE_RETURN_HTTPS: ${CORE_RETURN_HTTPS}
+        CORE_DATABASE_URL: postgres://zipline:${DB_PASSWORD}@db/zipline
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - uploads:/zipline/uploads
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: zipline
+        POSTGRES_USER: zipline
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    uploads:
+    db:

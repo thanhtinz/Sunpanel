@@ -1,0 +1,52 @@
+key: garage
+name:
+  vi: Garage
+  en: Garage
+description:
+  vi: "Kho đối tượng tương thích S3 thiết kế cho máy chủ nhỏ và đường truyền chậm."
+  en: "S3-compatible object storage designed for small servers and slow links."
+category: storage
+website: https://garagehq.deuxfleurs.fr
+portField: S3_PORT
+versions:
+  - name: "2.3.0"
+    images:
+      - dxflrs/garage:v2.3.0
+    values:
+      IMAGE: "dxflrs/garage:v2.3.0"
+  - name: "1.3.1"
+    images:
+      - dxflrs/garage:v1.3.1
+    values:
+      IMAGE: "dxflrs/garage:v1.3.1"
+  - name: "0.9.4"
+    images:
+      - dxflrs/garage:v0.9.4
+    values:
+      IMAGE: "dxflrs/garage:v0.9.4"
+fields:
+  - key: S3_PORT
+    label: {vi: Cổng S3, en: S3 port}
+    help:
+      vi: "Garage cần tệp garage.toml trong thư mục cấu hình trước khi chạy; xem tài liệu dự án."
+      en: "Garage needs a garage.toml in the config folder before it starts; see the project docs."
+    type: port
+    default: "3900"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${S3_PORT}:3900"
+      volumes:
+        - meta:/var/lib/garage/meta
+        - data:/var/lib/garage/data
+        - config:/etc/garage
+
+  volumes:
+    meta:
+    data:
+    config:

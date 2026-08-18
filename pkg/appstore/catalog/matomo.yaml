@@ -1,0 +1,75 @@
+key: matomo
+name:
+  vi: Matomo
+  en: Matomo
+description:
+  vi: "Thống kê truy cập website đầy đủ như Google Analytics nhưng dữ liệu nằm ở máy bạn."
+  en: "Web analytics as complete as Google Analytics, with the data staying on your machine."
+category: monitoring
+website: https://matomo.org
+portField: HTTP_PORT
+versions:
+  - name: "5.12.0"
+    images:
+      - matomo:5.12.0-apache
+      - mariadb:11
+    values:
+      IMAGE: "matomo:5.12.0-apache"
+      DB_IMAGE: "mariadb:11"
+  - name: "5.11.2"
+    images:
+      - matomo:5.11.2-apache
+      - mariadb:11
+    values:
+      IMAGE: "matomo:5.11.2-apache"
+      DB_IMAGE: "mariadb:11"
+  - name: "4.16.0"
+    images:
+      - matomo:4.16.0-apache
+      - mariadb:11
+    values:
+      IMAGE: "matomo:4.16.0-apache"
+      DB_IMAGE: "mariadb:11"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8483"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        MATOMO_DATABASE_HOST: db
+        MATOMO_DATABASE_DBNAME: matomo
+        MATOMO_DATABASE_USERNAME: matomo
+        MATOMO_DATABASE_PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - data:/var/www/html
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        MARIADB_DATABASE: matomo
+        MARIADB_USER: matomo
+        MARIADB_PASSWORD: ${DB_PASSWORD}
+        MARIADB_RANDOM_ROOT_PASSWORD: "1"
+      volumes:
+        - db:/var/lib/mysql
+
+  volumes:
+    data:
+    db:

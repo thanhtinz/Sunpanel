@@ -1,0 +1,95 @@
+key: peertube
+name:
+  vi: PeerTube
+  en: PeerTube
+description:
+  vi: "Nền tảng video liên kết, người xem chia sẻ băng thông cho nhau qua WebTorrent."
+  en: "A federated video platform where viewers share bandwidth with each other over WebTorrent."
+category: media
+website: https://joinpeertube.org
+portField: HTTP_PORT
+versions:
+  - name: "8.2.4"
+    images:
+      - chocobozzz/peertube:v8.2.4
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "chocobozzz/peertube:v8.2.4"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "7.3.0-bookworm"
+    images:
+      - chocobozzz/peertube:v7.3.0-bookworm
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "chocobozzz/peertube:v7.3.0-bookworm"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "6.3.3-bookworm"
+    images:
+      - chocobozzz/peertube:v6.3.3-bookworm
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "chocobozzz/peertube:v6.3.3-bookworm"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "9200"
+    required: true
+  - key: WEBSERVER_HOSTNAME
+    label: {vi: Tên miền, en: Hostname}
+    type: text
+    default: "video.example.com"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+        - redis
+      environment:
+        PEERTUBE_WEBSERVER_HOSTNAME: ${WEBSERVER_HOSTNAME}
+        PEERTUBE_DB_HOSTNAME: db
+        PEERTUBE_DB_USERNAME: peertube
+        PEERTUBE_DB_PASSWORD: ${DB_PASSWORD}
+        PEERTUBE_REDIS_HOSTNAME: redis
+        PEERTUBE_SMTP_DISABLE: "true"
+      ports:
+        - "${HTTP_PORT}:9000"
+      volumes:
+        - data:/data
+        - config:/config
+
+    redis:
+      image: ${REDIS_IMAGE}
+      container_name: ${CONTAINER_NAME}-redis
+      restart: unless-stopped
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: peertube
+        POSTGRES_USER: peertube
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    data:
+    config:
+    db:

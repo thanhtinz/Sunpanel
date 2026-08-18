@@ -1,0 +1,95 @@
+key: funkwhale
+name:
+  vi: Funkwhale
+  en: Funkwhale
+description:
+  vi: "Máy chủ nhạc liên kết: nghe thư viện của mình và của các máy chủ bạn bè."
+  en: "A federated music server: listen to your own library and to friendly servers'."
+category: media
+website: https://funkwhale.audio
+portField: HTTP_PORT
+versions:
+  - name: "1.2.10"
+    images:
+      - funkwhale/funkwhale:1.2.10
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "funkwhale/funkwhale:1.2.10"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "1.1.4"
+    images:
+      - funkwhale/funkwhale:1.1.4
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "funkwhale/funkwhale:1.1.4"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "1.0.1"
+    images:
+      - funkwhale/funkwhale:1.0.1
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "funkwhale/funkwhale:1.0.1"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8482"
+    required: true
+  - key: FUNKWHALE_HOSTNAME
+    label: {vi: Tên miền, en: Hostname}
+    type: text
+    default: "music.example.com"
+    required: true
+  - key: DJANGO_SECRET_KEY
+    label: {vi: Khóa bí mật, en: Secret key}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+        - redis
+      environment:
+        FUNKWHALE_HOSTNAME: ${FUNKWHALE_HOSTNAME}
+        DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+        DATABASE_URL: postgresql://funkwhale:${DB_PASSWORD}@db:5432/funkwhale
+        CACHE_URL: redis://redis:6379/0
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - data:/data
+
+    redis:
+      image: ${REDIS_IMAGE}
+      container_name: ${CONTAINER_NAME}-redis
+      restart: unless-stopped
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: funkwhale
+        POSTGRES_USER: funkwhale
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    data:
+    db:

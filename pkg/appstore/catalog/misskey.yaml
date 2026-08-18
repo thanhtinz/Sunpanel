@@ -1,0 +1,86 @@
+key: misskey
+name:
+  vi: Misskey
+  en: Misskey
+description:
+  vi: "Mạng xã hội liên kết kiểu Nhật, nhiều biểu cảm tùy chỉnh và giao diện linh hoạt."
+  en: "A Japanese-flavoured federated social network with custom reactions and a flexible UI."
+category: website
+website: https://misskey-hub.net
+portField: HTTP_PORT
+versions:
+  - name: "2026.7"
+    images:
+      - misskey/misskey:2026.7
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "misskey/misskey:2026.7"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "2025.12.2"
+    images:
+      - misskey/misskey:2025.12.2
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "misskey/misskey:2025.12.2"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "2024.11"
+    images:
+      - misskey/misskey:2024.11
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "misskey/misskey:2024.11"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3201"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+        - redis
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - files:/misskey/files
+        - config:/misskey/.config
+
+    redis:
+      image: ${REDIS_IMAGE}
+      container_name: ${CONTAINER_NAME}-redis
+      restart: unless-stopped
+      volumes:
+        - redis:/data
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: misskey
+        POSTGRES_USER: misskey
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    files:
+    config:
+    redis:
+    db:

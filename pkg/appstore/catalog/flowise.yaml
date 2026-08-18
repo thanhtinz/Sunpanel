@@ -1,0 +1,58 @@
+key: flowise
+name:
+  vi: Flowise
+  en: Flowise
+description:
+  vi: "Dựng luồng xử lý cho mô hình ngôn ngữ bằng cách nối các khối, không cần viết mã."
+  en: "Builds language-model pipelines by connecting blocks, with no code."
+category: automation
+website: https://flowiseai.com
+portField: HTTP_PORT
+versions:
+  - name: "3.1.4"
+    images:
+      - flowiseai/flowise:3.1.4
+    values:
+      IMAGE: "flowiseai/flowise:3.1.4"
+  - name: "2.2.8"
+    images:
+      - flowiseai/flowise:2.2.8
+    values:
+      IMAGE: "flowiseai/flowise:2.2.8"
+  - name: "1.8.4"
+    images:
+      - flowiseai/flowise:1.8.4
+    values:
+      IMAGE: "flowiseai/flowise:1.8.4"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3212"
+    required: true
+  - key: ADMIN_USER
+    label: {vi: Tài khoản quản trị, en: Admin user}
+    type: text
+    default: "admin"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        FLOWISE_USERNAME: "${ADMIN_USER}"
+        FLOWISE_PASSWORD: "${ADMIN_PASSWORD}"
+        PORT: "3000"
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - data:/root/.flowise
+
+  volumes:
+    data:

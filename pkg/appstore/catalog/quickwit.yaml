@@ -1,0 +1,46 @@
+key: quickwit
+name:
+  vi: Quickwit
+  en: Quickwit
+description:
+  vi: "Kho nhật ký tìm kiếm được, chạy thẳng trên kho đối tượng nên rẻ hơn Elasticsearch nhiều."
+  en: "Searchable log storage that runs straight on object storage, far cheaper than Elasticsearch."
+category: monitoring
+website: https://quickwit.io
+portField: HTTP_PORT
+versions:
+  - name: "0.9.0"
+    images:
+      - quickwit/quickwit:v0.9.0
+    values:
+      IMAGE: "quickwit/quickwit:v0.9.0"
+  - name: "0.8.2"
+    images:
+      - quickwit/quickwit:v0.8.2
+    values:
+      IMAGE: "quickwit/quickwit:v0.8.2"
+  - name: "0.7.1"
+    images:
+      - quickwit/quickwit:0.7.1
+    values:
+      IMAGE: "quickwit/quickwit:0.7.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "7280"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: run
+      ports:
+        - "${HTTP_PORT}:7280"
+      volumes:
+        - data:/quickwit/qwdata
+
+  volumes:
+    data:

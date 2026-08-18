@@ -1,0 +1,50 @@
+key: siyuan
+name:
+  vi: SiYuan
+  en: SiYuan
+description:
+  vi: "Ghi chú dạng khối có liên kết hai chiều, dùng được ngoại tuyến rồi đồng bộ sau."
+  en: "Block-based notes with bidirectional links that work offline and sync later."
+category: productivity
+website: https://b3log.org/siyuan
+portField: HTTP_PORT
+versions:
+  - name: "3.8.1"
+    images:
+      - b3log/siyuan:v3.8.1
+    values:
+      IMAGE: "b3log/siyuan:v3.8.1"
+  - name: "3.7.3"
+    images:
+      - b3log/siyuan:v3.7.3
+    values:
+      IMAGE: "b3log/siyuan:v3.7.3"
+  - name: "2.12.8"
+    images:
+      - b3log/siyuan:v2.12.8
+    values:
+      IMAGE: "b3log/siyuan:v2.12.8"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "6806"
+    required: true
+  - key: ACCESS_CODE
+    label: {vi: Mã truy cập, en: Access code}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: --workspace=/siyuan/workspace --accessAuthCode=${ACCESS_CODE}
+      ports:
+        - "${HTTP_PORT}:6806"
+      volumes:
+        - data:/siyuan/workspace
+
+  volumes:
+    data:

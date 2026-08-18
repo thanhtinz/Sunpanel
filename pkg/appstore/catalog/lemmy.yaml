@@ -1,0 +1,86 @@
+key: lemmy
+name:
+  vi: Lemmy
+  en: Lemmy
+description:
+  vi: "Diễn đàn liên kết theo chủ đề, kiểu Reddit mà mỗi máy chủ tự quản lấy cộng đồng của mình."
+  en: "A federated link-aggregator forum — Reddit-shaped, with each server running its own communities."
+category: website
+website: https://join-lemmy.org
+portField: HTTP_PORT
+versions:
+  - name: "0.19.20"
+    images:
+      - dessalines/lemmy:0.19.20
+      - postgres:16-alpine
+      - dessalines/lemmy-ui:0.19.7
+    values:
+      IMAGE: "dessalines/lemmy:0.19.20"
+      DB_IMAGE: "postgres:16-alpine"
+      UI_IMAGE: "dessalines/lemmy-ui:0.19.7"
+  - name: "0.18.5"
+    images:
+      - dessalines/lemmy:0.18.5
+      - postgres:16-alpine
+      - dessalines/lemmy-ui:0.19.7
+    values:
+      IMAGE: "dessalines/lemmy:0.18.5"
+      DB_IMAGE: "postgres:16-alpine"
+      UI_IMAGE: "dessalines/lemmy-ui:0.19.7"
+  - name: "0.17.4"
+    images:
+      - dessalines/lemmy:0.17.4
+      - postgres:16-alpine
+      - dessalines/lemmy-ui:0.19.7
+    values:
+      IMAGE: "dessalines/lemmy:0.17.4"
+      DB_IMAGE: "postgres:16-alpine"
+      UI_IMAGE: "dessalines/lemmy-ui:0.19.7"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3202"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        RUST_LOG: warn
+      volumes:
+        - pictrs:/pictrs
+
+    ui:
+      image: ${UI_IMAGE}
+      container_name: ${CONTAINER_NAME}-ui
+      restart: unless-stopped
+      depends_on:
+        - app
+      environment:
+        LEMMY_UI_LEMMY_INTERNAL_HOST: app:8536
+      ports:
+        - "${HTTP_PORT}:1234"
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: lemmy
+        POSTGRES_USER: lemmy
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    pictrs:
+    db:

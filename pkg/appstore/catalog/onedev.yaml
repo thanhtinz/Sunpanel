@@ -1,0 +1,51 @@
+key: onedev
+name:
+  vi: OneDev
+  en: OneDev
+description:
+  vi: "Máy chủ Git kèm CI/CD và quản lý công việc, cài xong là dùng được ngay."
+  en: "A Git server with built-in CI/CD and issue tracking that works right after install."
+category: development
+website: https://onedev.io
+portField: HTTP_PORT
+versions:
+  - name: "16.5.4"
+    images:
+      - 1dev/server:16.5.4
+    values:
+      IMAGE: "1dev/server:16.5.4"
+  - name: "15.1.8"
+    images:
+      - 1dev/server:15.1.8
+    values:
+      IMAGE: "1dev/server:15.1.8"
+  - name: "14.1.9"
+    images:
+      - 1dev/server:14.1.9
+    values:
+      IMAGE: "1dev/server:14.1.9"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "6610"
+    required: true
+  - key: SSH_PORT
+    label: {vi: Cổng SSH, en: SSH port}
+    type: port
+    default: "6611"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:6610"
+        - "${SSH_PORT}:22"
+      volumes:
+        - data:/opt/onedev
+
+  volumes:
+    data:

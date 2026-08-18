@@ -1,0 +1,132 @@
+key: mastodon
+name:
+  vi: Mastodon
+  en: Mastodon
+description:
+  vi: "Máy chủ mạng xã hội liên kết theo chuẩn ActivityPub, người dùng theo dõi được cả máy chủ khác."
+  en: "An ActivityPub social server whose users can follow accounts on any other server."
+category: website
+website: https://joinmastodon.org
+portField: HTTP_PORT
+versions:
+  - name: "4.6.6"
+    images:
+      - ghcr.io/mastodon/mastodon:v4.6.6
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "ghcr.io/mastodon/mastodon:v4.6.6"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "4.5.16"
+    images:
+      - ghcr.io/mastodon/mastodon:v4.5.16
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "ghcr.io/mastodon/mastodon:v4.5.16"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "4.4.23"
+    images:
+      - ghcr.io/mastodon/mastodon:v4.4.23
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "ghcr.io/mastodon/mastodon:v4.4.23"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3200"
+    required: true
+  - key: LOCAL_DOMAIN
+    label: {vi: Tên miền, en: Domain}
+    help:
+      vi: "Tên miền này đi vào định danh của mọi tài khoản; đổi sau là hỏng liên kết."
+      en: "This domain becomes part of every account's identity; changing it later breaks federation."
+    type: text
+    default: "social.example.com"
+    required: true
+  - key: SECRET_KEY_BASE
+    label: {vi: Khóa bí mật, en: Secret key}
+    type: password
+    generate: true
+  - key: OTP_SECRET
+    label: {vi: Khóa mã hai lớp, en: OTP secret}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: bash -c "rails s -p 3000"
+      depends_on:
+        - db
+        - redis
+      environment:
+        LOCAL_DOMAIN: ${LOCAL_DOMAIN}
+        SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+        OTP_SECRET: ${OTP_SECRET}
+        DB_HOST: db
+        DB_NAME: mastodon
+        DB_USER: mastodon
+        DB_PASS: ${DB_PASSWORD}
+        REDIS_HOST: redis
+        RAILS_ENV: production
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - system:/mastodon/public/system
+
+    sidekiq:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}-sidekiq
+      restart: unless-stopped
+      command: bundle exec sidekiq
+      depends_on:
+        - db
+        - redis
+      environment:
+        LOCAL_DOMAIN: ${LOCAL_DOMAIN}
+        SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+        OTP_SECRET: ${OTP_SECRET}
+        DB_HOST: db
+        DB_NAME: mastodon
+        DB_USER: mastodon
+        DB_PASS: ${DB_PASSWORD}
+        REDIS_HOST: redis
+        RAILS_ENV: production
+      volumes:
+        - system:/mastodon/public/system
+
+    redis:
+      image: ${REDIS_IMAGE}
+      container_name: ${CONTAINER_NAME}-redis
+      restart: unless-stopped
+      volumes:
+        - redis:/data
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: mastodon
+        POSTGRES_USER: mastodon
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    system:
+    redis:
+    db:

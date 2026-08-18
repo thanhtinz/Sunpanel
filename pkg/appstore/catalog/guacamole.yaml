@@ -1,0 +1,87 @@
+key: guacamole
+name:
+  vi: Apache Guacamole
+  en: Apache Guacamole
+description:
+  vi: "Mở máy tính từ xa qua trình duyệt: RDP, VNC và SSH, không cần cài phần mềm khách."
+  en: "Remote desktops in the browser: RDP, VNC and SSH with no client software."
+category: tool
+website: https://guacamole.apache.org
+portField: HTTP_PORT
+versions:
+  - name: "1.6.0"
+    images:
+      - guacamole/guacamole:1.6.0
+      - guacamole/guacd:1.5.5
+      - postgres:16-alpine
+    values:
+      IMAGE: "guacamole/guacamole:1.6.0"
+      GUACD_IMAGE: "guacamole/guacd:1.5.5"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "1.5.5"
+    images:
+      - guacamole/guacamole:1.5.5
+      - guacamole/guacd:1.5.5
+      - postgres:16-alpine
+    values:
+      IMAGE: "guacamole/guacamole:1.5.5"
+      GUACD_IMAGE: "guacamole/guacd:1.5.5"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "1.4.0"
+    images:
+      - guacamole/guacamole:1.4.0
+      - guacamole/guacd:1.5.5
+      - postgres:16-alpine
+    values:
+      IMAGE: "guacamole/guacamole:1.4.0"
+      GUACD_IMAGE: "guacamole/guacd:1.5.5"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    help:
+      vi: "Lần đầu phải nạp lược đồ cơ sở dữ liệu bằng tay; xem tài liệu dự án."
+      en: "The database schema must be loaded by hand on first run; see the project docs."
+    type: port
+    default: "8501"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - guacd
+        - db
+      environment:
+        GUACD_HOSTNAME: guacd
+        POSTGRESQL_HOSTNAME: db
+        POSTGRESQL_DATABASE: guacamole
+        POSTGRESQL_USER: guacamole
+        POSTGRESQL_PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:8080"
+
+    guacd:
+      image: ${GUACD_IMAGE}
+      container_name: ${CONTAINER_NAME}-guacd
+      restart: unless-stopped
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: guacamole
+        POSTGRES_USER: guacamole
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    db:

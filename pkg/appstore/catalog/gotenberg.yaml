@@ -1,0 +1,40 @@
+key: gotenberg
+name:
+  vi: Gotenberg
+  en: Gotenberg
+description:
+  vi: "Dịch vụ chuyển HTML, Markdown và tài liệu Office sang PDF qua một lệnh gọi API."
+  en: "An API service that converts HTML, Markdown and Office documents into PDF."
+category: tool
+website: https://gotenberg.dev
+portField: HTTP_PORT
+versions:
+  - name: "8.36"
+    images:
+      - gotenberg/gotenberg:8.36
+    values:
+      IMAGE: "gotenberg/gotenberg:8.36"
+  - name: "8.35.0"
+    images:
+      - gotenberg/gotenberg:8.35.0
+    values:
+      IMAGE: "gotenberg/gotenberg:8.35.0"
+  - name: "7.10.2"
+    images:
+      - gotenberg/gotenberg:7.10.2
+    values:
+      IMAGE: "gotenberg/gotenberg:7.10.2"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng API, en: API port}
+    type: port
+    default: "3213"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:3000"

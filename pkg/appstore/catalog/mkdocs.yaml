@@ -1,0 +1,47 @@
+key: mkdocs
+name:
+  vi: MkDocs Material
+  en: MkDocs Material
+description:
+  vi: "Dựng trang tài liệu từ tệp Markdown, có tìm kiếm và giao diện Material sẵn."
+  en: "Builds a documentation site from Markdown, with search and the Material theme included."
+category: website
+website: https://squidfunk.github.io/mkdocs-material
+portField: HTTP_PORT
+versions:
+  - name: "9.7.7"
+    images:
+      - squidfunk/mkdocs-material:9.7.7
+    values:
+      IMAGE: "squidfunk/mkdocs-material:9.7.7"
+  - name: "9.6.23"
+    images:
+      - squidfunk/mkdocs-material:9.6.23
+    values:
+      IMAGE: "squidfunk/mkdocs-material:9.6.23"
+  - name: "9.5.50"
+    images:
+      - squidfunk/mkdocs-material:9.5.50
+    values:
+      IMAGE: "squidfunk/mkdocs-material:9.5.50"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8491"
+    required: true
+  - key: DOCS_DIR
+    label: {vi: Thư mục tài liệu, en: Docs folder}
+    type: text
+    default: "/srv/docs"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8000"
+      volumes:
+        - ${DOCS_DIR}:/docs
