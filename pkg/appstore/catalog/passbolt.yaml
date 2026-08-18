@@ -1,0 +1,83 @@
+key: passbolt
+name:
+  vi: Passbolt
+  en: Passbolt
+description:
+  vi: "Kho mật khẩu cho nhóm: chia sẻ theo từng người, có nhật ký ai xem gì."
+  en: "A team password vault: share per person, with a log of who looked at what."
+category: security
+website: https://passbolt.com
+portField: HTTP_PORT
+versions:
+  - name: "5.14.3"
+    images:
+      - passbolt/passbolt:5.14.3-1-ce
+      - mariadb:11
+    values:
+      IMAGE: "passbolt/passbolt:5.14.3-1-ce"
+      DB_IMAGE: "mariadb:11"
+  - name: "4.12.1"
+    images:
+      - passbolt/passbolt:4.12.1-1-ce
+      - mariadb:11
+    values:
+      IMAGE: "passbolt/passbolt:4.12.1-1-ce"
+      DB_IMAGE: "mariadb:11"
+  - name: "3.12.2"
+    images:
+      - passbolt/passbolt:3.12.2-1-ce
+      - mariadb:11
+    values:
+      IMAGE: "passbolt/passbolt:3.12.2-1-ce"
+      DB_IMAGE: "mariadb:11"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8609"
+    required: true
+  - key: APP_FULL_BASE_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:8609"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        APP_FULL_BASE_URL: ${APP_FULL_BASE_URL}
+        DATASOURCES_DEFAULT_HOST: db
+        DATASOURCES_DEFAULT_DATABASE: passbolt
+        DATASOURCES_DEFAULT_USERNAME: passbolt
+        DATASOURCES_DEFAULT_PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - gpg:/etc/passbolt/gpg
+        - jwt:/etc/passbolt/jwt
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        MARIADB_DATABASE: passbolt
+        MARIADB_USER: passbolt
+        MARIADB_PASSWORD: ${DB_PASSWORD}
+        MARIADB_RANDOM_ROOT_PASSWORD: "1"
+      volumes:
+        - db:/var/lib/mysql
+
+  volumes:
+    gpg:
+    jwt:
+    db:

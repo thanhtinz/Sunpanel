@@ -28,7 +28,7 @@ def load_apps():
     apps = []
     for module in ("apps_core", "apps_media", "apps_dev", "apps_tools", "apps_home",
                    "apps_data", "apps_office", "apps_net",
-                   "apps_social", "apps_ai"):
+                   "apps_social", "apps_ai", "apps_biz", "apps_desk"):
         try:
             apps.extend(__import__(module).APPS)
         except ModuleNotFoundError:

@@ -1,0 +1,55 @@
+key: nzbget
+name:
+  vi: NZBGet
+  en: NZBGet
+description:
+  vi: "Máy tải Usenet cực nhẹ, chạy tốt trên máy chỉ có vài trăm megabyte RAM."
+  en: "A very light Usenet downloader that runs on machines with a few hundred megabytes of RAM."
+category: media
+website: https://nzbget.com
+portField: HTTP_PORT
+versions:
+  - name: "26.2.20260816"
+    images:
+      - linuxserver/nzbget:26.2.20260816
+    values:
+      IMAGE: "linuxserver/nzbget:26.2.20260816"
+  - name: "26.1.20260612"
+    images:
+      - linuxserver/nzbget:26.1.20260612
+    values:
+      IMAGE: "linuxserver/nzbget:26.1.20260612"
+  - name: "25.4.20260130"
+    images:
+      - linuxserver/nzbget:25.4.20260130
+    values:
+      IMAGE: "linuxserver/nzbget:25.4.20260130"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "6789"
+    required: true
+  - key: DOWNLOAD_DIR
+    label: {vi: Thư mục tải về, en: Download folder}
+    type: text
+    default: "/srv/downloads"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:6789"
+      volumes:
+        - config:/config
+        - ${DOWNLOAD_DIR}:/downloads
+
+  volumes:
+    config:

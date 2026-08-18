@@ -1,0 +1,52 @@
+key: flame
+name:
+  vi: Flame
+  en: Flame
+description:
+  vi: "Trang chủ máy chủ sửa được ngay trong giao diện, không phải mở tệp cấu hình."
+  en: "A server start page you edit in the UI instead of opening a config file."
+category: tool
+website: https://github.com/pawelmalak/flame
+portField: HTTP_PORT
+versions:
+  - name: "2.4.0"
+    images:
+      - pawelmalak/flame:2.4.0
+    values:
+      IMAGE: "pawelmalak/flame:2.4.0"
+  - name: "2.3.1"
+    images:
+      - pawelmalak/flame:2.3.1
+    values:
+      IMAGE: "pawelmalak/flame:2.3.1"
+  - name: "1.7.4"
+    images:
+      - pawelmalak/flame:1.7.4
+    values:
+      IMAGE: "pawelmalak/flame:1.7.4"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5005"
+    required: true
+  - key: PASSWORD
+    label: {vi: Mật khẩu, en: Password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PASSWORD: "${PASSWORD}"
+      ports:
+        - "${HTTP_PORT}:5005"
+      volumes:
+        - data:/app/data
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  volumes:
+    data:

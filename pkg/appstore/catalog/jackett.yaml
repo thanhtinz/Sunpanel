@@ -1,0 +1,39 @@
+key: jackett
+name:
+  vi: Jackett
+  en: Jackett
+description:
+  vi: "Cầu nối tới hàng trăm trang tìm nguồn, đưa chúng về một API chung."
+  en: "A bridge to hundreds of tracker sites, exposing them through one common API."
+category: media
+website: https://github.com/Jackett/Jackett
+portField: HTTP_PORT
+versions:
+  - name: "0.24.2416"
+    images:
+      - linuxserver/jackett:0.24.2416
+    values:
+      IMAGE: "linuxserver/jackett:0.24.2416"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "9117"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:9117"
+      volumes:
+        - config:/config
+
+  volumes:
+    config:

@@ -1,0 +1,55 @@
+key: firefox
+name:
+  vi: Firefox
+  en: Firefox
+description:
+  vi: "Trình duyệt Firefox chạy trên máy chủ, mở qua trình duyệt khác — tiện khi cần IP của máy chủ."
+  en: "Firefox running on the server and opened from another browser — handy when you need the server's IP."
+category: tool
+website: https://mozilla.org/firefox
+portField: HTTP_PORT
+versions:
+  - name: "1153.0.4"
+    images:
+      - linuxserver/firefox:1153.0.4
+    values:
+      IMAGE: "linuxserver/firefox:1153.0.4"
+  - name: "1152.0.6"
+    images:
+      - linuxserver/firefox:1152.0.6
+    values:
+      IMAGE: "linuxserver/firefox:1152.0.6"
+  - name: "1151.0.4"
+    images:
+      - linuxserver/firefox:1151.0.4
+    values:
+      IMAGE: "linuxserver/firefox:1151.0.4"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3450"
+    required: true
+  - key: PASSWORD
+    label: {vi: Mật khẩu truy cập, en: Access password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+        CUSTOM_USER: "abc"
+        PASSWORD: "${PASSWORD}"
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - config:/config
+
+  volumes:
+    config:

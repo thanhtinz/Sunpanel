@@ -1,0 +1,90 @@
+key: snipe-it
+name:
+  vi: Snipe-IT
+  en: Snipe-IT
+description:
+  vi: "Quản lý tài sản công nghệ: máy tính, giấy phép phần mềm, ai đang giữ thiết bị nào."
+  en: "IT asset management: machines, software licences and who currently holds what."
+category: productivity
+website: https://snipeitapp.com
+portField: HTTP_PORT
+versions:
+  - name: "8.7.1"
+    images:
+      - snipe/snipe-it:v8.7.1
+      - mariadb:11
+    values:
+      IMAGE: "snipe/snipe-it:v8.7.1"
+      DB_IMAGE: "mariadb:11"
+  - name: "7.1.17-alpine"
+    images:
+      - snipe/snipe-it:v7.1.17-alpine
+      - mariadb:11
+    values:
+      IMAGE: "snipe/snipe-it:v7.1.17-alpine"
+      DB_IMAGE: "mariadb:11"
+  - name: "6.4.2"
+    images:
+      - snipe/snipe-it:v6.4.2
+      - mariadb:11
+    values:
+      IMAGE: "snipe/snipe-it:v6.4.2"
+      DB_IMAGE: "mariadb:11"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8603"
+    required: true
+  - key: APP_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:8603"
+    required: true
+  - key: APP_KEY_VALUE
+    label: {vi: Khóa ứng dụng, en: App key}
+    help:
+      vi: "Snipe-IT yêu cầu khóa dạng base64:… dài 32 byte; xem tài liệu dự án để sinh."
+      en: "Snipe-IT wants a base64:… key of 32 bytes; see the project docs to generate one."
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        APP_ENV: production
+        APP_KEY: ${APP_KEY_VALUE}
+        APP_URL: ${APP_URL}
+        MYSQL_PORT_3306_TCP_ADDR: db
+        MYSQL_DATABASE: snipeit
+        MYSQL_USER: snipeit
+        MYSQL_PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - data:/var/lib/snipeit
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        MARIADB_DATABASE: snipeit
+        MARIADB_USER: snipeit
+        MARIADB_PASSWORD: ${DB_PASSWORD}
+        MARIADB_RANDOM_ROOT_PASSWORD: "1"
+      volumes:
+        - db:/var/lib/mysql
+
+  volumes:
+    data:
+    db:

@@ -1,0 +1,52 @@
+key: photostructure
+name:
+  vi: PhotoStructure
+  en: PhotoStructure
+description:
+  vi: "Gom ảnh nằm rải rác ở nhiều ổ đĩa về một thư viện, tự loại ảnh trùng."
+  en: "Gathers photos scattered across drives into one library and weeds out duplicates."
+category: media
+website: https://photostructure.com
+portField: HTTP_PORT
+versions:
+  - name: "1.1"
+    images:
+      - photostructure/server:1.1
+    values:
+      IMAGE: "photostructure/server:1.1"
+  - name: "1.0"
+    images:
+      - photostructure/server:1.0
+    values:
+      IMAGE: "photostructure/server:1.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "1787"
+    required: true
+  - key: PHOTOS_DIR
+    label: {vi: Thư mục ảnh, en: Photos folder}
+    type: text
+    default: "/srv/photos"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:1787"
+      volumes:
+        - config:/ps/config
+        - library:/ps/library
+        - tmp:/ps/tmp
+        - ${PHOTOS_DIR}:/ps/photos:ro
+
+  volumes:
+    config:
+    library:
+    tmp:

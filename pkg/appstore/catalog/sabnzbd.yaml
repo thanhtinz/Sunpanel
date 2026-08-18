@@ -1,0 +1,50 @@
+key: sabnzbd
+name:
+  vi: SABnzbd
+  en: SABnzbd
+description:
+  vi: "Máy tải Usenet có giao diện web, tự giải mã và giải nén sau khi tải xong."
+  en: "A Usenet downloader with a web UI that decodes and unpacks after each download."
+category: media
+website: https://sabnzbd.org
+portField: HTTP_PORT
+versions:
+  - name: "5.1.0"
+    images:
+      - linuxserver/sabnzbd:5.1.0
+    values:
+      IMAGE: "linuxserver/sabnzbd:5.1.0"
+  - name: "5.0.4"
+    images:
+      - linuxserver/sabnzbd:5.0.4
+    values:
+      IMAGE: "linuxserver/sabnzbd:5.0.4"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8610"
+    required: true
+  - key: DOWNLOAD_DIR
+    label: {vi: Thư mục tải về, en: Download folder}
+    type: text
+    default: "/srv/downloads"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - config:/config
+        - ${DOWNLOAD_DIR}:/downloads
+
+  volumes:
+    config:

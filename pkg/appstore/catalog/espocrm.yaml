@@ -1,0 +1,92 @@
+key: espocrm
+name:
+  vi: EspoCRM
+  en: EspoCRM
+description:
+  vi: "Quản lý quan hệ khách hàng: cơ hội bán hàng, liên hệ, chiến dịch và báo cáo."
+  en: "Customer relationship management: leads, contacts, campaigns and reports."
+category: productivity
+website: https://espocrm.com
+portField: HTTP_PORT
+versions:
+  - name: "10.0.5"
+    images:
+      - espocrm/espocrm:10.0.5
+      - mariadb:11
+    values:
+      IMAGE: "espocrm/espocrm:10.0.5"
+      DB_IMAGE: "mariadb:11"
+  - name: "9.3.10"
+    images:
+      - espocrm/espocrm:9.3.10
+      - mariadb:11
+    values:
+      IMAGE: "espocrm/espocrm:9.3.10"
+      DB_IMAGE: "mariadb:11"
+  - name: "8.4.2"
+    images:
+      - espocrm/espocrm:8.4.2
+      - mariadb:11
+    values:
+      IMAGE: "espocrm/espocrm:8.4.2"
+      DB_IMAGE: "mariadb:11"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8601"
+    required: true
+  - key: SITE_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:8601"
+    required: true
+  - key: ADMIN_USER
+    label: {vi: Tài khoản quản trị, en: Admin user}
+    type: text
+    default: "admin"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        ESPOCRM_DATABASE_HOST: db
+        ESPOCRM_DATABASE_NAME: espocrm
+        ESPOCRM_DATABASE_USER: espocrm
+        ESPOCRM_DATABASE_PASSWORD: ${DB_PASSWORD}
+        ESPOCRM_ADMIN_USERNAME: ${ADMIN_USER}
+        ESPOCRM_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+        ESPOCRM_SITE_URL: ${SITE_URL}
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - data:/var/www/html
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        MARIADB_DATABASE: espocrm
+        MARIADB_USER: espocrm
+        MARIADB_PASSWORD: ${DB_PASSWORD}
+        MARIADB_RANDOM_ROOT_PASSWORD: "1"
+      volumes:
+        - db:/var/lib/mysql
+
+  volumes:
+    data:
+    db:

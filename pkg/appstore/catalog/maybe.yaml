@@ -1,0 +1,82 @@
+key: maybe
+name:
+  vi: Maybe
+  en: Maybe
+description:
+  vi: "Quản lý tài chính cá nhân: gom tài khoản, theo dõi tài sản và dòng tiền."
+  en: "Personal finance: brings accounts together and tracks net worth and cash flow."
+category: productivity
+website: https://maybefinance.com
+portField: HTTP_PORT
+versions:
+  - name: "0.6.0"
+    images:
+      - ghcr.io/maybe-finance/maybe:0.6.0
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/maybe-finance/maybe:0.6.0"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "0.5.0"
+    images:
+      - ghcr.io/maybe-finance/maybe:0.5.0
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/maybe-finance/maybe:0.5.0"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "0.4.3"
+    images:
+      - ghcr.io/maybe-finance/maybe:0.4.3
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/maybe-finance/maybe:0.4.3"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8617"
+    required: true
+  - key: SECRET_KEY_BASE
+    label: {vi: Khóa bí mật, en: Secret key}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        SELF_HOSTED: "true"
+        RAILS_FORCE_SSL: "false"
+        RAILS_ASSUME_SSL: "false"
+        SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+        DB_HOST: db
+        POSTGRES_DB: maybe
+        POSTGRES_USER: maybe
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - storage:/rails/storage
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: maybe
+        POSTGRES_USER: maybe
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    storage:
+    db:

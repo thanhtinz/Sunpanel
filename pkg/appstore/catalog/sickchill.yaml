@@ -1,0 +1,61 @@
+key: sickchill
+name:
+  vi: SickChill
+  en: SickChill
+description:
+  vi: "Theo dõi phim bộ và tự tải tập mới, hỗ trợ cả Usenet lẫn torrent."
+  en: "Follows TV shows and fetches new episodes over both Usenet and torrents."
+category: media
+website: https://sickchill.github.io
+portField: HTTP_PORT
+versions:
+  - name: "2024.3.1"
+    images:
+      - linuxserver/sickchill:2024.3.1
+    values:
+      IMAGE: "linuxserver/sickchill:2024.3.1"
+  - name: "2023.6.27"
+    images:
+      - linuxserver/sickchill:2023.6.27
+    values:
+      IMAGE: "linuxserver/sickchill:2023.6.27"
+  - name: "2022.10.13"
+    images:
+      - linuxserver/sickchill:2022.10.13
+    values:
+      IMAGE: "linuxserver/sickchill:2022.10.13"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8611"
+    required: true
+  - key: MEDIA_DIR
+    label: {vi: Thư mục phim bộ, en: TV folder}
+    type: text
+    default: "/srv/media/tv"
+    required: true
+  - key: DOWNLOAD_DIR
+    label: {vi: Thư mục tải về, en: Download folder}
+    type: text
+    default: "/srv/downloads"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:8081"
+      volumes:
+        - config:/config
+        - ${MEDIA_DIR}:/tv
+        - ${DOWNLOAD_DIR}:/downloads
+
+  volumes:
+    config:

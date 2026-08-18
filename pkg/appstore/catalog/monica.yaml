@@ -1,0 +1,90 @@
+key: monica
+name:
+  vi: Monica
+  en: Monica
+description:
+  vi: "Sổ tay quan hệ cá nhân: nhớ ngày sinh, cuộc gặp và những gì bạn bè đã kể."
+  en: "A personal relationship notebook: birthdays, meetings and what friends told you."
+category: productivity
+website: https://monicahq.com
+portField: HTTP_PORT
+versions:
+  - name: "5.0"
+    images:
+      - monica:5.0-apache
+      - mariadb:11
+    values:
+      IMAGE: "monica:5.0-apache"
+      DB_IMAGE: "mariadb:11"
+  - name: "4.1.2"
+    images:
+      - monica:4.1.2-apache
+      - mariadb:11
+    values:
+      IMAGE: "monica:4.1.2-apache"
+      DB_IMAGE: "mariadb:11"
+  - name: "3.7.0"
+    images:
+      - monica:3.7.0-apache
+      - mariadb:11
+    values:
+      IMAGE: "monica:3.7.0-apache"
+      DB_IMAGE: "mariadb:11"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8602"
+    required: true
+  - key: APP_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:8602"
+    required: true
+  - key: APP_KEY_VALUE
+    label: {vi: Khóa ứng dụng, en: App key}
+    help:
+      vi: "Laravel yêu cầu khóa dài đúng 32 ký tự."
+      en: "Laravel needs a key of exactly 32 characters."
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        APP_ENV: production
+        APP_KEY: ${APP_KEY_VALUE}
+        APP_URL: ${APP_URL}
+        DB_HOST: db
+        DB_DATABASE: monica
+        DB_USERNAME: monica
+        DB_PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - data:/var/www/html/storage
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        MARIADB_DATABASE: monica
+        MARIADB_USER: monica
+        MARIADB_PASSWORD: ${DB_PASSWORD}
+        MARIADB_RANDOM_ROOT_PASSWORD: "1"
+      volumes:
+        - db:/var/lib/mysql
+
+  volumes:
+    data:
+    db:

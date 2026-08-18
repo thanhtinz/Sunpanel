@@ -25,6 +25,8 @@ kia đặt tên volume khác — và để sửa một thói quen chung phải m
 | `generate.py` | ghép hai phần trên lại và ghi ra tệp |
 | `apps_*.py` | bảng mô tả ứng dụng, chia theo nhóm |
 | `tags.json` | thẻ đã dò được lần trước |
+| `icons.py` | tải biểu trưng chính thức cho ứng dụng còn thiếu |
+| `resize.mjs` | thu nhỏ ảnh điểm mà `icons.py` tải về |
 
 ## Phiên bản
 
@@ -61,5 +63,11 @@ Thêm một `App(...)` vào tệp `apps_*.py` hợp nhóm nhất. Phần lớn �
 khai báo image, cổng và volume; chỉ khi ứng dụng cần thêm cơ sở dữ liệu hoặc
 nhiều dịch vụ mới phải viết `compose=` bằng tay.
 
-Nhớ đặt biểu trưng vào `pkg/appstore/icons/` — xem README ở đó. Kiểm thử sẽ báo
-lỗi nếu một ứng dụng không có biểu trưng.
+Rồi lấy biểu trưng về:
+
+```bash
+python3 tools/catalog/icons.py
+node tools/catalog/resize.mjs
+```
+
+Kiểm thử sẽ báo lỗi nếu một ứng dụng không có biểu trưng.

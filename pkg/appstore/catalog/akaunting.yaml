@@ -1,0 +1,97 @@
+key: akaunting
+name:
+  vi: Akaunting
+  en: Akaunting
+description:
+  vi: "Phần mềm kế toán cho doanh nghiệp nhỏ: hóa đơn, chi phí và báo cáo thuế."
+  en: "Accounting for small businesses: invoices, expenses and tax reports."
+category: productivity
+website: https://akaunting.com
+portField: HTTP_PORT
+versions:
+  - name: "3.1.21"
+    images:
+      - akaunting/akaunting:3.1.21
+      - mariadb:11
+    values:
+      IMAGE: "akaunting/akaunting:3.1.21"
+      DB_IMAGE: "mariadb:11"
+  - name: "3.0.17"
+    images:
+      - akaunting/akaunting:3.0.17
+      - mariadb:11
+    values:
+      IMAGE: "akaunting/akaunting:3.0.17"
+      DB_IMAGE: "mariadb:11"
+  - name: "2.1.35"
+    images:
+      - akaunting/akaunting:2.1.35
+      - mariadb:11
+    values:
+      IMAGE: "akaunting/akaunting:2.1.35"
+      DB_IMAGE: "mariadb:11"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8616"
+    required: true
+  - key: APP_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:8616"
+    required: true
+  - key: ADMIN_EMAIL
+    label: {vi: Email quản trị, en: Admin email}
+    type: text
+    default: "admin@example.com"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        APP_URL: ${APP_URL}
+        DB_HOST: db
+        DB_PORT: "3306"
+        DB_DATABASE: akaunting
+        DB_USERNAME: akaunting
+        DB_PASSWORD: ${DB_PASSWORD}
+        DB_PREFIX: akq_
+        COMPANY_NAME: Sunpanel
+        COMPANY_EMAIL: ${ADMIN_EMAIL}
+        ADMIN_EMAIL: ${ADMIN_EMAIL}
+        ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+        LOCALE: vi-VN
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - data:/var/www/html
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        MARIADB_DATABASE: akaunting
+        MARIADB_USER: akaunting
+        MARIADB_PASSWORD: ${DB_PASSWORD}
+        MARIADB_RANDOM_ROOT_PASSWORD: "1"
+      volumes:
+        - db:/var/lib/mysql
+
+  volumes:
+    data:
+    db:

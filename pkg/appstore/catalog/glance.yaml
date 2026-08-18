@@ -1,0 +1,46 @@
+key: glance
+name:
+  vi: Glance
+  en: Glance
+description:
+  vi: "Bảng tin gom mọi thứ về một trang: dịch vụ, tin tức, thời tiết, lịch và kho mã."
+  en: "A dashboard that gathers everything onto one page: services, news, weather, calendar and repos."
+category: tool
+website: https://github.com/glanceapp/glance
+portField: HTTP_PORT
+versions:
+  - name: "0.8.5"
+    images:
+      - glanceapp/glance:v0.8.5
+    values:
+      IMAGE: "glanceapp/glance:v0.8.5"
+  - name: "0.7.13"
+    images:
+      - glanceapp/glance:v0.7.13
+    values:
+      IMAGE: "glanceapp/glance:v0.7.13"
+  - name: "0.6.4"
+    images:
+      - glanceapp/glance:v0.6.4
+    values:
+      IMAGE: "glanceapp/glance:v0.6.4"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8613"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - config:/app/config
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  volumes:
+    config:

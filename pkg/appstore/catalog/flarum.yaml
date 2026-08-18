@@ -1,0 +1,101 @@
+key: flarum
+name:
+  vi: Flarum
+  en: Flarum
+description:
+  vi: "Diễn đàn hiện đại, nhẹ và đọc tốt trên điện thoại."
+  en: "A modern forum that stays light and reads well on a phone."
+category: website
+website: https://flarum.org
+portField: HTTP_PORT
+versions:
+  - name: "1.3.0"
+    images:
+      - mondedie/flarum:1.3.0
+      - mariadb:11
+    values:
+      IMAGE: "mondedie/flarum:1.3.0"
+      DB_IMAGE: "mariadb:11"
+  - name: "1.2.0"
+    images:
+      - mondedie/flarum:1.2.0
+      - mariadb:11
+    values:
+      IMAGE: "mondedie/flarum:1.2.0"
+      DB_IMAGE: "mariadb:11"
+  - name: "1.0.2"
+    images:
+      - mondedie/flarum:1.0.2
+      - mariadb:11
+    values:
+      IMAGE: "mondedie/flarum:1.0.2"
+      DB_IMAGE: "mariadb:11"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8615"
+    required: true
+  - key: FORUM_URL
+    label: {vi: Địa chỉ diễn đàn, en: Forum URL}
+    type: text
+    default: "http://localhost:8615"
+    required: true
+  - key: ADMIN_USER
+    label: {vi: Tài khoản quản trị, en: Admin user}
+    type: text
+    default: "admin"
+    required: true
+  - key: ADMIN_EMAIL
+    label: {vi: Email quản trị, en: Admin email}
+    type: text
+    default: "admin@example.com"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        DEBUG: "false"
+        FORUM_URL: ${FORUM_URL}
+        DB_HOST: db
+        DB_NAME: flarum
+        DB_USER: flarum
+        DB_PASS: ${DB_PASSWORD}
+        FLARUM_ADMIN_USER: ${ADMIN_USER}
+        FLARUM_ADMIN_MAIL: ${ADMIN_EMAIL}
+        FLARUM_ADMIN_PASS: ${ADMIN_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:8888"
+      volumes:
+        - assets:/flarum/app/public/assets
+        - extensions:/flarum/app/extensions
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        MARIADB_DATABASE: flarum
+        MARIADB_USER: flarum
+        MARIADB_PASSWORD: ${DB_PASSWORD}
+        MARIADB_RANDOM_ROOT_PASSWORD: "1"
+      volumes:
+        - db:/var/lib/mysql
+
+  volumes:
+    assets:
+    extensions:
+    db:

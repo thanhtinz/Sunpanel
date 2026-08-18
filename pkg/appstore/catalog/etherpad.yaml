@@ -1,0 +1,58 @@
+key: etherpad
+name:
+  vi: Etherpad
+  en: Etherpad
+description:
+  vi: "Trang soạn thảo chung theo thời gian thực, mở liên kết là gõ được ngay."
+  en: "A real-time shared editor: open the link and start typing."
+category: productivity
+website: https://etherpad.org
+portField: HTTP_PORT
+versions:
+  - name: "3.3.3"
+    images:
+      - etherpad/etherpad:3.3.3
+    values:
+      IMAGE: "etherpad/etherpad:3.3.3"
+  - name: "2.7.3"
+    images:
+      - etherpad/etherpad:2.7.3
+    values:
+      IMAGE: "etherpad/etherpad:2.7.3"
+  - name: "1.9.7"
+    images:
+      - etherpad/etherpad:1.9.7
+    values:
+      IMAGE: "etherpad/etherpad:1.9.7"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "9001"
+    required: true
+  - key: ADMIN_USER
+    label: {vi: Tài khoản quản trị, en: Admin user}
+    type: text
+    default: "admin"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
+        DB_TYPE: "sqlite"
+        DB_FILENAME: "/opt/etherpad-lite/var/etherpad.db"
+      ports:
+        - "${HTTP_PORT}:9001"
+      volumes:
+        - data:/opt/etherpad-lite/var
+
+  volumes:
+    data:

@@ -1,0 +1,75 @@
+key: odoo
+name:
+  vi: Odoo
+  en: Odoo
+description:
+  vi: "Bộ phần mềm quản trị doanh nghiệp: bán hàng, kho, kế toán, nhân sự trong một hệ."
+  en: "A business management suite: sales, inventory, accounting and HR in one system."
+category: productivity
+website: https://odoo.com
+portField: HTTP_PORT
+versions:
+  - name: "19.0"
+    images:
+      - odoo:19.0
+      - postgres:16-alpine
+    values:
+      IMAGE: "odoo:19.0"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "18.0"
+    images:
+      - odoo:18.0
+      - postgres:16-alpine
+    values:
+      IMAGE: "odoo:18.0"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "17.0"
+    images:
+      - odoo:17.0
+      - postgres:16-alpine
+    values:
+      IMAGE: "odoo:17.0"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8069"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        HOST: db
+        USER: odoo
+        PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:8069"
+      volumes:
+        - data:/var/lib/odoo
+        - addons:/mnt/extra-addons
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: postgres
+        POSTGRES_USER: odoo
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    data:
+    addons:
+    db:

@@ -1,0 +1,75 @@
+key: osticket
+name:
+  vi: osTicket
+  en: osTicket
+description:
+  vi: "Hệ thống nhận yêu cầu hỗ trợ qua email và biểu mẫu, chia theo phòng ban."
+  en: "A support ticket system fed by email and web forms, split by department."
+category: productivity
+website: https://osticket.com
+portField: HTTP_PORT
+versions:
+  - name: "1.12"
+    images:
+      - campbellsoftwaresolutions/osticket:1.12
+      - mariadb:11
+    values:
+      IMAGE: "campbellsoftwaresolutions/osticket:1.12"
+      DB_IMAGE: "mariadb:11"
+  - name: "1.11"
+    images:
+      - campbellsoftwaresolutions/osticket:1.11
+      - mariadb:11
+    values:
+      IMAGE: "campbellsoftwaresolutions/osticket:1.11"
+      DB_IMAGE: "mariadb:11"
+  - name: "1.10"
+    images:
+      - campbellsoftwaresolutions/osticket:1.10
+      - mariadb:11
+    values:
+      IMAGE: "campbellsoftwaresolutions/osticket:1.10"
+      DB_IMAGE: "mariadb:11"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8604"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        MYSQL_HOST: db
+        MYSQL_DATABASE: osticket
+        MYSQL_USER: osticket
+        MYSQL_PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - data:/data
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        MARIADB_DATABASE: osticket
+        MARIADB_USER: osticket
+        MARIADB_PASSWORD: ${DB_PASSWORD}
+        MARIADB_RANDOM_ROOT_PASSWORD: "1"
+      volumes:
+        - db:/var/lib/mysql
+
+  volumes:
+    data:
+    db:

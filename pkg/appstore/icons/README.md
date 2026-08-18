@@ -37,6 +37,18 @@ lúc người ta lưu tệp về — đã gặp một lần trong chính bộ s�
 diện nhúng biểu trưng qua thẻ `<img>` nên mã đó không chạy được, nhưng không có
 lý do gì để mang nó theo vào binary. Kiểm thử sẽ báo lỗi nếu còn sót.
 
+## Tải biểu trưng cho ứng dụng mới
+
+```bash
+python3 tools/catalog/icons.py     # tải cái còn thiếu
+node tools/catalog/resize.mjs      # thu nhỏ ảnh điểm, nếu có
+```
+
+`icons.py` bỏ qua ứng dụng đã có tệp, nên nó không ghi đè lên biểu trưng bạn đã
+chỉnh tay. Ảnh véc-tơ vượt 48 KB bị thay bằng bản ảnh điểm — vẽ chi tiết tới mức
+đó là phí cho một ô 44 điểm ảnh, và kiểm thử phía Go cũng chặn ở ngưỡng tương
+ứng sau khi mã hóa base64.
+
 ## Nguồn
 
 Logo lấy từ bộ sưu tập [dashboard-icons](https://github.com/homarr-labs/dashboard-icons),

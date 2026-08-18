@@ -1,0 +1,45 @@
+key: cloudbeaver
+name:
+  vi: CloudBeaver
+  en: CloudBeaver
+description:
+  vi: "Giao diện truy vấn cơ sở dữ liệu qua web, hỗ trợ hầu hết loại có trình điều khiển JDBC."
+  en: "A web database client covering most databases with a JDBC driver."
+category: database
+website: https://dbeaver.com/cloudbeaver
+portField: HTTP_PORT
+versions:
+  - name: "26.1.5"
+    images:
+      - dbeaver/cloudbeaver:26.1.5
+    values:
+      IMAGE: "dbeaver/cloudbeaver:26.1.5"
+  - name: "25.3.5"
+    images:
+      - dbeaver/cloudbeaver:25.3.5
+    values:
+      IMAGE: "dbeaver/cloudbeaver:25.3.5"
+  - name: "24.3.5"
+    images:
+      - dbeaver/cloudbeaver:24.3.5
+    values:
+      IMAGE: "dbeaver/cloudbeaver:24.3.5"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8978"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8978"
+      volumes:
+        - workspace:/opt/cloudbeaver/workspace
+
+  volumes:
+    workspace:

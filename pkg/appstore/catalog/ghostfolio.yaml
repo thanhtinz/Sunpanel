@@ -1,0 +1,92 @@
+key: ghostfolio
+name:
+  vi: Ghostfolio
+  en: Ghostfolio
+description:
+  vi: "Theo dõi danh mục đầu tư: cổ phiếu, quỹ và tiền mã hóa trong một bảng."
+  en: "Tracks an investment portfolio: stocks, funds and crypto on one dashboard."
+category: productivity
+website: https://ghostfol.io
+portField: HTTP_PORT
+versions:
+  - name: "3.53.0"
+    images:
+      - ghostfolio/ghostfolio:3.53.0
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "ghostfolio/ghostfolio:3.53.0"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "3.52.0"
+    images:
+      - ghostfolio/ghostfolio:3.52.0
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "ghostfolio/ghostfolio:3.52.0"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "2.255.0"
+    images:
+      - ghostfolio/ghostfolio:2.255.0
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "ghostfolio/ghostfolio:2.255.0"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3403"
+    required: true
+  - key: ACCESS_TOKEN_SALT
+    label: {vi: Muối cho vé truy cập, en: Access token salt}
+    type: password
+    generate: true
+  - key: JWT_SECRET_KEY
+    label: {vi: Khóa ký phiên, en: Session secret}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+        - redis
+      environment:
+        DATABASE_URL: postgresql://ghostfolio:${DB_PASSWORD}@db:5432/ghostfolio?sslmode=prefer
+        ACCESS_TOKEN_SALT: ${ACCESS_TOKEN_SALT}
+        JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+        REDIS_HOST: redis
+        REDIS_PORT: "6379"
+      ports:
+        - "${HTTP_PORT}:3333"
+
+    redis:
+      image: ${REDIS_IMAGE}
+      container_name: ${CONTAINER_NAME}-redis
+      restart: unless-stopped
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: ghostfolio
+        POSTGRES_USER: ghostfolio
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    db:

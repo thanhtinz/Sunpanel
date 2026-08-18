@@ -17,7 +17,7 @@ _UA = {"User-Agent": "sunpanel-catalog-generator"}
 # Thẻ phiên bản: v tuỳ chọn, 1–3 nhóm số, kèm hậu tố biến thể (alpine, fpm…).
 # Nhãn của bản chưa phát hành. Chúng luôn mới hơn bản ổn định nên nếu không
 # loại ra sẽ chiếm mất chỗ phiên bản chọn sẵn của người dùng.
-_PRERELEASE = re.compile(r"(?i)(^|[-.])(rc\d*|beta\d*|alpha\d*|dev|develop|nightly|snapshot|preview|canary|trunk|next|edge)([-.]|$)")
+_PRERELEASE = re.compile(r"(?i)(^|[-.])(rc\d*|beta\d*|alpha\d*|dev|develop|nightly|snapshot|preview|canary|trunk|next|edge|unstable|prealpha|prerelease)([-.]|$)")
 
 _SEMVER = re.compile(r"^v?(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?(-[A-Za-z0-9.-]+)?$")
 

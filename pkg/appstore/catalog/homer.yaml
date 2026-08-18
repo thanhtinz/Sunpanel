@@ -1,0 +1,47 @@
+key: homer
+name:
+  vi: Homer
+  en: Homer
+description:
+  vi: "Trang chủ tĩnh cho máy chủ, cấu hình bằng một tệp YAML duy nhất."
+  en: "A static start page for your server, configured by a single YAML file."
+category: tool
+website: https://github.com/bastienwirtz/homer
+portField: HTTP_PORT
+versions:
+  - name: "26.4.2"
+    images:
+      - b4bz/homer:v26.4.2
+    values:
+      IMAGE: "b4bz/homer:v26.4.2"
+  - name: "25.11.1"
+    images:
+      - b4bz/homer:v25.11.1
+    values:
+      IMAGE: "b4bz/homer:v25.11.1"
+  - name: "24.12.1"
+    images:
+      - b4bz/homer:v24.12.1
+    values:
+      IMAGE: "b4bz/homer:v24.12.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8612"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        INIT_ASSETS: "1"
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - assets:/www/assets
+
+  volumes:
+    assets:

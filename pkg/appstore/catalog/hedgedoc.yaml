@@ -1,0 +1,77 @@
+key: hedgedoc
+name:
+  vi: HedgeDoc
+  en: HedgeDoc
+description:
+  vi: "Soạn Markdown cùng lúc nhiều người, xem trước ngay bên cạnh."
+  en: "Collaborative Markdown editing with a live preview beside it."
+category: productivity
+website: https://hedgedoc.org
+portField: HTTP_PORT
+versions:
+  - name: "1.10.3"
+    images:
+      - quay.io/hedgedoc/hedgedoc:1.10.3
+      - postgres:16-alpine
+    values:
+      IMAGE: "quay.io/hedgedoc/hedgedoc:1.10.3"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "1.9.9"
+    images:
+      - quay.io/hedgedoc/hedgedoc:1.9.9
+      - postgres:16-alpine
+    values:
+      IMAGE: "quay.io/hedgedoc/hedgedoc:1.9.9"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3401"
+    required: true
+  - key: DOMAIN_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:3401"
+    required: true
+  - key: SESSION_SECRET
+    label: {vi: Khóa ký phiên, en: Session secret}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        CMD_DB_URL: postgres://hedgedoc:${DB_PASSWORD}@db:5432/hedgedoc
+        CMD_DOMAIN: ${DOMAIN_URL}
+        CMD_URL_ADDPORT: "true"
+        CMD_SESSION_SECRET: ${SESSION_SECRET}
+        CMD_ALLOW_ANONYMOUS: "false"
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - uploads:/hedgedoc/public/uploads
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: hedgedoc
+        POSTGRES_USER: hedgedoc
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    uploads:
+    db:

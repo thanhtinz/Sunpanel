@@ -24,3 +24,4 @@ config.yaml
 .vscode/
 *.swp
 .DS_Store
+resize.json

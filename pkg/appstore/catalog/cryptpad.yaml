@@ -1,0 +1,58 @@
+key: cryptpad
+name:
+  vi: CryptPad
+  en: CryptPad
+description:
+  vi: "Bộ soạn thảo chung mã hóa ngay trên trình duyệt — máy chủ không đọc được nội dung."
+  en: "A collaborative editor suite encrypted in the browser — the server cannot read the content."
+category: productivity
+website: https://cryptpad.org
+portField: HTTP_PORT
+versions:
+  - name: "2026.5.1"
+    images:
+      - cryptpad/cryptpad:version-2026.5.1
+    values:
+      IMAGE: "cryptpad/cryptpad:version-2026.5.1"
+  - name: "2025.9.0"
+    images:
+      - cryptpad/cryptpad:version-2025.9.0
+    values:
+      IMAGE: "cryptpad/cryptpad:version-2025.9.0"
+  - name: "2024.12.0"
+    images:
+      - cryptpad/cryptpad:version-2024.12.0
+    values:
+      IMAGE: "cryptpad/cryptpad:version-2024.12.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "3402"
+    required: true
+  - key: MAIN_DOMAIN
+    label: {vi: Tên miền chính, en: Main domain}
+    type: text
+    default: "http://localhost:3402"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        CPAD_MAIN_DOMAIN: "${MAIN_DOMAIN}"
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - blob:/cryptpad/blob
+        - block:/cryptpad/block
+        - data:/cryptpad/data
+        - datastore:/cryptpad/datastore
+
+  volumes:
+    blob:
+    block:
+    data:
+    datastore:

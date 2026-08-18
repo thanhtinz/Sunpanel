@@ -1,0 +1,45 @@
+key: teedy
+name:
+  vi: Teedy
+  en: Teedy
+description:
+  vi: "Quản lý tài liệu gọn nhẹ, có nhận dạng chữ và chia sẻ theo thẻ."
+  en: "Light document management with OCR and tag-based sharing."
+category: productivity
+website: https://teedy.io
+portField: HTTP_PORT
+versions:
+  - name: "1.11"
+    images:
+      - sismics/docs:v1.11
+    values:
+      IMAGE: "sismics/docs:v1.11"
+  - name: "1.10"
+    images:
+      - sismics/docs:v1.10
+    values:
+      IMAGE: "sismics/docs:v1.10"
+  - name: "1.8"
+    images:
+      - sismics/docs:v1.8
+    values:
+      IMAGE: "sismics/docs:v1.8"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8607"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - data:/data
+
+  volumes:
+    data:
