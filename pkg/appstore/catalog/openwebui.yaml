@@ -9,17 +9,17 @@ category: development
 website: https://openwebui.com
 portField: HTTP_PORT
 versions:
-  - name: "v0.7.2"
+  - name: "0.7.2"
     images:
       - ghcr.io/open-webui/open-webui:v0.7.2
     values:
       IMAGE: "ghcr.io/open-webui/open-webui:v0.7.2"
-  - name: "v0.6.43"
+  - name: "0.6.43"
     images:
       - ghcr.io/open-webui/open-webui:v0.6.43
     values:
       IMAGE: "ghcr.io/open-webui/open-webui:v0.6.43"
-  - name: "v0.5.20"
+  - name: "0.5.20"
     images:
       - ghcr.io/open-webui/open-webui:v0.5.20
     values:

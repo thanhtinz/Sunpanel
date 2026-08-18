@@ -1,0 +1,53 @@
+key: fileflows
+name:
+  vi: FileFlows
+  en: FileFlows
+description:
+  vi: "Dựng quy trình xử lý tệp bằng cách nối các khối: nhận diện, chuyển mã, di chuyển."
+  en: "Builds file-processing pipelines by connecting blocks: detect, transcode, move."
+category: media
+website: https://fileflows.com
+portField: HTTP_PORT
+versions:
+  - name: "26.07"
+    images:
+      - revenz/fileflows:26.07
+    values:
+      IMAGE: "revenz/fileflows:26.07"
+  - name: "26.06"
+    images:
+      - revenz/fileflows:26.06
+    values:
+      IMAGE: "revenz/fileflows:26.06"
+  - name: "26.05"
+    images:
+      - revenz/fileflows:26.05
+    values:
+      IMAGE: "revenz/fileflows:26.05"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5030"
+    required: true
+  - key: MEDIA_DIR
+    label: {vi: Thư mục thư viện, en: Library folder}
+    type: text
+    default: "/srv/media"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:5000"
+      volumes:
+        - data:/app/Data
+        - ${MEDIA_DIR}:/media
+
+  volumes:
+    data:

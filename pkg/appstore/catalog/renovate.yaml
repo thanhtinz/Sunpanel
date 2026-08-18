@@ -1,0 +1,56 @@
+key: renovate
+name:
+  vi: Renovate
+  en: Renovate
+description:
+  vi: "Tự mở pull request cập nhật thư viện cho các kho mã của bạn."
+  en: "Opens dependency-update pull requests on your repositories automatically."
+category: development
+website: https://renovatebot.com
+versions:
+  - name: "44.33.2"
+    images:
+      - renovate/renovate:44.33.2
+    values:
+      IMAGE: "renovate/renovate:44.33.2"
+  - name: "44.32.6"
+    images:
+      - renovate/renovate:44.32.6
+    values:
+      IMAGE: "renovate/renovate:44.32.6"
+  - name: "43.288"
+    images:
+      - renovate/renovate:43.288
+    values:
+      IMAGE: "renovate/renovate:43.288"
+fields:
+  - key: PLATFORM
+    label: {vi: Nền tảng, en: Platform}
+    type: text
+    default: "gitea"
+    required: true
+  - key: ENDPOINT
+    label: {vi: Địa chỉ máy chủ Git, en: Git server URL}
+    type: text
+    default: "http://localhost:3000/api/v1/"
+    required: true
+  - key: TOKEN
+    label: {vi: Vé truy cập, en: Access token}
+    type: password
+    generate: true
+  - key: REPOSITORIES
+    label: {vi: Danh sách kho mã, en: Repositories}
+    type: text
+    default: "user/repo"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        RENOVATE_PLATFORM: "${PLATFORM}"
+        RENOVATE_ENDPOINT: "${ENDPOINT}"
+        RENOVATE_TOKEN: "${TOKEN}"
+        RENOVATE_REPOSITORIES: "${REPOSITORIES}"

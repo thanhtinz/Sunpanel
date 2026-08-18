@@ -1,0 +1,45 @@
+key: olivetin
+name:
+  vi: OliveTin
+  en: OliveTin
+description:
+  vi: "Biến vài lệnh shell thành nút bấm an toàn cho người không dùng terminal."
+  en: "Turns a few shell commands into safe buttons for people who never open a terminal."
+category: tool
+website: https://olivetin.app
+portField: HTTP_PORT
+versions:
+  - name: "3000.19.0"
+    images:
+      - jamesread/olivetin:3000.19.0
+    values:
+      IMAGE: "jamesread/olivetin:3000.19.0"
+  - name: "2025.11.25"
+    images:
+      - jamesread/olivetin:2025.11.25
+    values:
+      IMAGE: "jamesread/olivetin:2025.11.25"
+  - name: "2024.12.11"
+    images:
+      - jamesread/olivetin:2024.12.11
+    values:
+      IMAGE: "jamesread/olivetin:2024.12.11"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8140"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:1337"
+      volumes:
+        - config:/config
+
+  volumes:
+    config:

@@ -8,17 +8,17 @@ description:
 category: storage
 website: https://github.com/offen/docker-volume-backup
 versions:
-  - name: "v2.48.2"
+  - name: "2.48.2"
     images:
       - offen/docker-volume-backup:v2.48.2
     values:
       IMAGE: "offen/docker-volume-backup:v2.48.2"
-  - name: "v2.47.2"
+  - name: "2.47.2"
     images:
       - offen/docker-volume-backup:v2.47.2
     values:
       IMAGE: "offen/docker-volume-backup:v2.47.2"
-  - name: "v2.46.1"
+  - name: "2.46.1"
     images:
       - offen/docker-volume-backup:v2.46.1
     values:

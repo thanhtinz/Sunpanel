@@ -1,0 +1,64 @@
+key: clickhouse
+name:
+  vi: ClickHouse
+  en: ClickHouse
+description:
+  vi: "Cơ sở dữ liệu cột cho báo cáo: quét hàng tỉ dòng trong vài giây."
+  en: "A columnar database for analytics: scans billions of rows in seconds."
+category: database
+website: https://clickhouse.com
+portField: HTTP_PORT
+versions:
+  - name: "26.7.3.19"
+    images:
+      - clickhouse/clickhouse-server:26.7.3.19
+    values:
+      IMAGE: "clickhouse/clickhouse-server:26.7.3.19"
+  - name: "26.6.2.160"
+    images:
+      - clickhouse/clickhouse-server:26.6.2.160
+    values:
+      IMAGE: "clickhouse/clickhouse-server:26.6.2.160"
+  - name: "25.12.11.4"
+    images:
+      - clickhouse/clickhouse-server:25.12.11.4
+    values:
+      IMAGE: "clickhouse/clickhouse-server:25.12.11.4"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng HTTP, en: HTTP port}
+    type: port
+    default: "8124"
+    required: true
+  - key: NATIVE_PORT
+    label: {vi: Cổng gốc, en: Native port}
+    type: port
+    default: "9010"
+    required: true
+  - key: DB_USER
+    label: {vi: Tên người dùng, en: User name}
+    type: text
+    default: "app"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu, en: Password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        CLICKHOUSE_USER: "${DB_USER}"
+        CLICKHOUSE_PASSWORD: "${DB_PASSWORD}"
+        CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+      ports:
+        - "${HTTP_PORT}:8123"
+        - "${NATIVE_PORT}:9000"
+      volumes:
+        - data:/var/lib/clickhouse
+
+  volumes:
+    data:

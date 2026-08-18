@@ -1,0 +1,47 @@
+key: kestra
+name:
+  vi: Kestra
+  en: Kestra
+description:
+  vi: "Điều phối luồng dữ liệu khai báo bằng YAML, có giao diện xem lịch sử từng bước."
+  en: "Declarative data-pipeline orchestration in YAML, with a UI that shows every step's history."
+category: automation
+website: https://kestra.io
+portField: HTTP_PORT
+versions:
+  - name: "1.3.33"
+    images:
+      - kestra/kestra:v1.3.33
+    values:
+      IMAGE: "kestra/kestra:v1.3.33"
+  - name: "1.2.24"
+    images:
+      - kestra/kestra:v1.2.24
+    values:
+      IMAGE: "kestra/kestra:v1.2.24"
+  - name: "0.24.20"
+    images:
+      - kestra/kestra:v0.24.20
+    values:
+      IMAGE: "kestra/kestra:v0.24.20"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8116"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: server standalone
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - data:/app/storage
+        - /var/run/docker.sock:/var/run/docker.sock
+
+  volumes:
+    data:

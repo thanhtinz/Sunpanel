@@ -9,11 +9,21 @@ category: productivity
 website: https://sabre.io/baikal
 portField: HTTP_PORT
 versions:
-  - name: "nginx"
+  - name: "0.10.1"
     images:
-      - ckulka/baikal:nginx
+      - ckulka/baikal:0.10.1-nginx
     values:
-      IMAGE: "ckulka/baikal:nginx"
+      IMAGE: "ckulka/baikal:0.10.1-nginx"
+  - name: "0.9.5"
+    images:
+      - ckulka/baikal:0.9.5-nginx
+    values:
+      IMAGE: "ckulka/baikal:0.9.5-nginx"
+  - name: "0.8.0"
+    images:
+      - ckulka/baikal:0.8.0-nginx
+    values:
+      IMAGE: "ckulka/baikal:0.8.0-nginx"
 fields:
   - key: HTTP_PORT
     label: {vi: Cổng web, en: Web port}

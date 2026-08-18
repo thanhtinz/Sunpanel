@@ -1,0 +1,52 @@
+key: baserow
+name:
+  vi: Baserow
+  en: Baserow
+description:
+  vi: "Cơ sở dữ liệu dạng bảng tính cho nhóm, thay Airtable mà dữ liệu ở lại máy chủ của bạn."
+  en: "A spreadsheet-style database for teams — an Airtable replacement with your data on your server."
+category: productivity
+website: https://baserow.io
+portField: HTTP_PORT
+versions:
+  - name: "2.3.3"
+    images:
+      - baserow/baserow:2.3.3
+    values:
+      IMAGE: "baserow/baserow:2.3.3"
+  - name: "2.2.2"
+    images:
+      - baserow/baserow:2.2.2
+    values:
+      IMAGE: "baserow/baserow:2.2.2"
+  - name: "1.35.3"
+    images:
+      - baserow/baserow:1.35.3
+    values:
+      IMAGE: "baserow/baserow:1.35.3"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8111"
+    required: true
+  - key: PUBLIC_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:8111"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        BASEROW_PUBLIC_URL: "${PUBLIC_URL}"
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - data:/baserow/data
+
+  volumes:
+    data:

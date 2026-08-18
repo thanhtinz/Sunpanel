@@ -1,0 +1,54 @@
+key: dockge
+name:
+  vi: Dockge
+  en: Dockge
+description:
+  vi: "Quản lý ngăn xếp compose bằng giao diện, sửa tệp compose ngay trong trình duyệt."
+  en: "Manages compose stacks from a UI and edits the compose file in the browser."
+category: tool
+website: https://github.com/louislam/dockge
+portField: HTTP_PORT
+versions:
+  - name: "1.5.0"
+    images:
+      - louislam/dockge:1.5.0
+    values:
+      IMAGE: "louislam/dockge:1.5.0"
+  - name: "1.4.2"
+    images:
+      - louislam/dockge:1.4.2
+    values:
+      IMAGE: "louislam/dockge:1.4.2"
+  - name: "1.3.5"
+    images:
+      - louislam/dockge:1.3.5
+    values:
+      IMAGE: "louislam/dockge:1.3.5"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5051"
+    required: true
+  - key: STACKS_DIR
+    label: {vi: Thư mục chứa ngăn xếp, en: Stacks folder}
+    type: text
+    default: "/opt/stacks"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        DOCKGE_STACKS_DIR: "/opt/stacks"
+      ports:
+        - "${HTTP_PORT}:5001"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - data:/app/data
+        - ${STACKS_DIR}:/opt/stacks
+
+  volumes:
+    data:

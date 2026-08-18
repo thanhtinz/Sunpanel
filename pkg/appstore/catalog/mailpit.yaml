@@ -1,0 +1,57 @@
+key: mailpit
+name:
+  vi: Mailpit
+  en: Mailpit
+description:
+  vi: "Hộp thư giả cho lập trình: hứng mọi email ứng dụng gửi ra và hiện trong trình duyệt."
+  en: "A fake mailbox for development: catches every email your app sends and shows it in the browser."
+category: development
+website: https://mailpit.axllent.org
+portField: HTTP_PORT
+versions:
+  - name: "1.30.7"
+    images:
+      - axllent/mailpit:v1.30.7
+    values:
+      IMAGE: "axllent/mailpit:v1.30.7"
+  - name: "1.29.7"
+    images:
+      - axllent/mailpit:v1.29.7
+    values:
+      IMAGE: "axllent/mailpit:v1.29.7"
+  - name: "1.28.4"
+    images:
+      - axllent/mailpit:v1.28.4
+    values:
+      IMAGE: "axllent/mailpit:v1.28.4"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8136"
+    required: true
+  - key: SMTP_PORT
+    label: {vi: Cổng SMTP, en: SMTP port}
+    help:
+      vi: "Trỏ cấu hình gửi thư của ứng dụng vào cổng này để xem thư mà không gửi ra ngoài."
+      en: "Point your app's mail settings at this port to inspect mail without sending it."
+    type: port
+    default: "1025"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        MP_MAX_MESSAGES: "5000"
+        MP_DATABASE: "/data/mailpit.db"
+      ports:
+        - "${HTTP_PORT}:8025"
+        - "${SMTP_PORT}:1025"
+      volumes:
+        - data:/data
+
+  volumes:
+    data:

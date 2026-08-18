@@ -1,0 +1,88 @@
+key: leantime
+name:
+  vi: Leantime
+  en: Leantime
+description:
+  vi: "Quản lý dự án cho nhóm nhỏ, có mục tiêu, ý tưởng và bảng công việc."
+  en: "Project management for small teams, with goals, ideas and task boards."
+category: productivity
+website: https://leantime.io
+portField: HTTP_PORT
+versions:
+  - name: "3.9.8"
+    images:
+      - leantime/leantime:3.9.8
+      - mariadb:11
+    values:
+      IMAGE: "leantime/leantime:3.9.8"
+      DB_IMAGE: "mariadb:11"
+  - name: "3.8.0"
+    images:
+      - leantime/leantime:3.8.0
+      - mariadb:11
+    values:
+      IMAGE: "leantime/leantime:3.8.0"
+      DB_IMAGE: "mariadb:11"
+  - name: "3.7.3"
+    images:
+      - leantime/leantime:3.7.3
+      - mariadb:11
+    values:
+      IMAGE: "leantime/leantime:3.7.3"
+      DB_IMAGE: "mariadb:11"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8131"
+    required: true
+  - key: SITE_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:8131"
+    required: true
+  - key: SESSION_PASSWORD
+    label: {vi: Khóa ký phiên, en: Session secret}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        LEAN_APP_URL: ${SITE_URL}
+        LEAN_SESSION_PASSWORD: ${SESSION_PASSWORD}
+        LEAN_DB_HOST: db
+        LEAN_DB_DATABASE: leantime
+        LEAN_DB_USER: leantime
+        LEAN_DB_PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - userfiles:/var/www/html/userfiles
+        - public:/var/www/html/public/userfiles
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        MARIADB_DATABASE: leantime
+        MARIADB_USER: leantime
+        MARIADB_PASSWORD: ${DB_PASSWORD}
+        MARIADB_RANDOM_ROOT_PASSWORD: "1"
+      volumes:
+        - db:/var/lib/mysql
+
+  volumes:
+    userfiles:
+    public:
+    db:

@@ -1,0 +1,79 @@
+key: redmine
+name:
+  vi: Redmine
+  en: Redmine
+description:
+  vi: "Theo dõi công việc và lỗi theo dự án, kèm wiki và lịch — ổn định suốt hai thập kỷ."
+  en: "Per-project issue tracking with a wiki and calendar — steady for two decades."
+category: productivity
+website: https://redmine.org
+portField: HTTP_PORT
+versions:
+  - name: "7.0.0"
+    images:
+      - redmine:7.0.0
+      - postgres:16-alpine
+    values:
+      IMAGE: "redmine:7.0.0"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "6.1.3"
+    images:
+      - redmine:6.1.3
+      - postgres:16-alpine
+    values:
+      IMAGE: "redmine:6.1.3"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "5.1.12"
+    images:
+      - redmine:5.1.12
+      - postgres:16-alpine
+    values:
+      IMAGE: "redmine:5.1.12"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8133"
+    required: true
+  - key: SECRET_KEY_BASE
+    label: {vi: Khóa bí mật, en: Secret key}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        REDMINE_DB_POSTGRES: db
+        REDMINE_DB_DATABASE: redmine
+        REDMINE_DB_USERNAME: redmine
+        REDMINE_DB_PASSWORD: ${DB_PASSWORD}
+        REDMINE_SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - files:/usr/src/redmine/files
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: redmine
+        POSTGRES_USER: redmine
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    files:
+    db:

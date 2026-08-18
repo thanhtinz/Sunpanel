@@ -1,0 +1,41 @@
+key: scrutiny
+name:
+  vi: Scrutiny
+  en: Scrutiny
+description:
+  vi: "Theo dõi sức khỏe ổ cứng qua S.M.A.R.T. và báo trước khi ổ sắp hỏng."
+  en: "Watches drive health through S.M.A.R.T. and warns before a disk fails."
+category: monitoring
+website: https://github.com/AnalogJ/scrutiny
+portField: HTTP_PORT
+versions:
+  - name: "master-omnibus"
+    images:
+      - ghcr.io/analogj/scrutiny:master-omnibus
+    values:
+      IMAGE: "ghcr.io/analogj/scrutiny:master-omnibus"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    help:
+      vi: "Cần chạy đặc quyền hoặc cấp thiết bị ổ đĩa cho container thì mới đọc được S.M.A.R.T."
+      en: "Needs privileged mode or the disk devices passed in to read S.M.A.R.T. data."
+    type: port
+    default: "8142"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - /run/udev:/run/udev:ro
+        - config:/opt/scrutiny/config
+        - influxdb:/opt/scrutiny/influxdb
+
+  volumes:
+    config:
+    influxdb:

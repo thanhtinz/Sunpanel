@@ -9,7 +9,7 @@ category: media
 website: https://tubearchivist.com
 portField: HTTP_PORT
 versions:
-  - name: "v0.5.11"
+  - name: "0.5.11"
     images:
       - bbilly1/tubearchivist:v0.5.11
       - redis:7-alpine
@@ -18,7 +18,7 @@ versions:
       IMAGE: "bbilly1/tubearchivist:v0.5.11"
       REDIS_IMAGE: "redis:7-alpine"
       ES_IMAGE: "bbilly1/tubearchivist-es:8.14.3"
-  - name: "v0.4.13"
+  - name: "0.4.13"
     images:
       - bbilly1/tubearchivist:v0.4.13
       - redis:7-alpine
@@ -27,7 +27,7 @@ versions:
       IMAGE: "bbilly1/tubearchivist:v0.4.13"
       REDIS_IMAGE: "redis:7-alpine"
       ES_IMAGE: "bbilly1/tubearchivist-es:8.14.3"
-  - name: "v0.3.6"
+  - name: "0.3.6"
     images:
       - bbilly1/tubearchivist:v0.3.6
       - redis:7-alpine

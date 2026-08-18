@@ -1,0 +1,107 @@
+key: netbox
+name:
+  vi: NetBox
+  en: NetBox
+description:
+  vi: "Sổ tay hạ tầng mạng: tủ rack, thiết bị, dải IP và cáp nối."
+  en: "The source of truth for network infrastructure: racks, devices, IP ranges and cabling."
+category: monitoring
+website: https://netbox.dev
+portField: HTTP_PORT
+versions:
+  - name: "4.6.8-5.0.2"
+    images:
+      - netboxcommunity/netbox:v4.6.8-5.0.2
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "netboxcommunity/netbox:v4.6.8-5.0.2"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "4.5.10-4.0.2"
+    images:
+      - netboxcommunity/netbox:v4.5.10-4.0.2
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "netboxcommunity/netbox:v4.5.10-4.0.2"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "3.7.8-2.8.0"
+    images:
+      - netboxcommunity/netbox:v3.7.8-2.8.0
+      - postgres:16-alpine
+      - redis:7-alpine
+    values:
+      IMAGE: "netboxcommunity/netbox:v3.7.8-2.8.0"
+      DB_IMAGE: "postgres:16-alpine"
+      REDIS_IMAGE: "redis:7-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8143"
+    required: true
+  - key: ADMIN_USER
+    label: {vi: Tài khoản quản trị, en: Admin user}
+    type: text
+    default: "admin"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+  - key: SECRET_KEY
+    label: {vi: Khóa bí mật, en: Secret key}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+        - redis
+      environment:
+        DB_HOST: db
+        DB_NAME: netbox
+        DB_USER: netbox
+        DB_PASSWORD: ${DB_PASSWORD}
+        REDIS_HOST: redis
+        REDIS_DATABASE: "0"
+        REDIS_CACHE_HOST: redis
+        REDIS_CACHE_DATABASE: "1"
+        SECRET_KEY: ${SECRET_KEY}
+        SUPERUSER_NAME: ${ADMIN_USER}
+        SUPERUSER_PASSWORD: ${ADMIN_PASSWORD}
+        SUPERUSER_EMAIL: admin@example.com
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - media:/opt/netbox/netbox/media
+
+    redis:
+      image: ${REDIS_IMAGE}
+      container_name: ${CONTAINER_NAME}-redis
+      restart: unless-stopped
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: netbox
+        POSTGRES_USER: netbox
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    media:
+    db:

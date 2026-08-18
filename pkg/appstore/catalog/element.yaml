@@ -1,0 +1,35 @@
+key: element
+name:
+  vi: Element
+  en: Element
+description:
+  vi: "Ứng dụng web cho mạng nhắn tin Matrix, chỉ là phần giao diện nên rất nhẹ."
+  en: "The web client for the Matrix chat network — front end only, so it stays light."
+category: productivity
+website: https://element.io
+portField: HTTP_PORT
+versions:
+  - name: "1.12.25"
+    images:
+      - vectorim/element-web:v1.12.25
+    values:
+      IMAGE: "vectorim/element-web:v1.12.25"
+  - name: "1.11.112"
+    images:
+      - vectorim/element-web:v1.11.112
+    values:
+      IMAGE: "vectorim/element-web:v1.11.112"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8134"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:80"

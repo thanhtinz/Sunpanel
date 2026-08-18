@@ -1,0 +1,59 @@
+key: neo4j
+name:
+  vi: Neo4j
+  en: Neo4j
+description:
+  vi: "Cơ sở dữ liệu đồ thị: lưu quan hệ giữa các thực thể và truy vấn theo đường đi."
+  en: "A graph database: stores relationships between entities and queries along paths."
+category: database
+website: https://neo4j.com
+portField: HTTP_PORT
+versions:
+  - name: "2026.07.1"
+    images:
+      - neo4j:2026.07.1
+    values:
+      IMAGE: "neo4j:2026.07.1"
+  - name: "2025.12.1"
+    images:
+      - neo4j:2025.12.1
+    values:
+      IMAGE: "neo4j:2025.12.1"
+  - name: "5.26.29"
+    images:
+      - neo4j:5.26.29
+    values:
+      IMAGE: "neo4j:5.26.29"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "7474"
+    required: true
+  - key: BOLT_PORT
+    label: {vi: Cổng Bolt, en: Bolt port}
+    type: port
+    default: "7687"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu, en: Password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        NEO4J_AUTH: "neo4j/${DB_PASSWORD}"
+      ports:
+        - "${HTTP_PORT}:7474"
+        - "${BOLT_PORT}:7687"
+      volumes:
+        - data:/data
+        - logs:/logs
+
+  volumes:
+    data:
+    logs:

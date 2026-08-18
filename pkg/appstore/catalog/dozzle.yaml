@@ -9,17 +9,17 @@ category: monitoring
 website: https://dozzle.dev
 portField: HTTP_PORT
 versions:
-  - name: "v10.7.2"
+  - name: "10.7.2"
     images:
       - amir20/dozzle:v10.7.2
     values:
       IMAGE: "amir20/dozzle:v10.7.2"
-  - name: "v9.0.3"
+  - name: "9.0.3"
     images:
       - amir20/dozzle:v9.0.3
     values:
       IMAGE: "amir20/dozzle:v9.0.3"
-  - name: "v8.14.12"
+  - name: "8.14.12"
     images:
       - amir20/dozzle:v8.14.12
     values:

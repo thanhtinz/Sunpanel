@@ -9,17 +9,17 @@ category: security
 website: https://crowdsec.net
 portField: API_PORT
 versions:
-  - name: "v1.7.8"
+  - name: "1.7.8"
     images:
       - crowdsecurity/crowdsec:v1.7.8
     values:
       IMAGE: "crowdsecurity/crowdsec:v1.7.8"
-  - name: "v1.6.11"
+  - name: "1.6.11"
     images:
       - crowdsecurity/crowdsec:v1.6.11
     values:
       IMAGE: "crowdsecurity/crowdsec:v1.6.11"
-  - name: "v1.5.5"
+  - name: "1.5.5"
     images:
       - crowdsecurity/crowdsec:v1.5.5
     values:

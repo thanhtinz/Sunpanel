@@ -1,0 +1,51 @@
+key: questdb
+name:
+  vi: QuestDB
+  en: QuestDB
+description:
+  vi: "Cơ sở dữ liệu chuỗi thời gian truy vấn bằng SQL, nạp dữ liệu rất nhanh."
+  en: "A time-series database you query with plain SQL and can write to very fast."
+category: database
+website: https://questdb.io
+portField: HTTP_PORT
+versions:
+  - name: "10.0.0"
+    images:
+      - questdb/questdb:10.0.0
+    values:
+      IMAGE: "questdb/questdb:10.0.0"
+  - name: "9.4.3"
+    images:
+      - questdb/questdb:9.4.3
+    values:
+      IMAGE: "questdb/questdb:9.4.3"
+  - name: "8.3.3"
+    images:
+      - questdb/questdb:8.3.3
+    values:
+      IMAGE: "questdb/questdb:8.3.3"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "9020"
+    required: true
+  - key: PG_PORT
+    label: {vi: Cổng giao thức PostgreSQL, en: PostgreSQL wire port}
+    type: port
+    default: "8812"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:9000"
+        - "${PG_PORT}:8812"
+      volumes:
+        - data:/var/lib/questdb
+
+  volumes:
+    data:

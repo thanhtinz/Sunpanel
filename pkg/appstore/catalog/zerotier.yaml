@@ -1,0 +1,47 @@
+key: zerotier
+name:
+  vi: ZeroTier
+  en: ZeroTier
+description:
+  vi: "Mạng ảo phẳng nối mọi thiết bị như đang chung một switch, kể cả qua Internet."
+  en: "A flat virtual network that makes every device act like it shares one switch, even across the Internet."
+category: security
+website: https://zerotier.com
+versions:
+  - name: "1.14.2"
+    images:
+      - zerotier/zerotier:1.14.2
+    values:
+      IMAGE: "zerotier/zerotier:1.14.2"
+  - name: "1.12.2"
+    images:
+      - zerotier/zerotier:1.12.2
+    values:
+      IMAGE: "zerotier/zerotier:1.12.2"
+  - name: "1.10.6"
+    images:
+      - zerotier/zerotier:1.10.6
+    values:
+      IMAGE: "zerotier/zerotier:1.10.6"
+fields:
+  - key: NETWORK_ID
+    label: {vi: Mã mạng, en: Network ID}
+    help:
+      vi: "Mã 16 ký tự của mạng, lấy ở my.zerotier.com."
+      en: "The 16-character network ID from my.zerotier.com."
+    type: text
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        ZEROTIER_JOIN_NETWORKS: "${NETWORK_ID}"
+      volumes:
+        - data:/var/lib/zerotier-one
+        - /dev/net/tun:/dev/net/tun
+
+  volumes:
+    data:

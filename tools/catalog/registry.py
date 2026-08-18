@@ -15,6 +15,10 @@ import urllib.request
 _UA = {"User-Agent": "sunpanel-catalog-generator"}
 
 # Thẻ phiên bản: v tuỳ chọn, 1–3 nhóm số, kèm hậu tố biến thể (alpine, fpm…).
+# Nhãn của bản chưa phát hành. Chúng luôn mới hơn bản ổn định nên nếu không
+# loại ra sẽ chiếm mất chỗ phiên bản chọn sẵn của người dùng.
+_PRERELEASE = re.compile(r"(?i)(^|[-.])(rc\d*|beta\d*|alpha\d*|dev|develop|nightly|snapshot|preview|canary|trunk|next|edge)([-.]|$)")
+
 _SEMVER = re.compile(r"^v?(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?(-[A-Za-z0-9.-]+)?$")
 
 
@@ -83,6 +87,8 @@ def pick_versions(tags, suffix="", prefix="", count=3, min_major=0, any_suffix=F
     """
     best = {}
     for tag in tags:
+        if _PRERELEASE.search(tag):
+            continue
         if prefix:
             if not tag.startswith(prefix):
                 continue

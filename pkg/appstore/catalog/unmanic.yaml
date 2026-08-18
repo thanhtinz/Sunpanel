@@ -1,0 +1,57 @@
+key: unmanic
+name:
+  vi: Unmanic
+  en: Unmanic
+description:
+  vi: "Tự chuyển mã lại thư viện phim để đồng nhất định dạng và giảm dung lượng."
+  en: "Re-encodes your media library to one consistent format and a smaller footprint."
+category: media
+website: https://docs.unmanic.app
+portField: HTTP_PORT
+versions:
+  - name: "0.4.1"
+    images:
+      - josh5/unmanic:0.4.1
+    values:
+      IMAGE: "josh5/unmanic:0.4.1"
+  - name: "0.3.1"
+    images:
+      - josh5/unmanic:0.3.1
+    values:
+      IMAGE: "josh5/unmanic:0.3.1"
+  - name: "0.2.9"
+    images:
+      - josh5/unmanic:0.2.9
+    values:
+      IMAGE: "josh5/unmanic:0.2.9"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8890"
+    required: true
+  - key: MEDIA_DIR
+    label: {vi: Thư mục thư viện, en: Library folder}
+    type: text
+    default: "/srv/media"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:8888"
+      volumes:
+        - config:/config
+        - ${MEDIA_DIR}:/library
+        - cache:/tmp/unmanic
+
+  volumes:
+    config:
+    cache:

@@ -26,7 +26,8 @@ CACHE = os.path.join(HERE, "tags.json")
 
 def load_apps():
     apps = []
-    for module in ("apps_core", "apps_media", "apps_dev", "apps_tools", "apps_home"):
+    for module in ("apps_core", "apps_media", "apps_dev", "apps_tools", "apps_home",
+                   "apps_data", "apps_office", "apps_net"):
         try:
             apps.extend(__import__(module).APPS)
         except ModuleNotFoundError:

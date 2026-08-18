@@ -1,0 +1,45 @@
+key: alertmanager
+name:
+  vi: Alertmanager
+  en: Alertmanager
+description:
+  vi: "Gom cảnh báo từ Prometheus, khử trùng lặp rồi gửi tới đúng người qua đúng kênh."
+  en: "Groups alerts from Prometheus, deduplicates them and routes each to the right person."
+category: monitoring
+website: https://prometheus.io/docs/alerting/latest/alertmanager
+portField: HTTP_PORT
+versions:
+  - name: "0.34.0"
+    images:
+      - prom/alertmanager:v0.34.0
+    values:
+      IMAGE: "prom/alertmanager:v0.34.0"
+  - name: "0.33.1"
+    images:
+      - prom/alertmanager:v0.33.1
+    values:
+      IMAGE: "prom/alertmanager:v0.33.1"
+  - name: "0.32.2"
+    images:
+      - prom/alertmanager:v0.32.2
+    values:
+      IMAGE: "prom/alertmanager:v0.32.2"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "9093"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:9093"
+      volumes:
+        - data:/alertmanager
+
+  volumes:
+    data:

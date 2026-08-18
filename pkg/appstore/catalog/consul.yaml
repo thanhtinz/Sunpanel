@@ -1,0 +1,41 @@
+key: consul
+name:
+  vi: Consul
+  en: Consul
+description:
+  vi: "Sổ đăng ký dịch vụ và kho cấu hình cho hệ thống nhiều máy chủ."
+  en: "A service registry and configuration store for multi-server systems."
+category: tool
+website: https://consul.io
+portField: HTTP_PORT
+versions:
+  - name: "2.0.3"
+    images:
+      - hashicorp/consul:2.0.3
+    values:
+      IMAGE: "hashicorp/consul:2.0.3"
+  - name: "1.22.7"
+    images:
+      - hashicorp/consul:1.22.7
+    values:
+      IMAGE: "hashicorp/consul:1.22.7"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8500"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0
+      ports:
+        - "${HTTP_PORT}:8500"
+      volumes:
+        - data:/consul/data
+
+  volumes:
+    data:

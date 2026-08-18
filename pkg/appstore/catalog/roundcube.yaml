@@ -1,0 +1,59 @@
+key: roundcube
+name:
+  vi: Roundcube
+  en: Roundcube
+description:
+  vi: "Đọc thư qua trình duyệt cho hộp thư IMAP sẵn có của bạn."
+  en: "A browser mail client for your existing IMAP mailbox."
+category: productivity
+website: https://roundcube.net
+portField: HTTP_PORT
+versions:
+  - name: "1.7.3"
+    images:
+      - roundcube/roundcubemail:1.7.3-apache
+    values:
+      IMAGE: "roundcube/roundcubemail:1.7.3-apache"
+  - name: "1.6.18"
+    images:
+      - roundcube/roundcubemail:1.6.18-apache
+    values:
+      IMAGE: "roundcube/roundcubemail:1.6.18-apache"
+  - name: "1.5.11"
+    images:
+      - roundcube/roundcubemail:1.5.11-apache
+    values:
+      IMAGE: "roundcube/roundcubemail:1.5.11-apache"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8137"
+    required: true
+  - key: IMAP_HOST
+    label: {vi: Máy chủ IMAP, en: IMAP host}
+    type: text
+    default: "ssl://imap.example.com:993"
+    required: true
+  - key: SMTP_HOST
+    label: {vi: Máy chủ SMTP, en: SMTP host}
+    type: text
+    default: "tls://smtp.example.com:587"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        ROUNDCUBEMAIL_DEFAULT_HOST: "${IMAP_HOST}"
+        ROUNDCUBEMAIL_SMTP_SERVER: "${SMTP_HOST}"
+        ROUNDCUBEMAIL_DB_TYPE: "sqlite"
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - data:/var/roundcube/db
+
+  volumes:
+    data:

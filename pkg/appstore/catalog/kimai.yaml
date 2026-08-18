@@ -1,0 +1,83 @@
+key: kimai
+name:
+  vi: Kimai
+  en: Kimai
+description:
+  vi: "Chấm giờ làm theo dự án và khách hàng, xuất báo cáo để lập hóa đơn."
+  en: "Tracks time by project and customer, and exports reports for invoicing."
+category: productivity
+website: https://kimai.org
+portField: HTTP_PORT
+versions:
+  - name: "2.65.0"
+    images:
+      - kimai/kimai2:2.65.0
+      - mariadb:11
+    values:
+      IMAGE: "kimai/kimai2:2.65.0"
+      DB_IMAGE: "mariadb:11"
+  - name: "2.64.0"
+    images:
+      - kimai/kimai2:2.64.0
+      - mariadb:11
+    values:
+      IMAGE: "kimai/kimai2:2.64.0"
+      DB_IMAGE: "mariadb:11"
+  - name: "2.63.0"
+    images:
+      - kimai/kimai2:2.63.0
+      - mariadb:11
+    values:
+      IMAGE: "kimai/kimai2:2.63.0"
+      DB_IMAGE: "mariadb:11"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8130"
+    required: true
+  - key: ADMIN_EMAIL
+    label: {vi: Email quản trị, en: Admin email}
+    type: text
+    default: "admin@example.com"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        ADMINMAIL: ${ADMIN_EMAIL}
+        ADMINPASS: ${ADMIN_PASSWORD}
+        DATABASE_URL: mysql://kimai:${DB_PASSWORD}@db/kimai?charset=utf8mb4&serverVersion=11.0.0-MariaDB
+      ports:
+        - "${HTTP_PORT}:8001"
+      volumes:
+        - data:/opt/kimai/var
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        MARIADB_DATABASE: kimai
+        MARIADB_USER: kimai
+        MARIADB_PASSWORD: ${DB_PASSWORD}
+        MARIADB_RANDOM_ROOT_PASSWORD: "1"
+      volumes:
+        - db:/var/lib/mysql
+
+  volumes:
+    data:
+    db:

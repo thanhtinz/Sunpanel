@@ -1,0 +1,74 @@
+key: woodpecker-ci
+name:
+  vi: Woodpecker CI
+  en: Woodpecker CI
+description:
+  vi: "Máy chạy CI/CD gọn nhẹ cho Gitea, GitHub và GitLab, cấu hình bằng một tệp YAML."
+  en: "A lightweight CI/CD server for Gitea, GitHub and GitLab, configured by one YAML file."
+category: development
+website: https://woodpecker-ci.org
+portField: HTTP_PORT
+versions:
+  - name: "3.17.0"
+    images:
+      - woodpeckerci/woodpecker-server:v3.17.0
+    values:
+      IMAGE: "woodpeckerci/woodpecker-server:v3.17.0"
+  - name: "3.16.0"
+    images:
+      - woodpeckerci/woodpecker-server:v3.16.0
+    values:
+      IMAGE: "woodpeckerci/woodpecker-server:v3.16.0"
+  - name: "3.15.0"
+    images:
+      - woodpeckerci/woodpecker-server:v3.15.0
+    values:
+      IMAGE: "woodpeckerci/woodpecker-server:v3.15.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8120"
+    required: true
+  - key: HOST_URL
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:8120"
+    required: true
+  - key: GITEA_URL
+    label: {vi: Địa chỉ Gitea, en: Gitea URL}
+    type: text
+    default: "http://localhost:3000"
+    required: true
+  - key: CLIENT_ID
+    label: {vi: Client ID của ứng dụng OAuth, en: OAuth client ID}
+    type: text
+    required: true
+  - key: CLIENT_SECRET
+    label: {vi: Client secret, en: Client secret}
+    type: password
+    generate: true
+  - key: AGENT_SECRET
+    label: {vi: Khóa cho máy chạy lệnh, en: Agent shared secret}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        WOODPECKER_HOST: "${HOST_URL}"
+        WOODPECKER_GITEA: "true"
+        WOODPECKER_GITEA_URL: "${GITEA_URL}"
+        WOODPECKER_GITEA_CLIENT: "${CLIENT_ID}"
+        WOODPECKER_GITEA_SECRET: "${CLIENT_SECRET}"
+        WOODPECKER_AGENT_SECRET: "${AGENT_SECRET}"
+      ports:
+        - "${HTTP_PORT}:8000"
+      volumes:
+        - data:/var/lib/woodpecker
+
+  volumes:
+    data:

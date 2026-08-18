@@ -1,0 +1,48 @@
+key: jaeger
+name:
+  vi: Jaeger
+  en: Jaeger
+description:
+  vi: "Theo vết một yêu cầu đi qua nhiều dịch vụ để biết đoạn nào chậm."
+  en: "Traces a request across services so you can see which hop is slow."
+category: monitoring
+website: https://jaegertracing.io
+portField: HTTP_PORT
+versions:
+  - name: "1.76.0"
+    images:
+      - jaegertracing/all-in-one:1.76.0
+    values:
+      IMAGE: "jaegertracing/all-in-one:1.76.0"
+  - name: "1.75.0"
+    images:
+      - jaegertracing/all-in-one:1.75.0
+    values:
+      IMAGE: "jaegertracing/all-in-one:1.75.0"
+  - name: "1.74.0"
+    images:
+      - jaegertracing/all-in-one:1.74.0
+    values:
+      IMAGE: "jaegertracing/all-in-one:1.74.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "16686"
+    required: true
+  - key: OTLP_PORT
+    label: {vi: Cổng nhận vết OTLP, en: OTLP ingest port}
+    type: port
+    default: "4318"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        COLLECTOR_OTLP_ENABLED: "true"
+      ports:
+        - "${HTTP_PORT}:16686"
+        - "${OTLP_PORT}:4318"

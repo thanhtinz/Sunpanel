@@ -9,17 +9,17 @@ category: monitoring
 website: https://ntfy.sh
 portField: HTTP_PORT
 versions:
-  - name: "v2.27"
+  - name: "2.27"
     images:
       - binwiederhier/ntfy:v2.27
     values:
       IMAGE: "binwiederhier/ntfy:v2.27"
-  - name: "v2.26.3"
+  - name: "2.26.3"
     images:
       - binwiederhier/ntfy:v2.26.3
     values:
       IMAGE: "binwiederhier/ntfy:v2.26.3"
-  - name: "v2.25"
+  - name: "2.25"
     images:
       - binwiederhier/ntfy:v2.25
     values:

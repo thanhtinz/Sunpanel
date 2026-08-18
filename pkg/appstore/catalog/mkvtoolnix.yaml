@@ -1,0 +1,53 @@
+key: mkvtoolnix
+name:
+  vi: MKVToolNix
+  en: MKVToolNix
+description:
+  vi: "Ghép, tách và sửa thông tin tệp MKV: đổi phụ đề, đổi tên rãnh, gộp nhiều nguồn."
+  en: "Merges, splits and edits MKV files: swap subtitles, rename tracks, combine sources."
+category: media
+website: https://mkvtoolnix.download
+portField: HTTP_PORT
+versions:
+  - name: "26.08.2"
+    images:
+      - jlesage/mkvtoolnix:v26.08.2
+    values:
+      IMAGE: "jlesage/mkvtoolnix:v26.08.2"
+  - name: "25.12.3"
+    images:
+      - jlesage/mkvtoolnix:v25.12.3
+    values:
+      IMAGE: "jlesage/mkvtoolnix:v25.12.3"
+  - name: "24.12.2"
+    images:
+      - jlesage/mkvtoolnix:v24.12.2
+    values:
+      IMAGE: "jlesage/mkvtoolnix:v24.12.2"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5802"
+    required: true
+  - key: MEDIA_DIR
+    label: {vi: Thư mục làm việc, en: Working folder}
+    type: text
+    default: "/srv/media"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:5800"
+      volumes:
+        - config:/config
+        - ${MEDIA_DIR}:/storage
+
+  volumes:
+    config:

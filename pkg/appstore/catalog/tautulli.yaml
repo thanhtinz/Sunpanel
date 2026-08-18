@@ -1,0 +1,44 @@
+key: tautulli
+name:
+  vi: Tautulli
+  en: Tautulli
+description:
+  vi: "Thống kê ai xem gì trên Plex, xem bao lâu và từ thiết bị nào."
+  en: "Statistics for Plex: who watched what, for how long and from which device."
+category: media
+website: https://tautulli.com
+portField: HTTP_PORT
+versions:
+  - name: "2.17.2"
+    images:
+      - linuxserver/tautulli:2.17.2
+    values:
+      IMAGE: "linuxserver/tautulli:2.17.2"
+  - name: "2.16.1"
+    images:
+      - linuxserver/tautulli:2.16.1
+    values:
+      IMAGE: "linuxserver/tautulli:2.16.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8182"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:8181"
+      volumes:
+        - config:/config
+
+  volumes:
+    config:

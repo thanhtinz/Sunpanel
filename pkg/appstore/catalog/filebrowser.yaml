@@ -9,17 +9,17 @@ category: tool
 website: https://filebrowser.org
 portField: HTTP_PORT
 versions:
-  - name: "v2.63.23"
+  - name: "2.63.23"
     images:
       - filebrowser/filebrowser:v2.63.23
     values:
       IMAGE: "filebrowser/filebrowser:v2.63.23"
-  - name: "v2.62.2"
+  - name: "2.62.2"
     images:
       - filebrowser/filebrowser:v2.62.2
     values:
       IMAGE: "filebrowser/filebrowser:v2.62.2"
-  - name: "v2.61.2"
+  - name: "2.61.2"
     images:
       - filebrowser/filebrowser:v2.61.2
     values:

@@ -14,11 +14,11 @@ versions:
       - grafana/grafana:13.2
     values:
       IMAGE: "grafana/grafana:13.2"
-  - name: "12.4.8"
+  - name: "12.4.9"
     images:
-      - grafana/grafana:12.4.8
+      - grafana/grafana:12.4.9
     values:
-      IMAGE: "grafana/grafana:12.4.8"
+      IMAGE: "grafana/grafana:12.4.9"
   - name: "11.6.16"
     images:
       - grafana/grafana:11.6.16

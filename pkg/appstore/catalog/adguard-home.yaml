@@ -9,17 +9,17 @@ category: security
 website: https://adguard.com/adguard-home
 portField: SETUP_PORT
 versions:
-  - name: "v0.107.78"
+  - name: "0.107.78"
     images:
       - adguard/adguardhome:v0.107.78
     values:
       IMAGE: "adguard/adguardhome:v0.107.78"
-  - name: "v0.106.3"
+  - name: "0.106.3"
     images:
       - adguard/adguardhome:v0.106.3
     values:
       IMAGE: "adguard/adguardhome:v0.106.3"
-  - name: "v0.105.2"
+  - name: "0.105.2"
     images:
       - adguard/adguardhome:v0.105.2
     values:

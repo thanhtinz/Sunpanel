@@ -1,0 +1,51 @@
+key: budibase
+name:
+  vi: Budibase
+  en: Budibase
+description:
+  vi: "Dựng ứng dụng nội bộ bằng kéo thả, nối thẳng vào cơ sở dữ liệu và API sẵn có."
+  en: "Builds internal apps by dragging and dropping, wired straight into your databases and APIs."
+category: development
+website: https://budibase.com
+portField: HTTP_PORT
+versions:
+  - name: "3.42.0"
+    images:
+      - budibase/budibase:v3.42.0
+    values:
+      IMAGE: "budibase/budibase:v3.42.0"
+  - name: "3.41.3"
+    images:
+      - budibase/budibase:3.41.3
+    values:
+      IMAGE: "budibase/budibase:3.41.3"
+  - name: "3.40.1"
+    images:
+      - budibase/budibase:3.40.1
+    values:
+      IMAGE: "budibase/budibase:3.40.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8114"
+    required: true
+  - key: JWT_SECRET
+    label: {vi: Khóa ký phiên, en: Session secret}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        JWT_SECRET: "${JWT_SECRET}"
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - data:/data
+
+  volumes:
+    data:

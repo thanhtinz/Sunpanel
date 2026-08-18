@@ -1,0 +1,99 @@
+key: zabbix
+name:
+  vi: Zabbix
+  en: Zabbix
+description:
+  vi: "Giám sát hạ tầng quy mô doanh nghiệp: máy chủ, mạng, dịch vụ và cảnh báo theo ngưỡng."
+  en: "Enterprise-scale infrastructure monitoring: servers, networks, services and threshold alerts."
+category: monitoring
+website: https://zabbix.com
+portField: HTTP_PORT
+versions:
+  - name: "7.4.13"
+    images:
+      - zabbix/zabbix-server-pgsql:7.4.13-alpine
+      - postgres:16-alpine
+      - zabbix/zabbix-web-nginx-pgsql:alpine-7.0-latest
+    values:
+      IMAGE: "zabbix/zabbix-server-pgsql:7.4.13-alpine"
+      DB_IMAGE: "postgres:16-alpine"
+      WEB_IMAGE: "zabbix/zabbix-web-nginx-pgsql:alpine-7.0-latest"
+  - name: "7.2.15"
+    images:
+      - zabbix/zabbix-server-pgsql:7.2.15-alpine
+      - postgres:16-alpine
+      - zabbix/zabbix-web-nginx-pgsql:alpine-7.0-latest
+    values:
+      IMAGE: "zabbix/zabbix-server-pgsql:7.2.15-alpine"
+      DB_IMAGE: "postgres:16-alpine"
+      WEB_IMAGE: "zabbix/zabbix-web-nginx-pgsql:alpine-7.0-latest"
+  - name: "6.0.48"
+    images:
+      - zabbix/zabbix-server-pgsql:6.0.48-alpine
+      - postgres:16-alpine
+      - zabbix/zabbix-web-nginx-pgsql:alpine-7.0-latest
+    values:
+      IMAGE: "zabbix/zabbix-server-pgsql:6.0.48-alpine"
+      DB_IMAGE: "postgres:16-alpine"
+      WEB_IMAGE: "zabbix/zabbix-web-nginx-pgsql:alpine-7.0-latest"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8145"
+    required: true
+  - key: SERVER_PORT
+    label: {vi: Cổng máy chủ Zabbix, en: Zabbix server port}
+    type: port
+    default: "10051"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        DB_SERVER_HOST: db
+        POSTGRES_DB: zabbix
+        POSTGRES_USER: zabbix
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "${SERVER_PORT}:10051"
+
+    web:
+      image: ${WEB_IMAGE}
+      container_name: ${CONTAINER_NAME}-web
+      restart: unless-stopped
+      depends_on:
+        - app
+        - db
+      environment:
+        ZBX_SERVER_HOST: app
+        DB_SERVER_HOST: db
+        POSTGRES_DB: zabbix
+        POSTGRES_USER: zabbix
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+        PHP_TZ: Asia/Ho_Chi_Minh
+      ports:
+        - "${HTTP_PORT}:8080"
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: zabbix
+        POSTGRES_USER: zabbix
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    db:

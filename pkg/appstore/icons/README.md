@@ -30,6 +30,13 @@ bản `-dark` thì panel dùng chung bản thường.
 thị chỉ rộng 44 điểm ảnh, một tệp 512×512 chỉ làm binary phình ra. Kiểm thử sẽ
 báo lỗi nếu một biểu trưng vượt 64 KB.
 
+## Trước khi đưa một tệp vào đây
+
+Vài tệp SVG thượng nguồn dính thẻ `<script>` do tiện ích trình duyệt chèn vào
+lúc người ta lưu tệp về — đã gặp một lần trong chính bộ sưu tập nói trên. Giao
+diện nhúng biểu trưng qua thẻ `<img>` nên mã đó không chạy được, nhưng không có
+lý do gì để mang nó theo vào binary. Kiểm thử sẽ báo lỗi nếu còn sót.
+
 ## Nguồn
 
 Logo lấy từ bộ sưu tập [dashboard-icons](https://github.com/homarr-labs/dashboard-icons),

@@ -1,0 +1,52 @@
+key: vault
+name:
+  vi: HashiCorp Vault
+  en: HashiCorp Vault
+description:
+  vi: "Kho bí mật cho hạ tầng: mật khẩu, khóa API và chứng chỉ, có kiểm toán và hạn dùng."
+  en: "A secrets store for infrastructure — passwords, API keys and certificates, with audit and expiry."
+category: security
+website: https://vaultproject.io
+portField: HTTP_PORT
+versions:
+  - name: "2.0.4"
+    images:
+      - hashicorp/vault:2.0.4
+    values:
+      IMAGE: "hashicorp/vault:2.0.4"
+  - name: "1.21.4"
+    images:
+      - hashicorp/vault:1.21.4
+    values:
+      IMAGE: "hashicorp/vault:1.21.4"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng, en: Port}
+    help:
+      vi: "Bản dựng sẵn chạy ở chế độ phát triển, dữ liệu nằm trong RAM. Đọc tài liệu trước khi dùng thật."
+      en: "This template runs in dev mode with data in memory. Read the docs before trusting it with real secrets."
+    type: port
+    default: "8200"
+    required: true
+  - key: ROOT_TOKEN
+    label: {vi: Vé quản trị, en: Root token}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        VAULT_DEV_ROOT_TOKEN_ID: "${ROOT_TOKEN}"
+        VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+      ports:
+        - "${HTTP_PORT}:8200"
+      volumes:
+        - file:/vault/file
+        - logs:/vault/logs
+
+  volumes:
+    file:
+    logs:

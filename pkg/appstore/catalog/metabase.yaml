@@ -9,21 +9,21 @@ category: database
 website: https://metabase.com
 portField: HTTP_PORT
 versions:
-  - name: "v0.63.13"
+  - name: "0.63.13"
     images:
       - metabase/metabase:v0.63.13
       - postgres:16-alpine
     values:
       IMAGE: "metabase/metabase:v0.63.13"
       DB_IMAGE: "postgres:16-alpine"
-  - name: "v0.62.16"
+  - name: "0.62.16"
     images:
       - metabase/metabase:v0.62.16
       - postgres:16-alpine
     values:
       IMAGE: "metabase/metabase:v0.62.16"
       DB_IMAGE: "postgres:16-alpine"
-  - name: "v0.61.18"
+  - name: "0.61.18"
     images:
       - metabase/metabase:v0.61.18
       - postgres:16-alpine

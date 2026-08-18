@@ -1,0 +1,48 @@
+key: diun
+name:
+  vi: Diun
+  en: Diun
+description:
+  vi: "Báo khi image của container có bản mới, để bạn tự quyết định lúc nào cập nhật."
+  en: "Tells you when a container image has a new release, leaving the timing to you."
+category: monitoring
+website: https://crazymax.dev/diun
+versions:
+  - name: "4.33"
+    images:
+      - crazymax/diun:4.33
+    values:
+      IMAGE: "crazymax/diun:4.33"
+  - name: "4.32"
+    images:
+      - crazymax/diun:4.32
+    values:
+      IMAGE: "crazymax/diun:4.32"
+  - name: "4.31"
+    images:
+      - crazymax/diun:4.31
+    values:
+      IMAGE: "crazymax/diun:4.31"
+fields:
+  - key: SCHEDULE
+    label: {vi: Lịch kiểm tra, en: Check schedule}
+    type: text
+    default: "0 0 4 * * *"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        DIUN_WATCH_SCHEDULE: "${SCHEDULE}"
+        TZ: "Asia/Ho_Chi_Minh"
+        DIUN_PROVIDERS_DOCKER: "true"
+        LOG_LEVEL: "info"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+        - data:/data
+
+  volumes:
+    data:

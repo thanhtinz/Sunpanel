@@ -1,0 +1,46 @@
+key: telegraf
+name:
+  vi: Telegraf
+  en: Telegraf
+description:
+  vi: "Bộ thu số liệu cắm được vào hàng trăm nguồn rồi đẩy sang InfluxDB hay Prometheus."
+  en: "A metrics agent that plugs into hundreds of sources and ships to InfluxDB or Prometheus."
+category: monitoring
+website: https://influxdata.com/time-series-platform/telegraf
+portField: STATSD_PORT
+versions:
+  - name: "1.39.3"
+    images:
+      - telegraf:1.39.3
+    values:
+      IMAGE: "telegraf:1.39.3"
+  - name: "1.38.4"
+    images:
+      - telegraf:1.38.4
+    values:
+      IMAGE: "telegraf:1.38.4"
+  - name: "1.37.3"
+    images:
+      - telegraf:1.37.3
+    values:
+      IMAGE: "telegraf:1.37.3"
+fields:
+  - key: STATSD_PORT
+    label: {vi: Cổng StatsD, en: StatsD port}
+    type: port
+    default: "8125"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${STATSD_PORT}:8125"
+      volumes:
+        - config:/etc/telegraf
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  volumes:
+    config:

@@ -1,0 +1,72 @@
+key: windmill
+name:
+  vi: Windmill
+  en: Windmill
+description:
+  vi: "Biến script Python, TypeScript hay Bash thành công việc có lịch chạy và biểu mẫu."
+  en: "Turns Python, TypeScript or Bash scripts into scheduled jobs with generated forms."
+category: automation
+website: https://windmill.dev
+portField: HTTP_PORT
+versions:
+  - name: "1.792.0"
+    images:
+      - ghcr.io/windmill-labs/windmill:1.792.0
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/windmill-labs/windmill:1.792.0"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "1.791.0"
+    images:
+      - ghcr.io/windmill-labs/windmill:1.791.0
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/windmill-labs/windmill:1.791.0"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "1.790.1"
+    images:
+      - ghcr.io/windmill-labs/windmill:1.790.1
+      - postgres:16-alpine
+    values:
+      IMAGE: "ghcr.io/windmill-labs/windmill:1.790.1"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8115"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        DATABASE_URL: postgres://windmill:${DB_PASSWORD}@db/windmill?sslmode=disable
+        MODE: standalone
+      ports:
+        - "${HTTP_PORT}:8000"
+      volumes:
+        - cache:/tmp/windmill/cache
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: windmill
+        POSTGRES_USER: windmill
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    cache:
+    db:

@@ -1,0 +1,45 @@
+key: pocketbase
+name:
+  vi: PocketBase
+  en: PocketBase
+description:
+  vi: "Máy chủ hậu cần gói trong một tệp: cơ sở dữ liệu, đăng nhập, tệp và API thời gian thực."
+  en: "A backend in a single file: database, auth, file storage and a realtime API."
+category: development
+website: https://pocketbase.io
+portField: HTTP_PORT
+versions:
+  - name: "0.39.11"
+    images:
+      - ghcr.io/muchobien/pocketbase:0.39.11
+    values:
+      IMAGE: "ghcr.io/muchobien/pocketbase:0.39.11"
+  - name: "0.38.2"
+    images:
+      - ghcr.io/muchobien/pocketbase:0.38.2
+    values:
+      IMAGE: "ghcr.io/muchobien/pocketbase:0.38.2"
+  - name: "0.37.5"
+    images:
+      - ghcr.io/muchobien/pocketbase:0.37.5
+    values:
+      IMAGE: "ghcr.io/muchobien/pocketbase:0.37.5"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng, en: Port}
+    type: port
+    default: "8113"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8090"
+      volumes:
+        - data:/pb_data
+
+  volumes:
+    data:

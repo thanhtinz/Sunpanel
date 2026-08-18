@@ -9,17 +9,17 @@ category: tool
 website: https://gchq.github.io/CyberChef
 portField: HTTP_PORT
 versions:
-  - name: "v11.2.0"
+  - name: "11.2.0"
     images:
       - mpepping/cyberchef:v11.2.0
     values:
       IMAGE: "mpepping/cyberchef:v11.2.0"
-  - name: "v10.24.0"
+  - name: "10.24.0"
     images:
       - mpepping/cyberchef:v10.24.0
     values:
       IMAGE: "mpepping/cyberchef:v10.24.0"
-  - name: "v9.55.0"
+  - name: "9.55.0"
     images:
       - mpepping/cyberchef:v9.55.0
     values:

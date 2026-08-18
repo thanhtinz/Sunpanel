@@ -1,0 +1,59 @@
+key: handbrake
+name:
+  vi: HandBrake
+  en: HandBrake
+description:
+  vi: "Chuyển mã video qua giao diện web, có sẵn hàng chục cấu hình dựng sẵn."
+  en: "Video transcoding through a web UI, with dozens of ready-made presets."
+category: media
+website: https://handbrake.fr
+portField: HTTP_PORT
+versions:
+  - name: "26.08.2"
+    images:
+      - jlesage/handbrake:v26.08.2
+    values:
+      IMAGE: "jlesage/handbrake:v26.08.2"
+  - name: "25.12.4"
+    images:
+      - jlesage/handbrake:v25.12.4
+    values:
+      IMAGE: "jlesage/handbrake:v25.12.4"
+  - name: "24.12.1"
+    images:
+      - jlesage/handbrake:v24.12.1
+    values:
+      IMAGE: "jlesage/handbrake:v24.12.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5801"
+    required: true
+  - key: MEDIA_DIR
+    label: {vi: Thư mục nguồn, en: Source folder}
+    type: text
+    default: "/srv/media"
+    required: true
+  - key: OUTPUT_DIR
+    label: {vi: Thư mục kết quả, en: Output folder}
+    type: text
+    default: "/srv/media/converted"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:5800"
+      volumes:
+        - config:/config
+        - ${MEDIA_DIR}:/storage:ro
+        - ${OUTPUT_DIR}:/output
+
+  volumes:
+    config:

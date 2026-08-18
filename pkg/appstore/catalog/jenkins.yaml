@@ -1,0 +1,51 @@
+key: jenkins
+name:
+  vi: Jenkins
+  en: Jenkins
+description:
+  vi: "Máy chạy CI/CD lâu đời nhất, có hàng nghìn plugin cho mọi thứ bạn cần nối vào."
+  en: "The oldest CI/CD server, with thousands of plugins for anything you need to connect."
+category: development
+website: https://jenkins.io
+portField: HTTP_PORT
+versions:
+  - name: "2.568.2"
+    images:
+      - jenkins/jenkins:2.568.2-lts-jdk21
+    values:
+      IMAGE: "jenkins/jenkins:2.568.2-lts-jdk21"
+  - name: "2.555.3"
+    images:
+      - jenkins/jenkins:2.555.3-lts-jdk21
+    values:
+      IMAGE: "jenkins/jenkins:2.555.3-lts-jdk21"
+  - name: "2.541.3"
+    images:
+      - jenkins/jenkins:2.541.3-lts-jdk21
+    values:
+      IMAGE: "jenkins/jenkins:2.541.3-lts-jdk21"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8119"
+    required: true
+  - key: AGENT_PORT
+    label: {vi: Cổng máy chạy lệnh, en: Agent port}
+    type: port
+    default: "50000"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8080"
+        - "${AGENT_PORT}:50000"
+      volumes:
+        - data:/var/jenkins_home
+
+  volumes:
+    data:

@@ -1,0 +1,50 @@
+key: typesense
+name:
+  vi: Typesense
+  en: Typesense
+description:
+  vi: "Máy tìm kiếm nhanh, nhẹ RAM, cấu hình đơn giản hơn Elasticsearch rất nhiều."
+  en: "A fast search engine that is light on memory and far simpler to run than Elasticsearch."
+category: database
+website: https://typesense.org
+portField: HTTP_PORT
+versions:
+  - name: "30.2"
+    images:
+      - typesense/typesense:30.2
+    values:
+      IMAGE: "typesense/typesense:30.2"
+  - name: "29.1"
+    images:
+      - typesense/typesense:29.1
+    values:
+      IMAGE: "typesense/typesense:29.1"
+  - name: "28.0"
+    images:
+      - typesense/typesense:28.0
+    values:
+      IMAGE: "typesense/typesense:28.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng, en: Port}
+    type: port
+    default: "8108"
+    required: true
+  - key: API_KEY
+    label: {vi: Khóa API, en: API key}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: --data-dir /data --api-key=${API_KEY} --enable-cors
+      ports:
+        - "${HTTP_PORT}:8108"
+      volumes:
+        - data:/data
+
+  volumes:
+    data:

@@ -16,9 +16,9 @@ versions:
       IMAGE: "nicolargo/glances:4.5.6-full"
   - name: "4.4.1"
     images:
-      - nicolargo/glances:4.4.1
+      - nicolargo/glances:4.4.1-full
     values:
-      IMAGE: "nicolargo/glances:4.4.1"
+      IMAGE: "nicolargo/glances:4.4.1-full"
   - name: "3.4.0.5"
     images:
       - nicolargo/glances:3.4.0.5-full

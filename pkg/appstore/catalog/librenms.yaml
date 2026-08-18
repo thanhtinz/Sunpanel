@@ -1,0 +1,95 @@
+key: librenms
+name:
+  vi: LibreNMS
+  en: LibreNMS
+description:
+  vi: "Giám sát thiết bị mạng qua SNMP: switch, router, tường lửa, kèm biểu đồ lưu lượng."
+  en: "SNMP monitoring for network gear — switches, routers and firewalls — with traffic graphs."
+category: monitoring
+website: https://librenms.org
+portField: HTTP_PORT
+versions:
+  - name: "26.7.0"
+    images:
+      - librenms/librenms:26.7.0
+      - mariadb:11
+      - redis:7-alpine
+    values:
+      IMAGE: "librenms/librenms:26.7.0"
+      DB_IMAGE: "mariadb:11"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "25.12.0"
+    images:
+      - librenms/librenms:25.12.0
+      - mariadb:11
+      - redis:7-alpine
+    values:
+      IMAGE: "librenms/librenms:25.12.0"
+      DB_IMAGE: "mariadb:11"
+      REDIS_IMAGE: "redis:7-alpine"
+  - name: "24.12.0"
+    images:
+      - librenms/librenms:24.12.0
+      - mariadb:11
+      - redis:7-alpine
+    values:
+      IMAGE: "librenms/librenms:24.12.0"
+      DB_IMAGE: "mariadb:11"
+      REDIS_IMAGE: "redis:7-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8144"
+    required: true
+  - key: SECRET_KEY
+    label: {vi: Khóa ứng dụng, en: App key}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+        - redis
+      environment:
+        DB_HOST: db
+        DB_NAME: librenms
+        DB_USER: librenms
+        DB_PASSWORD: ${DB_PASSWORD}
+        APP_KEY: ${SECRET_KEY}
+        REDIS_HOST: redis
+        TZ: Asia/Ho_Chi_Minh
+      ports:
+        - "${HTTP_PORT}:8000"
+      volumes:
+        - data:/data
+
+    redis:
+      image: ${REDIS_IMAGE}
+      container_name: ${CONTAINER_NAME}-redis
+      restart: unless-stopped
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      command: mysqld --innodb-file-per-table=1 --lower-case-table-names=0
+      environment:
+        MARIADB_DATABASE: librenms
+        MARIADB_USER: librenms
+        MARIADB_PASSWORD: ${DB_PASSWORD}
+        MARIADB_RANDOM_ROOT_PASSWORD: "1"
+      volumes:
+        - db:/var/lib/mysql
+
+  volumes:
+    data:
+    db:

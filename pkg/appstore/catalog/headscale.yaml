@@ -1,0 +1,48 @@
+key: headscale
+name:
+  vi: Headscale
+  en: Headscale
+description:
+  vi: "Máy chủ điều phối thay cho dịch vụ Tailscale, để mạng riêng của bạn không phụ thuộc bên ngoài."
+  en: "A self-hosted replacement for Tailscale's coordination server, so your private network depends on no one."
+category: security
+website: https://headscale.net
+portField: HTTP_PORT
+versions:
+  - name: "0.29.3"
+    images:
+      - headscale/headscale:v0.29.3
+    values:
+      IMAGE: "headscale/headscale:v0.29.3"
+  - name: "0.28"
+    images:
+      - headscale/headscale:v0.28
+    values:
+      IMAGE: "headscale/headscale:v0.28"
+  - name: "0.27.1"
+    images:
+      - headscale/headscale:v0.27.1
+    values:
+      IMAGE: "headscale/headscale:v0.27.1"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng, en: Port}
+    type: port
+    default: "8150"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      command: serve
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - config:/etc/headscale
+        - data:/var/lib/headscale
+
+  volumes:
+    config:
+    data:

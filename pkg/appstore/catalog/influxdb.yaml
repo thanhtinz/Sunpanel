@@ -1,0 +1,70 @@
+key: influxdb
+name:
+  vi: InfluxDB
+  en: InfluxDB
+description:
+  vi: "Cơ sở dữ liệu chuỗi thời gian cho số liệu cảm biến và chỉ số hệ thống."
+  en: "A time-series database for sensor readings and system metrics."
+category: database
+website: https://influxdata.com
+portField: HTTP_PORT
+versions:
+  - name: "2.9.1"
+    images:
+      - influxdb:2.9.1
+    values:
+      IMAGE: "influxdb:2.9.1"
+  - name: "2.8.0"
+    images:
+      - influxdb:2.8.0
+    values:
+      IMAGE: "influxdb:2.8.0"
+  - name: "2.7.12"
+    images:
+      - influxdb:2.7.12
+    values:
+      IMAGE: "influxdb:2.7.12"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng, en: Port}
+    type: port
+    default: "8086"
+    required: true
+  - key: ADMIN_USER
+    label: {vi: Tài khoản quản trị, en: Admin user}
+    type: text
+    default: "admin"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+  - key: ORG_NAME
+    label: {vi: Tên tổ chức, en: Organisation}
+    type: text
+    default: "sunpanel"
+    required: true
+  - key: BUCKET_NAME
+    label: {vi: Tên kho dữ liệu, en: Bucket}
+    type: text
+    default: "metrics"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        DOCKER_INFLUXDB_INIT_MODE: "setup"
+        DOCKER_INFLUXDB_INIT_USERNAME: "${ADMIN_USER}"
+        DOCKER_INFLUXDB_INIT_PASSWORD: "${ADMIN_PASSWORD}"
+        DOCKER_INFLUXDB_INIT_ORG: "${ORG_NAME}"
+        DOCKER_INFLUXDB_INIT_BUCKET: "${BUCKET_NAME}"
+      ports:
+        - "${HTTP_PORT}:8086"
+      volumes:
+        - data:/var/lib/influxdb2
+
+  volumes:
+    data:

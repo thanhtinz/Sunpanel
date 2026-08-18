@@ -1,0 +1,45 @@
+key: nocodb
+name:
+  vi: NocoDB
+  en: NocoDB
+description:
+  vi: "Biến cơ sở dữ liệu thành bảng tính có giao diện, làm được ứng dụng nội bộ không cần lập trình."
+  en: "Turns a database into a spreadsheet UI — internal apps without writing code."
+category: productivity
+website: https://nocodb.com
+portField: HTTP_PORT
+versions:
+  - name: "2026.08.0"
+    images:
+      - nocodb/nocodb:2026.08.0
+    values:
+      IMAGE: "nocodb/nocodb:2026.08.0"
+  - name: "2026.07.0"
+    images:
+      - nocodb/nocodb:2026.07.0
+    values:
+      IMAGE: "nocodb/nocodb:2026.07.0"
+  - name: "0.301.5"
+    images:
+      - nocodb/nocodb:0.301.5
+    values:
+      IMAGE: "nocodb/nocodb:0.301.5"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8110"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8080"
+      volumes:
+        - data:/usr/app/data
+
+  volumes:
+    data:

@@ -1,0 +1,57 @@
+key: couchdb
+name:
+  vi: CouchDB
+  en: CouchDB
+description:
+  vi: "Cơ sở dữ liệu tài liệu đồng bộ được với thiết bị ngoại tuyến rồi gộp lại sau."
+  en: "A document database that syncs with offline devices and merges afterwards."
+category: database
+website: https://couchdb.apache.org
+portField: HTTP_PORT
+versions:
+  - name: "3.5.2.1"
+    images:
+      - couchdb:3.5.2.1
+    values:
+      IMAGE: "couchdb:3.5.2.1"
+  - name: "3.4.3"
+    images:
+      - couchdb:3.4.3
+    values:
+      IMAGE: "couchdb:3.4.3"
+  - name: "3.3.3"
+    images:
+      - couchdb:3.3.3
+    values:
+      IMAGE: "couchdb:3.3.3"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng, en: Port}
+    type: port
+    default: "5984"
+    required: true
+  - key: DB_USER
+    label: {vi: Tài khoản quản trị, en: Admin user}
+    type: text
+    default: "admin"
+    required: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu, en: Password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        COUCHDB_USER: "${DB_USER}"
+        COUCHDB_PASSWORD: "${DB_PASSWORD}"
+      ports:
+        - "${HTTP_PORT}:5984"
+      volumes:
+        - data:/opt/couchdb/data
+
+  volumes:
+    data:

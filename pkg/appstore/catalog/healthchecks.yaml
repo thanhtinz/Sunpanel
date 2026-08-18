@@ -1,0 +1,60 @@
+key: healthchecks
+name:
+  vi: Healthchecks
+  en: Healthchecks
+description:
+  vi: "Theo dõi tác vụ định kỳ bằng tín hiệu ping: không thấy ping đúng giờ là báo động."
+  en: "Watches cron jobs by ping: no ping on schedule means an alert."
+category: monitoring
+website: https://healthchecks.io
+portField: HTTP_PORT
+versions:
+  - name: "4.3"
+    images:
+      - healthchecks/healthchecks:v4.3
+    values:
+      IMAGE: "healthchecks/healthchecks:v4.3"
+  - name: "3.13"
+    images:
+      - healthchecks/healthchecks:v3.13
+    values:
+      IMAGE: "healthchecks/healthchecks:v3.13"
+  - name: "2.10"
+    images:
+      - healthchecks/healthchecks:v2.10
+    values:
+      IMAGE: "healthchecks/healthchecks:v2.10"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8139"
+    required: true
+  - key: SITE_ROOT
+    label: {vi: Địa chỉ trang, en: Site URL}
+    type: text
+    default: "http://localhost:8139"
+    required: true
+  - key: SECRET_KEY
+    label: {vi: Khóa bí mật, en: Secret key}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        SITE_ROOT: "${SITE_ROOT}"
+        SECRET_KEY: "${SECRET_KEY}"
+        DB: "sqlite"
+        ALLOWED_HOSTS: "*"
+        SUPERUSER_EMAIL: "admin@example.com"
+      ports:
+        - "${HTTP_PORT}:8000"
+      volumes:
+        - data:/data
+
+  volumes:
+    data:

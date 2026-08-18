@@ -1,0 +1,56 @@
+key: opensearch
+name:
+  vi: OpenSearch
+  en: OpenSearch
+description:
+  vi: "Bộ tìm kiếm và phân tích nhật ký quy mô lớn, nhánh nguồn mở của Elasticsearch."
+  en: "Large-scale search and log analytics — the open-source fork of Elasticsearch."
+category: database
+website: https://opensearch.org
+portField: HTTP_PORT
+versions:
+  - name: "3.8.0"
+    images:
+      - opensearchproject/opensearch:3.8.0
+    values:
+      IMAGE: "opensearchproject/opensearch:3.8.0"
+  - name: "3.7.0"
+    images:
+      - opensearchproject/opensearch:3.7.0
+    values:
+      IMAGE: "opensearchproject/opensearch:3.7.0"
+  - name: "2.19.6"
+    images:
+      - opensearchproject/opensearch:2.19.6
+    values:
+      IMAGE: "opensearchproject/opensearch:2.19.6"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng, en: Port}
+    help:
+      vi: "OpenSearch cần ít nhất 2 GB RAM riêng cho nó."
+      en: "OpenSearch wants at least 2 GB of memory to itself."
+    type: port
+    default: "9200"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        discovery.type: "single-node"
+        OPENSEARCH_INITIAL_ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
+        bootstrap.memory_lock: "true"
+      ports:
+        - "${HTTP_PORT}:9200"
+      volumes:
+        - data:/usr/share/opensearch/data
+
+  volumes:
+    data:

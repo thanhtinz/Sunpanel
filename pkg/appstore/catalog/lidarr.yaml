@@ -1,0 +1,61 @@
+key: lidarr
+name:
+  vi: Lidarr
+  en: Lidarr
+description:
+  vi: "Theo dõi nhạc theo nghệ sĩ: tự tải album mới và sắp xếp vào thư viện."
+  en: "Follows music by artist: grabs new albums and organises them into the library."
+category: media
+website: https://lidarr.audio
+portField: HTTP_PORT
+versions:
+  - name: "3.1.0.4875-ls39"
+    images:
+      - linuxserver/lidarr:3.1.0.4875-ls39
+    values:
+      IMAGE: "linuxserver/lidarr:3.1.0.4875-ls39"
+  - name: "3.0.1.4866-ls11"
+    images:
+      - linuxserver/lidarr:3.0.1.4866-ls11
+    values:
+      IMAGE: "linuxserver/lidarr:3.0.1.4866-ls11"
+  - name: "2.14.5.4836-ls9"
+    images:
+      - linuxserver/lidarr:2.14.5.4836-ls9
+    values:
+      IMAGE: "linuxserver/lidarr:2.14.5.4836-ls9"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8686"
+    required: true
+  - key: MUSIC_DIR
+    label: {vi: Thư mục nhạc, en: Music folder}
+    type: text
+    default: "/srv/music"
+    required: true
+  - key: DOWNLOAD_DIR
+    label: {vi: Thư mục tải về, en: Download folder}
+    type: text
+    default: "/srv/downloads"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:8686"
+      volumes:
+        - config:/config
+        - ${MUSIC_DIR}:/music
+        - ${DOWNLOAD_DIR}:/downloads
+
+  volumes:
+    config:

@@ -9,17 +9,17 @@ category: monitoring
 website: https://prometheus.io
 portField: HTTP_PORT
 versions:
-  - name: "v3.14.0"
+  - name: "3.14.0"
     images:
       - prom/prometheus:v3.14.0
     values:
       IMAGE: "prom/prometheus:v3.14.0"
-  - name: "v3.13.2"
+  - name: "3.13.2"
     images:
       - prom/prometheus:v3.13.2
     values:
       IMAGE: "prom/prometheus:v3.13.2"
-  - name: "v2.55.1"
+  - name: "2.55.1"
     images:
       - prom/prometheus:v2.55.1
     values:

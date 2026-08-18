@@ -1,0 +1,45 @@
+key: snappymail
+name:
+  vi: SnappyMail
+  en: SnappyMail
+description:
+  vi: "Đọc thư qua web, nhẹ và nhanh, chạy tốt trên máy chủ nhỏ."
+  en: "A light, fast webmail client that runs well on small servers."
+category: productivity
+website: https://snappymail.eu
+portField: HTTP_PORT
+versions:
+  - name: "2.38.2"
+    images:
+      - djmaze/snappymail:v2.38.2
+    values:
+      IMAGE: "djmaze/snappymail:v2.38.2"
+  - name: "2.37.3"
+    images:
+      - djmaze/snappymail:v2.37.3
+    values:
+      IMAGE: "djmaze/snappymail:v2.37.3"
+  - name: "2.36.4"
+    images:
+      - djmaze/snappymail:v2.36.4
+    values:
+      IMAGE: "djmaze/snappymail:v2.36.4"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8138"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8888"
+      volumes:
+        - data:/snappymail/data
+
+  volumes:
+    data:

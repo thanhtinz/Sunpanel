@@ -1,0 +1,49 @@
+key: overseerr
+name:
+  vi: Overseerr
+  en: Overseerr
+description:
+  vi: "Trang nhận yêu cầu phim cho thư viện Plex, duyệt xong là hệ thống tự tải."
+  en: "A media request page for Plex libraries — approve a request and the system fetches it."
+category: media
+website: https://overseerr.dev
+portField: HTTP_PORT
+versions:
+  - name: "1.35.0"
+    images:
+      - linuxserver/overseerr:1.35.0
+    values:
+      IMAGE: "linuxserver/overseerr:1.35.0"
+  - name: "1.34.0"
+    images:
+      - linuxserver/overseerr:1.34.0
+    values:
+      IMAGE: "linuxserver/overseerr:1.34.0"
+  - name: "1.33.2"
+    images:
+      - linuxserver/overseerr:1.33.2
+    values:
+      IMAGE: "linuxserver/overseerr:1.33.2"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "5056"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:5055"
+      volumes:
+        - config:/config
+
+  volumes:
+    config:

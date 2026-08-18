@@ -9,7 +9,7 @@ category: monitoring
 website: https://github.com/statping-ng/statping-ng
 portField: HTTP_PORT
 versions:
-  - name: "v0.90.78"
+  - name: "0.90.78"
     images:
       - adamboutcher/statping-ng:v0.90.78
     values:

@@ -9,17 +9,17 @@ category: tool
 website: https://traefik.io
 portField: DASHBOARD_PORT
 versions:
-  - name: "v3.7.10"
+  - name: "3.7.10"
     images:
       - traefik:v3.7.10
     values:
       IMAGE: "traefik:v3.7.10"
-  - name: "v3.6.25"
+  - name: "3.6.25"
     images:
       - traefik:v3.6.25
     values:
       IMAGE: "traefik:v3.6.25"
-  - name: "v2.11.54"
+  - name: "2.11.54"
     images:
       - traefik:v2.11.54
     values:

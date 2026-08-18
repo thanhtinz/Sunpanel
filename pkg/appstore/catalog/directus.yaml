@@ -1,0 +1,92 @@
+key: directus
+name:
+  vi: Directus
+  en: Directus
+description:
+  vi: "Bảng quản trị và API tự sinh cho cơ sở dữ liệu SQL sẵn có của bạn."
+  en: "An admin panel and instant API on top of your existing SQL database."
+category: development
+website: https://directus.io
+portField: HTTP_PORT
+versions:
+  - name: "12.2"
+    images:
+      - directus/directus:12.2
+      - postgres:16-alpine
+    values:
+      IMAGE: "directus/directus:12.2"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "11.17.4"
+    images:
+      - directus/directus:11.17.4
+      - postgres:16-alpine
+    values:
+      IMAGE: "directus/directus:11.17.4"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "10.13.4"
+    images:
+      - directus/directus:10.13.4
+      - postgres:16-alpine
+    values:
+      IMAGE: "directus/directus:10.13.4"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8112"
+    required: true
+  - key: ADMIN_EMAIL
+    label: {vi: Email quản trị, en: Admin email}
+    type: text
+    default: "admin@example.com"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+  - key: SECRET_KEY
+    label: {vi: Khóa bí mật, en: Secret key}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        SECRET: ${SECRET_KEY}
+        ADMIN_EMAIL: ${ADMIN_EMAIL}
+        ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+        DB_CLIENT: pg
+        DB_HOST: db
+        DB_PORT: "5432"
+        DB_DATABASE: directus
+        DB_USER: directus
+        DB_PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:8055"
+      volumes:
+        - uploads:/directus/uploads
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: directus
+        POSTGRES_USER: directus
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    uploads:
+    db:

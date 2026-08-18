@@ -1,0 +1,52 @@
+key: sonarqube
+name:
+  vi: SonarQube
+  en: SonarQube
+description:
+  vi: "Soi chất lượng mã: lỗi tiềm ẩn, lỗ hổng bảo mật và phần mã trùng lặp."
+  en: "Inspects code quality: latent bugs, security holes and duplicated blocks."
+category: development
+website: https://sonarqube.org
+portField: HTTP_PORT
+versions:
+  - name: "26.8.0.126808"
+    images:
+      - sonarqube:26.8.0.126808-community
+    values:
+      IMAGE: "sonarqube:26.8.0.126808-community"
+  - name: "25.12.0.117093"
+    images:
+      - sonarqube:25.12.0.117093-community
+    values:
+      IMAGE: "sonarqube:25.12.0.117093-community"
+  - name: "24.12.0.100206"
+    images:
+      - sonarqube:24.12.0.100206-community
+    values:
+      IMAGE: "sonarqube:24.12.0.100206-community"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    help:
+      vi: "SonarQube cần ít nhất 2 GB RAM và vm.max_map_count từ 262144 trở lên."
+      en: "SonarQube needs at least 2 GB of RAM and vm.max_map_count of 262144 or more."
+    type: port
+    default: "9030"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:9000"
+      volumes:
+        - data:/opt/sonarqube/data
+        - extensions:/opt/sonarqube/extensions
+        - logs:/opt/sonarqube/logs
+
+  volumes:
+    data:
+    extensions:
+    logs:

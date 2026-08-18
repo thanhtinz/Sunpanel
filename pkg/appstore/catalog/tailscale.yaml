@@ -1,0 +1,55 @@
+key: tailscale
+name:
+  vi: Tailscale
+  en: Tailscale
+description:
+  vi: "Nối các máy của bạn thành một mạng riêng, xuyên qua NAT mà không cần mở cổng."
+  en: "Joins your machines into one private network, punching through NAT with no open ports."
+category: security
+website: https://tailscale.com
+versions:
+  - name: "1.102.2"
+    images:
+      - tailscale/tailscale:v1.102.2
+    values:
+      IMAGE: "tailscale/tailscale:v1.102.2"
+  - name: "1.98.10"
+    images:
+      - tailscale/tailscale:v1.98.10
+    values:
+      IMAGE: "tailscale/tailscale:v1.98.10"
+  - name: "1.96.5"
+    images:
+      - tailscale/tailscale:v1.96.5
+    values:
+      IMAGE: "tailscale/tailscale:v1.96.5"
+fields:
+  - key: AUTH_KEY
+    label: {vi: Khóa xác thực, en: Auth key}
+    help:
+      vi: "Tạo ở bảng điều khiển Tailscale, mục Settings › Keys."
+      en: "Create one in the Tailscale admin console under Settings › Keys."
+    type: password
+    generate: true
+  - key: NODE_NAME
+    label: {vi: Tên máy trong mạng, en: Machine name}
+    type: text
+    default: "sunpanel"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        TS_AUTHKEY: "${AUTH_KEY}"
+        TS_HOSTNAME: "${NODE_NAME}"
+        TS_STATE_DIR: "/var/lib/tailscale"
+        TS_USERSPACE: "true"
+      volumes:
+        - state:/var/lib/tailscale
+        - /dev/net/tun:/dev/net/tun
+
+  volumes:
+    state:

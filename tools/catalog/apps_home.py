@@ -498,7 +498,7 @@ volumes:
         vi="Máy chủ lịch và danh bạ theo chuẩn CalDAV/CardDAV, đồng bộ với iPhone và Android.",
         en="A CalDAV/CardDAV calendar and contacts server that syncs with iPhone and Android.",
         website="https://sabre.io/baikal",
-        image="ckulka/baikal", fixed_tags=("nginx",),
+        image="ckulka/baikal", tag_suffix="-nginx", tag_pages=6, min_major=0,
         container_port=80, volumes=("config:/var/www/baikal/config", "data:/var/www/baikal/Specific"),
         fields=(port("HTTP_PORT", "Cổng web", "Web port", 8095),),
     ),

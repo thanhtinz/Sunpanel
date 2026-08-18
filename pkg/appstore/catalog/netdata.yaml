@@ -9,17 +9,17 @@ category: monitoring
 website: https://netdata.cloud
 portField: HTTP_PORT
 versions:
-  - name: "v2.11.0"
+  - name: "2.11.0"
     images:
       - netdata/netdata:v2.11.0
     values:
       IMAGE: "netdata/netdata:v2.11.0"
-  - name: "v2.10.4"
+  - name: "2.10.4"
     images:
       - netdata/netdata:v2.10.4
     values:
       IMAGE: "netdata/netdata:v2.10.4"
-  - name: "v1.47.5"
+  - name: "1.47.5"
     images:
       - netdata/netdata:v1.47.5
     values:

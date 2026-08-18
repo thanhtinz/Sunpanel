@@ -1,0 +1,47 @@
+key: netbird
+name:
+  vi: NetBird
+  en: NetBird
+description:
+  vi: "Mạng riêng ngang hàng dựa trên WireGuard, có quản lý người dùng và quy tắc truy cập."
+  en: "A peer-to-peer private network on WireGuard, with user management and access rules."
+category: security
+website: https://netbird.io
+portField: HTTP_PORT
+versions:
+  - name: "2.91.1"
+    images:
+      - netbirdio/dashboard:v2.91.1
+    values:
+      IMAGE: "netbirdio/dashboard:v2.91.1"
+  - name: "2.90.10"
+    images:
+      - netbirdio/dashboard:v2.90.10
+    values:
+      IMAGE: "netbirdio/dashboard:v2.90.10"
+  - name: "2.80.0"
+    images:
+      - netbirdio/dashboard:v2.80.0
+    values:
+      IMAGE: "netbirdio/dashboard:v2.80.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8151"
+    required: true
+  - key: MGMT_URL
+    label: {vi: Địa chỉ máy chủ quản lý, en: Management server URL}
+    type: text
+    default: "http://localhost:33073"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        NETBIRD_MGMT_API_ENDPOINT: "${MGMT_URL}"
+      ports:
+        - "${HTTP_PORT}:80"

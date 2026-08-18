@@ -1,0 +1,86 @@
+key: listmonk
+name:
+  vi: Listmonk
+  en: Listmonk
+description:
+  vi: "Gửi bản tin và quản lý danh sách người nhận, tự quản hoàn toàn."
+  en: "Self-hosted newsletters and subscriber lists."
+category: website
+website: https://listmonk.app
+portField: HTTP_PORT
+versions:
+  - name: "6.2.0"
+    images:
+      - listmonk/listmonk:v6.2.0
+      - postgres:16-alpine
+    values:
+      IMAGE: "listmonk/listmonk:v6.2.0"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "5.1.0"
+    images:
+      - listmonk/listmonk:v5.1.0
+      - postgres:16-alpine
+    values:
+      IMAGE: "listmonk/listmonk:v5.1.0"
+      DB_IMAGE: "postgres:16-alpine"
+  - name: "4.1.0"
+    images:
+      - listmonk/listmonk:v4.1.0
+      - postgres:16-alpine
+    values:
+      IMAGE: "listmonk/listmonk:v4.1.0"
+      DB_IMAGE: "postgres:16-alpine"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8135"
+    required: true
+  - key: ADMIN_USER
+    label: {vi: Tài khoản quản trị, en: Admin user}
+    type: text
+    default: "admin"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: {vi: Mật khẩu quản trị, en: Admin password}
+    type: password
+    generate: true
+  - key: DB_PASSWORD
+    label: {vi: Mật khẩu cơ sở dữ liệu, en: Database password}
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      depends_on:
+        - db
+      environment:
+        LISTMONK_app__address: 0.0.0.0:9000
+        LISTMONK_db__host: db
+        LISTMONK_db__user: listmonk
+        LISTMONK_db__password: ${DB_PASSWORD}
+        LISTMONK_db__database: listmonk
+        LISTMONK_ADMIN_USER: ${ADMIN_USER}
+        LISTMONK_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ports:
+        - "${HTTP_PORT}:9000"
+      volumes:
+        - uploads:/listmonk/uploads
+
+    db:
+      image: ${DB_IMAGE}
+      container_name: ${CONTAINER_NAME}-db
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: listmonk
+        POSTGRES_USER: listmonk
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - db:/var/lib/postgresql/data
+
+  volumes:
+    uploads:
+    db:

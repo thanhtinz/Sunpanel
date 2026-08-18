@@ -16,7 +16,7 @@ versions:
     values:
       IMAGE: "ghcr.io/umami-software/umami:postgresql-3.0.0"
       DB_IMAGE: "postgres:16-alpine"
-  - name: "v2.20.2"
+  - name: "2.20.2"
     images:
       - ghcr.io/umami-software/umami:postgresql-v2.20.2
       - postgres:16-alpine

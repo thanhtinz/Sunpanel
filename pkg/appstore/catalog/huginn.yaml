@@ -1,0 +1,38 @@
+key: huginn
+name:
+  vi: Huginn
+  en: Huginn
+description:
+  vi: "Đặt các tác nhân theo dõi web và tự hành động thay bạn — kiểu IFTTT tự quản."
+  en: "Builds agents that watch the web and act for you — self-hosted IFTTT."
+category: automation
+website: https://github.com/huginn/huginn
+portField: HTTP_PORT
+versions:
+  - name: "latest"
+    note:
+      vi: "Dự án chỉ phát hành thẻ latest, nên mỗi lần cài lại sẽ lấy bản mới nhất lúc đó."
+      en: "The project only publishes a latest tag, so each install pulls whatever is newest then."
+    images:
+      - huginn/huginn:latest
+    values:
+      IMAGE: "huginn/huginn:latest"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8118"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:3000"
+      volumes:
+        - data:/var/lib/mysql
+
+  volumes:
+    data:

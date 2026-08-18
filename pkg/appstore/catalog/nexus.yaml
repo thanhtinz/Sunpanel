@@ -1,0 +1,48 @@
+key: nexus
+name:
+  vi: Sonatype Nexus
+  en: Sonatype Nexus
+description:
+  vi: "Kho lưu gói dùng chung cho Maven, npm, Docker và nhiều loại khác."
+  en: "An artifact repository for Maven, npm, Docker and many other package types."
+category: development
+website: https://sonatype.com/products/nexus-repository
+portField: HTTP_PORT
+versions:
+  - name: "3.95.1"
+    images:
+      - sonatype/nexus3:3.95.1
+    values:
+      IMAGE: "sonatype/nexus3:3.95.1"
+  - name: "3.94.1"
+    images:
+      - sonatype/nexus3:3.94.1
+    values:
+      IMAGE: "sonatype/nexus3:3.94.1"
+  - name: "3.93.2"
+    images:
+      - sonatype/nexus3:3.93.2
+    values:
+      IMAGE: "sonatype/nexus3:3.93.2"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    help:
+      vi: "Nexus cần khoảng 2 GB RAM; mật khẩu quản trị lần đầu nằm trong tệp admin.password."
+      en: "Nexus needs around 2 GB of RAM; the first admin password lands in admin.password."
+    type: port
+    default: "8121"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      ports:
+        - "${HTTP_PORT}:8081"
+      volumes:
+        - data:/nexus-data
+
+  volumes:
+    data:

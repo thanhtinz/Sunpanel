@@ -206,6 +206,8 @@ def render(app, versions):
             label = label[len(app.tag_prefix):]
         if app.tag_suffix and label.endswith(app.tag_suffix):
             label = label[: -len(app.tag_suffix)]
+        if len(label) > 1 and label[0] == "v" and label[1].isdigit():
+            label = label[1:]
         images = [f"{app.image}:{tag}", *app.side_images]
 
         out.append(f'  - name: "{label}"')

@@ -1,0 +1,51 @@
+key: smokeping
+name:
+  vi: SmokePing
+  en: SmokePing
+description:
+  vi: "Đo độ trễ và mất gói theo thời gian, vẽ ra biểu đồ nhìn là biết mạng chập chờn lúc nào."
+  en: "Measures latency and packet loss over time, charting exactly when the link wobbles."
+category: monitoring
+website: https://oss.oetiker.ch/smokeping
+portField: HTTP_PORT
+versions:
+  - name: "2.9.0"
+    images:
+      - linuxserver/smokeping:2.9.0
+    values:
+      IMAGE: "linuxserver/smokeping:2.9.0"
+  - name: "2.8.2"
+    images:
+      - linuxserver/smokeping:2.8.2
+    values:
+      IMAGE: "linuxserver/smokeping:2.8.2"
+  - name: "2.7.3"
+    images:
+      - linuxserver/smokeping:2.7.3
+    values:
+      IMAGE: "linuxserver/smokeping:2.7.3"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng web, en: Web port}
+    type: port
+    default: "8146"
+    required: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "Asia/Ho_Chi_Minh"
+      ports:
+        - "${HTTP_PORT}:80"
+      volumes:
+        - config:/config
+        - data:/data
+
+  volumes:
+    config:
+    data:

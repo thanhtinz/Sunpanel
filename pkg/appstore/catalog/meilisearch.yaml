@@ -1,0 +1,55 @@
+key: meilisearch
+name:
+  vi: Meilisearch
+  en: Meilisearch
+description:
+  vi: "Máy tìm kiếm cho ứng dụng: gõ tới đâu ra kết quả tới đó, chịu được cả lỗi chính tả."
+  en: "A search engine for your app: results as you type, typo-tolerant out of the box."
+category: database
+website: https://meilisearch.com
+portField: HTTP_PORT
+versions:
+  - name: "1.53.1"
+    images:
+      - getmeili/meilisearch:v1.53.1
+    values:
+      IMAGE: "getmeili/meilisearch:v1.53.1"
+  - name: "1.52.3"
+    images:
+      - getmeili/meilisearch:v1.52.3
+    values:
+      IMAGE: "getmeili/meilisearch:v1.52.3"
+  - name: "1.51.0"
+    images:
+      - getmeili/meilisearch:v1.51.0
+    values:
+      IMAGE: "getmeili/meilisearch:v1.51.0"
+fields:
+  - key: HTTP_PORT
+    label: {vi: Cổng, en: Port}
+    type: port
+    default: "7700"
+    required: true
+  - key: MASTER_KEY
+    label: {vi: Khóa chủ, en: Master key}
+    help:
+      vi: "Mọi truy vấn đều cần khóa này; giữ kín như mật khẩu."
+      en: "Every request needs this key; keep it as secret as a password."
+    type: password
+    generate: true
+compose: |
+  services:
+    app:
+      image: ${IMAGE}
+      container_name: ${CONTAINER_NAME}
+      restart: unless-stopped
+      environment:
+        MEILI_MASTER_KEY: "${MASTER_KEY}"
+        MEILI_ENV: "production"
+      ports:
+        - "${HTTP_PORT}:7700"
+      volumes:
+        - data:/meili_data
+
+  volumes:
+    data:
