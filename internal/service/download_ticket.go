@@ -70,3 +70,69 @@ func (t *TokenIssuer) ParseDownloadTicket(ticket string) (*DownloadClaims, error
 
 	return claims, nil
 }
+
+// pluginTicketTTL là thời gian sống của một vé mở giao diện plugin.
+//
+// Dài hơn vé tải xuống vì khung nhúng còn phải tải tiếp mã và ảnh của plugin sau
+// khi trang đầu đã mở, nhưng vẫn đủ ngắn để vé lọt ra ngoài cũng nhanh hết hạn.
+const pluginTicketTTL = 10 * time.Minute
+
+// PluginClaims là nội dung của một vé mở giao diện plugin.
+type PluginClaims struct {
+	jwt.RegisteredClaims
+	// Plugin là định danh plugin duy nhất mà vé này mở được.
+	Plugin string `json:"plugin"`
+	// UserID, Username và Role để panel biết chuyển tiếp danh tính nào tới plugin.
+	UserID   uint   `json:"uid"`
+	Username string `json:"usr"`
+	Role     string `json:"rol"`
+}
+
+// IssuePluginTicket cấp vé mở giao diện của đúng một plugin.
+//
+// Khung nhúng không đặt được header Authorization, cùng lý do với vé tải xuống.
+// Vé này chỉ mở được đúng một plugin và mang sẵn danh tính người dùng, nên nó
+// không thay thế được access token cho bất cứ việc gì khác.
+func (t *TokenIssuer) IssuePluginTicket(userID uint, username, role, plugin string) (string, error) {
+	now := time.Now()
+	claims := PluginClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:    "sunpanel",
+			Subject:   "plugin",
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(now.Add(pluginTicketTTL)),
+		},
+		Plugin: plugin, UserID: userID, Username: username, Role: role,
+	}
+
+	signed, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(t.secret)
+	if err != nil {
+		return "", fmt.Errorf("ký vé plugin: %w", err)
+	}
+	return signed, nil
+}
+
+// ParsePluginTicket kiểm tra vé và trả về thông tin nó mang.
+func (t *TokenIssuer) ParsePluginTicket(ticket string) (*PluginClaims, error) {
+	claims := &PluginClaims{}
+
+	_, err := jwt.ParseWithClaims(ticket, claims, func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("thuật toán ký không mong đợi: %v", token.Header["alg"])
+		}
+		return t.secret, nil
+	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
+	if err != nil {
+		return nil, apperr.Unauthorized.Wrap(err)
+	}
+
+	// Subject phân biệt vé plugin với access token và vé tải xuống: thiếu bước
+	// này thì một access token thường cũng dùng làm vé được.
+	if claims.Subject != "plugin" {
+		return nil, apperr.Unauthorized
+	}
+	if claims.Plugin == "" {
+		return nil, apperr.Unauthorized
+	}
+	return claims, nil
+}

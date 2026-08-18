@@ -26,6 +26,7 @@ type Config struct {
 	Website  WebsiteConfig  `yaml:"website"`
 	AppStore AppStoreConfig `yaml:"appStore"`
 	Backup   BackupConfig   `yaml:"backup"`
+	Plugin   PluginConfig   `yaml:"plugin"`
 	Log      LogConfig      `yaml:"log"`
 }
 
@@ -128,6 +129,12 @@ type BackupConfig struct {
 	WorkDir string `yaml:"workDir"`
 }
 
+// PluginConfig là cấu hình hệ thống plugin.
+type PluginConfig struct {
+	// Dir là thư mục chứa tệp khai báo plugin.
+	Dir string `yaml:"dir"`
+}
+
 // LogConfig là cấu hình ghi log.
 type LogConfig struct {
 	// Level nhận một trong: debug, info, warn, error.
@@ -171,6 +178,9 @@ func Default() Config {
 		Backup: BackupConfig{
 			Root:    filepath.Join(dataDir, "backups"),
 			WorkDir: filepath.Join(dataDir, "tmp"),
+		},
+		Plugin: PluginConfig{
+			Dir: filepath.Join(dataDir, "plugins"),
 		},
 		Website: WebsiteConfig{
 			NginxConfDir: defaultNginxConfDir(),
@@ -283,6 +293,7 @@ func applyEnv(cfg *Config) {
 	envStr(&cfg.AppStore.CatalogDir, "APP_CATALOG_DIR")
 	envStr(&cfg.Backup.Root, "BACKUP_ROOT")
 	envStr(&cfg.Backup.WorkDir, "BACKUP_WORK_DIR")
+	envStr(&cfg.Plugin.Dir, "PLUGIN_DIR")
 	envBool(&cfg.Server.TLS.Enabled, "TLS_ENABLED")
 	envStr(&cfg.Server.TLS.CertFile, "TLS_CERT_FILE")
 	envStr(&cfg.Server.TLS.KeyFile, "TLS_KEY_FILE")

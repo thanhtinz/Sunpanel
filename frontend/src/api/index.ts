@@ -48,6 +48,7 @@ import type {
   NotifyChannelPayload,
   Node,
   NodePayload,
+  PluginList,
   PageResult,
   QueryResult,
   Role,
@@ -223,6 +224,29 @@ export const cronApi = {
 
   validate: (schedule: string) =>
     request<{ next: string[] }>('/api/v1/cron/validate', { method: 'POST', body: { schedule } }),
+}
+
+/** Các endpoint plugin. */
+export const pluginApi = {
+  list: () => request<PluginList>('/api/v1/plugins'),
+
+  all: () => request<PluginList>('/api/v1/plugins/all'),
+
+  reload: () => request<PluginList>('/api/v1/plugins/reload', { method: 'POST' }),
+
+  /** Cấp vé ngắn hạn để khung nhúng mở được giao diện plugin. */
+  ticket: (key: string) =>
+    request<{ ticket: string }>(`/api/v1/plugins/${encodeURIComponent(key)}/ticket`, {
+      method: 'POST',
+    }),
+
+  /** Địa chỉ đầy đủ để nhúng giao diện của một plugin.
+   *
+   * Khung nhúng không đặt được header Authorization, nên danh tính đi kèm dưới
+   * dạng vé ngắn hạn chỉ mở được đúng plugin này. */
+  uiUrl: (key: string, path: string, ticket: string) =>
+    `${baseUrl()}/api/v1/plugins/${encodeURIComponent(key)}/proxy${path || '/'}` +
+    `?ticket=${encodeURIComponent(ticket)}`,
 }
 
 /** Các endpoint quản lý node. */

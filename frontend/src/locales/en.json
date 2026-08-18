@@ -56,7 +56,9 @@
     "databases": "Databases",
     "backups": "Backups",
     "alerts": "Alerts",
-    "nodes": "Nodes"
+    "nodes": "Nodes",
+    "plugins": "Plugins",
+    "plugin-detail": "Plugins"
   },
   "dashboard": {
     "title": "System overview",
@@ -833,6 +835,20 @@
     "unauthorized": "The token does not match the agent on that machine.",
     "unreachable": "Cannot reach the agent. Check the address, port and firewall.",
     "version_mismatch": "The agent version does not match the panel. Update the agent to the same version."
+  },
+  "plugin": {
+    "title": "Plugins",
+    "reload": "Reload",
+    "reloaded": "Plugin list reloaded.",
+    "open": "Open",
+    "openInTab": "Open in a new tab",
+    "none": "No plugins yet.",
+    "hint": "A plugin is a service of its own, declared by a YAML file in {dir}. The panel forwards requests to it along with the caller's identity, and never loads plugin code into its own process."
+  },
+  "pluginErr": {
+    "not_found": "Plugin {plugin} was not found, or it is disabled.",
+    "invalid": "The plugin manifest is not valid.",
+    "unreachable": "Could not reach plugin {plugin}. Check that the plugin service is running."
   },
   "website": {
     "title": "Websites",

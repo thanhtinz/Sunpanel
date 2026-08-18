@@ -745,3 +745,21 @@ export interface NodePayload {
   skipVerify: boolean
   remark?: string
 }
+
+export interface PluginManifest {
+  key: string
+  name: LocalizedText
+  description: LocalizedText
+  version: string
+  author: string
+  website: string
+  baseUrl: string
+  uiPath: string
+  requireRole: string
+  enabled: boolean
+}
+
+export interface PluginList {
+  plugins: PluginManifest[]
+  dir: string
+}

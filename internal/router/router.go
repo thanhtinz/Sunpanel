@@ -42,6 +42,7 @@ type Services struct {
 	Tokens    *service.TokenIssuer
 	APIKeys   *service.APIKeyService
 	Nodes     *service.NodeService
+	Plugins   *service.PluginService
 	Alerts    *service.AlertService
 }
 
@@ -99,6 +100,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	alertHandler := v1.NewAlertHandler(svc.Alerts, svc.Audit)
 	apiKeyHandler := v1.NewAPIKeyHandler(svc.APIKeys, svc.Audit)
 	nodeHandler := v1.NewNodeHandler(svc.Nodes, svc.Audit)
+	pluginHandler := v1.NewPluginHandler(svc.Plugins, svc.Tokens, svc.Audit)
 	firewallHandler := v1.NewFirewallHandler(svc.Firewall)
 	dockerHandler := v1.NewDockerHandler(svc.Docker)
 
@@ -338,6 +340,21 @@ func registerAPI(engine *gin.Engine, svc Services) {
 				nodeWrite.DELETE("/:id", nodeHandler.Delete)
 			}
 		}
+
+		// Plugin: panel chuyển tiếp yêu cầu tới dịch vụ plugin chạy riêng, kèm danh
+		// tính người gọi. Panel không nạp mã lạ vào tiến trình của chính mình vì
+		// nó chạy quyền root.
+		plugins := authenticated.Group("/plugins")
+		{
+			plugins.GET("", pluginHandler.List)
+			plugins.GET("/all", middleware.RequireAdmin(), pluginHandler.ListAll)
+			plugins.POST("/reload", middleware.RequireAdmin(), pluginHandler.Reload)
+			plugins.POST("/:key/ticket", pluginHandler.Ticket)
+		}
+
+		// Khung nhúng của plugin không đặt được header Authorization, nên tuyến này
+		// nằm ngoài lớp xác thực thường và tự kiểm vé ngắn hạn bên trong handler.
+		api.Any("/plugins/:key/proxy/*path", pluginHandler.Proxy)
 
 		// Xem trạng thái dịch vụ thì ai đăng nhập cũng được; điều khiển thì không.
 		services := authenticated.Group("/services")

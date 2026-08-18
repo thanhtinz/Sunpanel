@@ -340,6 +340,16 @@ var (
 	NodeVersionMismatch = New(http.StatusBadGateway, "node.version_mismatch")
 )
 
+// Các lỗi của plugin.
+var (
+	// PluginNotFound là không tìm thấy plugin hoặc plugin đang tắt.
+	PluginNotFound = New(http.StatusNotFound, "plugin.not_found")
+	// PluginInvalid là tệp khai báo plugin không hợp lệ.
+	PluginInvalid = New(http.StatusBadRequest, "plugin.invalid")
+	// PluginUnreachable là không gọi được dịch vụ plugin.
+	PluginUnreachable = New(http.StatusBadGateway, "plugin.unreachable")
+)
+
 // Các lỗi của Docker.
 var (
 	// DockerUnavailable là không kết nối được tới Docker.

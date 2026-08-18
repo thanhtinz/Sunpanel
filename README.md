@@ -74,10 +74,13 @@ sunpanel reset-password -user admin
   quyền và thu hồi được riêng lẻ.
 - **Nhiều máy chủ**: chép chính binary này sang máy khác và chạy `sunpanel agent`
   để panel điều khiển máy đó từ xa qua kênh TLS có token.
+- **Plugin**: mở rộng panel bằng dịch vụ chạy riêng khai báo qua YAML; panel
+  chuyển tiếp yêu cầu kèm danh tính người gọi — xem [hướng dẫn](docs/PLUGINS.md).
 - **Giao diện**: chế độ sáng/tối, chuyển ngôn ngữ tức thời, bảng lệnh nhanh Ctrl+K
   (tìm được cả khi gõ không dấu), bố cục riêng cho điện thoại.
 
-Xem [lộ trình phát triển](docs/ROADMAP.md) cho các tính năng đang tới: hệ thống plugin.
+Toàn bộ lộ trình ban đầu đã hoàn thành; xem [lộ trình](docs/ROADMAP.md) để biết
+thứ tự các mốc đã đi qua.
 
 ### Bảo mật
 
@@ -208,10 +211,13 @@ sunpanel reset-password -user admin
   with scoped privileges and per-key revocation.
 - **Multi-server**: copy the same binary to another machine and run `sunpanel agent`
   to have the panel drive it remotely over a token-authenticated TLS channel.
+- **Plugins**: extend the panel with a separate service declared in YAML; the panel
+  forwards requests along with the caller's identity — see the [guide](docs/PLUGINS.md).
 - **UI**: light/dark theme, instant language switching, Ctrl+K command palette
   (matches Vietnamese text typed without diacritics), dedicated mobile layout.
 
-See the [roadmap](docs/ROADMAP.md) for what's next: a plugin system.
+The original roadmap is complete; see the [roadmap](docs/ROADMAP.md) for the order
+the milestones were delivered in.
 
 ### Security
 

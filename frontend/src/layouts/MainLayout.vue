@@ -34,6 +34,7 @@ import IconDatabase from '@/components/icons/IconDatabase.vue'
 import IconBackup from '@/components/icons/IconBackup.vue'
 import IconBell from '@/components/icons/IconBell.vue'
 import IconNodes from '@/components/icons/IconNodes.vue'
+import IconPlugin from '@/components/icons/IconPlugin.vue'
 import IconMenu from '@/components/icons/IconMenu.vue'
 import IconSearch from '@/components/icons/IconSearch.vue'
 import CommandPalette from '@/components/CommandPalette.vue'
@@ -137,6 +138,7 @@ const menuOptions = computed<MenuOption[]>(() => {
   if (auth.isAdmin) {
     options.push(
       { label: renderLink('nodes', t('nav.nodes')), key: 'nodes', icon: renderIcon(IconNodes) },
+      { label: renderLink('plugins', t('nav.plugins')), key: 'plugins', icon: renderIcon(IconPlugin) },
       { label: renderLink('users', t('nav.users')), key: 'users', icon: renderIcon(IconUsers) },
       { label: renderLink('audit', t('nav.audit')), key: 'audit', icon: renderIcon(IconLogs) },
     )

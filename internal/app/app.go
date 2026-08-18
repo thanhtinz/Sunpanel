@@ -26,6 +26,7 @@ import (
 	"github.com/thanhtinz/sunpanel/pkg/dockerx"
 	"github.com/thanhtinz/sunpanel/pkg/firewall"
 	"github.com/thanhtinz/sunpanel/pkg/host"
+	"github.com/thanhtinz/sunpanel/pkg/plugin"
 	"github.com/thanhtinz/sunpanel/pkg/sysservice"
 	"github.com/thanhtinz/sunpanel/pkg/webserver"
 )
@@ -113,6 +114,14 @@ func New(cfg config.Config) (*App, error) {
 	// Chứng chỉ mới chỉ có tác dụng sau khi máy chủ web đọc lại tệp.
 	certificates.SetReloader(websites.Reload)
 
+	// Plugin nạp lúc khởi động; tệp khai báo hỏng phải lộ ra ngay chứ không phải
+	// lúc người dùng bấm vào menu.
+	pluginRegistry, err := plugin.Load(cfg.Plugin.Dir)
+	if err != nil {
+		return nil, fmt.Errorf("nạp plugin: %w", err)
+	}
+	plugins := service.NewPluginService(pluginRegistry, audit)
+
 	alerts := service.NewAlertService(db, sealer, monitor, audit)
 	apiKeys := service.NewAPIKeyService(db, audit)
 	nodes := service.NewNodeService(db, sealer, audit)
@@ -171,6 +180,7 @@ func New(cfg config.Config) (*App, error) {
 		Alerts:    alerts,
 		APIKeys:   apiKeys,
 		Nodes:     nodes,
+		Plugins:   plugins,
 		Websites:  websites,
 		Certs:     certificates,
 		Firewall:  firewallSvc,

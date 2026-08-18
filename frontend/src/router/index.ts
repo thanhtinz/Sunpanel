@@ -84,6 +84,18 @@ const router = createRouter({
           component: () => import('@/views/NodesView.vue'),
         },
         {
+          path: 'plugins',
+          name: 'plugins',
+          component: () => import('@/views/PluginsView.vue'),
+        },
+        {
+          // Giao diện của một plugin cụ thể dùng chung một view, phân biệt bằng
+          // tham số đường dẫn.
+          path: 'plugins/:key',
+          name: 'plugin-detail',
+          component: () => import('@/views/PluginsView.vue'),
+        },
+        {
           path: 'profile',
           name: 'profile',
           component: () => import('@/views/ProfileView.vue'),

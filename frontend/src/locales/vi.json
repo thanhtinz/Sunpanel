@@ -56,7 +56,9 @@
     "databases": "Cơ sở dữ liệu",
     "backups": "Sao lưu",
     "alerts": "Cảnh báo",
-    "nodes": "Máy chủ"
+    "nodes": "Máy chủ",
+    "plugins": "Plugin",
+    "plugin-detail": "Plugin"
   },
   "dashboard": {
     "title": "Tổng quan hệ thống",
@@ -833,6 +835,20 @@
     "unauthorized": "Token không đúng với agent trên máy đó.",
     "unreachable": "Không kết nối được tới agent. Kiểm tra địa chỉ, cổng và tường lửa.",
     "version_mismatch": "Phiên bản agent không khớp với panel. Hãy cập nhật agent lên cùng phiên bản."
+  },
+  "plugin": {
+    "title": "Plugin",
+    "reload": "Nạp lại",
+    "reloaded": "Đã nạp lại danh sách plugin.",
+    "open": "Mở",
+    "openInTab": "Mở ở tab mới",
+    "none": "Chưa có plugin nào.",
+    "hint": "Plugin là dịch vụ chạy riêng, khai báo bằng tệp YAML trong thư mục {dir}. Panel chuyển tiếp yêu cầu tới plugin kèm danh tính người gọi, và không nạp mã plugin vào tiến trình của chính mình."
+  },
+  "pluginErr": {
+    "not_found": "Không tìm thấy plugin {plugin}, hoặc plugin đang tắt.",
+    "invalid": "Tệp khai báo plugin không hợp lệ.",
+    "unreachable": "Không gọi được plugin {plugin}. Kiểm tra dịch vụ plugin có đang chạy không."
   },
   "website": {
     "title": "Website",
