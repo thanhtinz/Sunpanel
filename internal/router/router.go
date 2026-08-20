@@ -226,6 +226,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 			websites.GET("", websiteHandler.List)
 			websites.GET("/:id", websiteHandler.Get)
 			websites.GET("/rewrites", websiteHandler.Rewrites)
+			websites.GET("/:id/domains", websiteHandler.Domains)
 			websites.GET("/:id/config", websiteHandler.Config)
 			// Thống kê đọc từ nhật ký truy cập, trong đó có địa chỉ của khách vào
 			// website; cùng mức nhạy cảm với nhật ký hệ thống nên đòi quyền vận hành.

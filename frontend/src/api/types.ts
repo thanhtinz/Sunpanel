@@ -497,6 +497,22 @@ export interface Website {
   updatedAt: string
 }
 
+/** Kết quả tra cứu một tên miền. */
+export interface DomainResult {
+  domain: string
+  status: 'here' | 'elsewhere' | 'missing' | 'unknown'
+  ips: string[]
+  cname?: string
+  error?: string
+  tookMs: number
+}
+
+/** Kết quả kiểm tra toàn bộ tên miền của một website. */
+export interface DomainReport {
+  serverIps: string[]
+  results: DomainResult[]
+}
+
 /** Một mẫu quy tắc viết lại đường dẫn. */
 export interface RewritePreset {
   key: string

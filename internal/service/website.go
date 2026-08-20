@@ -11,6 +11,7 @@ import (
 	"github.com/thanhtinz/sunpanel/internal/apperr"
 	"github.com/thanhtinz/sunpanel/internal/model"
 	"github.com/thanhtinz/sunpanel/pkg/accesslog"
+	"github.com/thanhtinz/sunpanel/pkg/dnscheck"
 	"github.com/thanhtinz/sunpanel/pkg/host"
 	"github.com/thanhtinz/sunpanel/pkg/webserver"
 )
@@ -68,7 +69,9 @@ type WebsiteService struct {
 	logDir string
 	// traffic đọc nhật ký truy cập để dựng số liệu; nil nghĩa là tắt tính năng.
 	traffic *accesslog.Analyzer
-	audit   *AuditService
+	// dns tra cứu tên miền của website.
+	dns   *dnscheck.Checker
+	audit *AuditService
 }
 
 // NewWebsiteService tạo dịch vụ website.
@@ -78,7 +81,8 @@ func NewWebsiteService(
 ) *WebsiteService {
 	return &WebsiteService{
 		db: db, manager: manager, certs: certificates, host: h, authDir: authDir,
-		acmeWebroot: acmeWebroot, logDir: webserver.DefaultLogDir, audit: audit,
+		acmeWebroot: acmeWebroot, logDir: webserver.DefaultLogDir,
+		dns: dnscheck.New(), audit: audit,
 	}
 }
 

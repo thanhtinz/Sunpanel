@@ -13,14 +13,17 @@ import {
   NInputNumber,
   NModal,
   NPopconfirm,
+  NDropdown,
   NSelect,
   NSpace,
   NSwitch,
   NTabPane,
   NTabs,
+  NSpin,
   NTag,
   NText,
   NUpload,
+  useDialog,
   useMessage,
   type UploadFileInfo,
   type DataTableColumns,
@@ -35,6 +38,7 @@ import {
   type WebServerStatus,
   type Website,
   type RedirectRule,
+  type DomainReport,
   type RewritePreset,
   type WebsiteType,
 } from '@/api'
@@ -46,6 +50,7 @@ import { formatDateTime } from '@/utils/format'
 const { t } = useI18n()
 const auth = useAuthStore()
 const message = useMessage()
+const dialog = useDialog()
 
 const status = ref<WebServerStatus>({ server: '', available: true })
 const sites = ref<Website[]>([])
@@ -366,6 +371,33 @@ async function removeSite(site: Website): Promise<void> {
   }
 }
 
+/** Màu của từng trạng thái tên miền. */
+const domainTone: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
+  here: 'success',
+  elsewhere: 'warning',
+  missing: 'error',
+  unknown: 'default',
+}
+
+const domainCheck = ref<{
+  show: boolean
+  name: string
+  loading: boolean
+  report: DomainReport | null
+}>({ show: false, name: '', loading: false, report: null })
+
+async function checkDomains(site: Website): Promise<void> {
+  domainCheck.value = { show: true, name: site.name, loading: true, report: null }
+  try {
+    domainCheck.value.report = await websiteApi.domains(site.id)
+  } catch (err) {
+    report(err)
+    domainCheck.value.show = false
+  } finally {
+    domainCheck.value.loading = false
+  }
+}
+
 function openTraffic(site: Website): void {
   traffic.value = { show: true, id: site.id, name: site.name }
 }
@@ -513,27 +545,13 @@ const siteColumns = computed<DataTableColumns<Website>>(() => [
   {
     title: t('common.actions'),
     key: 'actions',
-    width: 320,
+    width: 190,
     render: (row) =>
       h(
         NSpace,
-        { size: 4 },
+        { size: 4, wrap: false },
         {
           default: () => [
-            h(
-              NButton,
-              { size: 'tiny', quaternary: true, onClick: () => showConfig(row) },
-              { default: () => t('website.viewConfig') },
-            ),
-            // Thống kê đọc nhật ký truy cập, vốn chứa địa chỉ của khách vào
-            // website, nên nó đi cùng mức quyền với các thao tác vận hành.
-            auth.canWrite
-              ? h(
-                  NButton,
-                  { size: 'tiny', quaternary: true, onClick: () => openTraffic(row) },
-                  { default: () => t('website.traffic') },
-                )
-              : null,
             auth.canWrite
               ? h(
                   NButton,
@@ -541,34 +559,76 @@ const siteColumns = computed<DataTableColumns<Website>>(() => [
                   { default: () => t('common.edit') },
                 )
               : null,
-            // Website chuyển tiếp không có thư mục gốc nên không có gì để triển khai.
-            auth.canWrite && row.type !== 'proxy'
-              ? h(
-                  NButton,
-                  { size: 'tiny', quaternary: true, onClick: () => openDeploy(row) },
-                  { default: () => t('website.deploySource') },
-                )
-              : null,
-            auth.canWrite
-              ? h(
-                  NPopconfirm,
-                  { onPositiveClick: () => removeSite(row) },
-                  {
-                    trigger: () =>
-                      h(
-                        NButton,
-                        { size: 'tiny', quaternary: true, type: 'error' },
-                        { default: () => t('common.delete') },
-                      ),
-                    default: () => t('website.deleteConfirm', { name: row.name }),
-                  },
-                )
-              : null,
+            // Các thao tác còn lại gom vào một menu: bày cả sáu nút ra hàng thì
+            // cột thao tác rộng hơn cả cột tên miền, và trên màn hình hẹp chúng
+            // xuống dòng thành một khối chữ không đọc được.
+            h(
+              NDropdown,
+              {
+                options: rowActions(row),
+                trigger: 'click',
+                onSelect: (key: string) => runRowAction(key, row),
+              },
+              {
+                default: () =>
+                  h(
+                    NButton,
+                    { size: 'tiny', quaternary: true },
+                    { default: () => t('website.moreActions') },
+                  ),
+              },
+            ),
           ],
         },
       ),
   },
 ])
+
+/** Các thao tác phụ của một website. */
+function rowActions(site: Website) {
+  return [
+    { label: t('website.viewConfig'), key: 'config' },
+    { label: t('website.checkDomains'), key: 'domains' },
+    // Thống kê đọc nhật ký truy cập, vốn chứa địa chỉ của khách vào website,
+    // nên nó đi cùng mức quyền với các thao tác vận hành.
+    ...(auth.canWrite ? [{ label: t('website.traffic'), key: 'traffic' }] : []),
+    // Website chuyển tiếp không có thư mục gốc nên không có gì để triển khai.
+    ...(auth.canWrite && site.type !== 'proxy'
+      ? [{ label: t('website.deploySource'), key: 'source' }]
+      : []),
+    ...(auth.canWrite
+      ? [{ type: 'divider', key: 'ngan' }, { label: t('common.delete'), key: 'delete' }]
+      : []),
+  ]
+}
+
+function runRowAction(key: string, site: Website): void {
+  switch (key) {
+    case 'config':
+      void showConfig(site)
+      break
+    case 'domains':
+      void checkDomains(site)
+      break
+    case 'traffic':
+      openTraffic(site)
+      break
+    case 'source':
+      openDeploy(site)
+      break
+    case 'delete':
+      // Xóa website là thao tác không lấy lại được, nên nó vẫn phải hỏi lại một
+      // lần dù đã nằm trong menu.
+      dialog.warning({
+        title: t('common.delete'),
+        content: t('website.deleteConfirm', { name: site.name }),
+        positiveText: t('common.delete'),
+        negativeText: t('common.cancel'),
+        onPositiveClick: () => void removeSite(site),
+      })
+      break
+  }
+}
 
 const certColumns = computed<DataTableColumns<Certificate>>(() => [
   { title: t('website.name'), key: 'name', width: 160 },
@@ -994,6 +1054,42 @@ function capitalize(value: string): string {
   </NModal>
 
   <NModal
+    v-model:show="domainCheck.show"
+    preset="card"
+    :title="t('website.domainsOf', { name: domainCheck.name })"
+    style="width: 94vw; max-width: 720px"
+  >
+    <NSpin :show="domainCheck.loading">
+      <NSpace vertical :size="12">
+        <NText depth="3" style="font-size: 12px">
+          {{ t('website.serverIps', { ips: domainCheck.report?.serverIps.join(', ') || '—' }) }}
+        </NText>
+
+        <NSpace
+          v-for="item in domainCheck.report?.results ?? []"
+          :key="item.domain"
+          vertical
+          :size="4"
+          class="domain-row"
+        >
+          <NSpace align="center" :size="8">
+            <NTag :type="domainTone[item.status]" size="small" :bordered="false">
+              {{ t(`domainStatus.${item.status}`) }}
+            </NTag>
+            <NText strong>{{ item.domain }}</NText>
+          </NSpace>
+          <NText v-if="item.ips.length" depth="3" style="font-size: 12px">
+            {{ item.ips.join(', ') }}
+            <template v-if="item.cname"> · CNAME → {{ item.cname }}</template>
+          </NText>
+          <NText v-else-if="item.error" depth="3" style="font-size: 12px">{{ item.error }}</NText>
+          <NText v-else depth="3" style="font-size: 12px">{{ t('website.domainNoRecord') }}</NText>
+        </NSpace>
+      </NSpace>
+    </NSpin>
+  </NModal>
+
+  <NModal
     v-model:show="traffic.show"
     preset="card"
     :title="t('website.trafficOf', { name: traffic.name })"
@@ -1022,6 +1118,15 @@ function capitalize(value: string): string {
 
 .domain-link:hover {
   opacity: 1;
+}
+
+.domain-row {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--sp-border);
+}
+
+.domain-row:last-child {
+  border-bottom: none;
 }
 
 .config-preview {

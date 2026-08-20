@@ -72,6 +72,7 @@ import type {
   SshKey,
   SystemAccount,
   SystemAccountPayload,
+  DomainReport,
   RewritePreset,
   SecurityOverview,
   TrafficReport,
@@ -468,6 +469,8 @@ export const websiteApi = {
   config: (id: number) => request<{ content: string }>(`/api/v1/websites/${id}/config`),
 
   rewrites: () => request<RewritePreset[]>('/api/v1/websites/rewrites'),
+
+  domains: (id: number) => request<DomainReport>(`/api/v1/websites/${id}/domains`),
 
   traffic: (id: number, window: string) =>
     request<TrafficReport>(`/api/v1/websites/${id}/traffic?window=${window}`),

@@ -481,6 +481,12 @@
     "minutes": "{n} min",
     "seconds": "{n} s"
   },
+  "domainStatus": {
+    "here": "Points here",
+    "elsewhere": "Points elsewhere",
+    "missing": "No record",
+    "unknown": "Lookup failed"
+  },
   "rewrite": {
     "wordpress": "WordPress",
     "laravel": "Laravel",
@@ -1175,6 +1181,11 @@
     "unreachable": "Could not reach plugin {plugin}. Check that the plugin service is running."
   },
   "website": {
+    "moreActions": "More",
+    "checkDomains": "Check domains",
+    "domainsOf": "Domains — {name}",
+    "serverIps": "This server: {ips}",
+    "domainNoRecord": "No record points at this domain yet.",
     "rewrite": "URL rewriting",
     "rewriteHelp": "Pick the one matching your app. Without these rules the home page loads but every other path returns 404.",
     "rewriteNone": "None",

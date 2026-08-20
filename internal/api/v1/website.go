@@ -86,6 +86,22 @@ func (h *WebsiteHandler) Rewrites(c *gin.Context) {
 	response.OK(c, webserver.Rewrites())
 }
 
+// Domains xử lý GET /api/v1/websites/:id/domains.
+func (h *WebsiteHandler) Domains(c *gin.Context) {
+	id, err := uintParam(c, "id")
+	if err != nil {
+		response.Fail(c, err)
+		return
+	}
+
+	report, err := h.websites.CheckDomains(c.Request.Context(), id)
+	if err != nil {
+		response.Fail(c, err)
+		return
+	}
+	response.OK(c, report)
+}
+
 // Traffic xử lý GET /api/v1/websites/:id/traffic?window=24h.
 func (h *WebsiteHandler) Traffic(c *gin.Context) {
 	id, err := uintParam(c, "id")

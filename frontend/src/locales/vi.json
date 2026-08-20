@@ -481,6 +481,12 @@
     "minutes": "{n} phút",
     "seconds": "{n} giây"
   },
+  "domainStatus": {
+    "here": "Trỏ về máy này",
+    "elsewhere": "Trỏ đi nơi khác",
+    "missing": "Chưa có bản ghi",
+    "unknown": "Không tra được"
+  },
   "rewrite": {
     "wordpress": "WordPress",
     "laravel": "Laravel",
@@ -1175,6 +1181,11 @@
     "unreachable": "Không gọi được plugin {plugin}. Kiểm tra dịch vụ plugin có đang chạy không."
   },
   "website": {
+    "moreActions": "Thao tác khác",
+    "checkDomains": "Kiểm tra tên miền",
+    "domainsOf": "Tên miền — {name}",
+    "serverIps": "Địa chỉ của máy chủ này: {ips}",
+    "domainNoRecord": "Chưa có bản ghi nào trỏ tới tên miền này.",
     "rewrite": "Viết lại đường dẫn",
     "rewriteHelp": "Chọn theo mã nguồn đang chạy. Thiếu quy tắc này thì trang chủ vào được nhưng mọi đường dẫn con trả về 404.",
     "rewriteNone": "Không dùng",
