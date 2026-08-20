@@ -14,6 +14,7 @@ import {
 } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import { ApiError } from '@/api'
+import BrandLogo from '@/components/BrandLogo.vue'
 import { useAuthStore } from '@/stores/auth'
 import { SUPPORTED_LOCALES, setLocale, translateError, type Locale } from '@/locales'
 
@@ -75,9 +76,9 @@ function changeLanguage(value: Locale): void {
   <div class="login-page">
     <NCard class="login-card" size="large">
       <div class="brand">
-        <div class="brand-mark">☀</div>
+        <BrandLogo :size="44" />
         <div>
-          <div class="brand-name">{{ t('app.name') }}</div>
+          <div class="brand-name"><span class="brand-sun">Sun</span>Panel</div>
           <NText depth="3" class="brand-tagline">{{ t('app.tagline') }}</NText>
         </div>
       </div>
@@ -170,15 +171,13 @@ function changeLanguage(value: Locale): void {
   margin-bottom: 24px;
 }
 
-.brand-mark {
-  font-size: 34px;
-  line-height: 1;
-  color: #f0a500;
-}
-
 .brand-name {
   font-size: 20px;
   font-weight: 600;
+}
+
+.brand-sun {
+  color: var(--sp-sun);
 }
 
 .brand-tagline {

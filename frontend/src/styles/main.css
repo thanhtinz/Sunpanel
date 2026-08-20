@@ -32,6 +32,12 @@
   --sp-warn: #d97706;
   --sp-danger: #dc2626;
 
+  /* Màu của biểu trưng. Khung cửa sổ tách thành biến vì nền tối nuốt mất màu
+     xanh than nguyên bản: nó gần như trùng màu nền và biểu trưng trông như một
+     ô trắng trôi lơ lửng. */
+  --sp-brand-frame: #011c3e;
+  --sp-brand-screen: #ffffff;
+
   --sp-shadow: 0 1px 2px rgba(22, 25, 23, 0.04), 0 1px 3px rgba(22, 25, 23, 0.06);
   --sp-radius-card: 10px;
   --sp-radius-control: 7px;
@@ -53,6 +59,9 @@
   --sp-sun: #f2a93b;
   --sp-warn: #e08a2b;
   --sp-danger: #ef4444;
+
+  --sp-brand-frame: #2c4f80;
+  --sp-brand-screen: #f4f7fb;
 
   --sp-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.35);
 }

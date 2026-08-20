@@ -1,6 +1,8 @@
 <div align="center">
 
-# ☀ SunPanel
+<img src="docs/brand/sunpanel-logo.png" alt="SunPanel" width="420">
+
+# SunPanel
 
 **Bảng điều khiển quản trị máy chủ — một binary duy nhất, đa nền tảng, đa ngôn ngữ**
 

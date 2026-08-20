@@ -1,6 +1,5 @@
 {
   "app": {
-    "name": "SunPanel",
     "tagline": "Bảng điều khiển quản trị máy chủ"
   },
   "common": {

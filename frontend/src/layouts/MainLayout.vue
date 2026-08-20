@@ -47,6 +47,7 @@ import IconUsers from '@/components/icons/IconUsers.vue'
 import IconLogs from '@/components/icons/IconLogs.vue'
 import IconMoon from '@/components/icons/IconMoon.vue'
 import IconSun from '@/components/icons/IconSun.vue'
+import BrandLogo from '@/components/BrandLogo.vue'
 import IconGlobe from '@/components/icons/IconGlobe.vue'
 
 const { t, locale } = useI18n()
@@ -215,8 +216,10 @@ function toggleTheme(): void {
     >
       <div class="sider-inner">
         <RouterLink :to="{ name: 'dashboard' }" class="brand">
-          <span class="brand-mark">☀</span>
-          <span v-if="!collapsed" class="brand-name">{{ t('app.name') }}</span>
+          <BrandLogo :size="26" />
+          <span v-if="!collapsed" class="brand-name">
+            <span class="brand-sun">Sun</span>Panel
+          </span>
         </RouterLink>
 
         <div class="sider-nav">
@@ -297,8 +300,10 @@ function toggleTheme(): void {
     <NDrawerContent :native-scrollbar="false" body-content-style="padding: 0">
       <div class="sider-inner">
         <div class="brand">
-          <span class="brand-mark">☀</span>
-          <span class="brand-name">{{ t('app.name') }}</span>
+          <BrandLogo :size="26" />
+          <span class="brand-name">
+            <span class="brand-sun">Sun</span>Panel
+          </span>
         </div>
         <div class="sider-nav">
           <NMenu :options="menuOptions" :value="activeMenuKey" :indent="18" />
@@ -336,10 +341,7 @@ function toggleTheme(): void {
   text-decoration: none;
 }
 
-.brand-mark {
-  flex: none;
-  font-size: 20px;
-  line-height: 1;
+.brand-sun {
   color: var(--sp-sun);
 }
 
