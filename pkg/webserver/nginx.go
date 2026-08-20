@@ -190,6 +190,10 @@ func (n *Nginx) Render(site Site) (string, error) {
 	if strings.TrimSpace(data.LogDir) == "" {
 		data.LogDir = DefaultLogDir
 	}
+	// Website dạng chuyển tiếp không có tệp trên đĩa để viết lại đường dẫn tới.
+	if data.Type != SiteProxy {
+		data.RewriteBlock, _ = RewriteBody(data.Rewrite)
+	}
 	if data.Type == SitePHP && strings.TrimSpace(data.PHPSocket) == "" {
 		// Đường dẫn socket mặc định của PHP-FPM trên Debian và Ubuntu.
 		data.PHPSocket = "unix:/run/php/php-fpm.sock"
@@ -210,6 +214,8 @@ type templateData struct {
 	Site
 	// ModernHTTP2 chọn cú pháp bật HTTP/2 phù hợp với phiên bản nginx.
 	ModernHTTP2 bool
+	// RewriteBlock là khối location / của mẫu viết lại đang chọn.
+	RewriteBlock string
 }
 
 // supportsModernHTTP2 cho biết nginx trên máy có nhận chỉ thị "http2 on" không.
@@ -421,10 +427,16 @@ server {
 
     root {{ .Root }};
     index index.html index.htm{{ if eq (printf "%s" .Type) "php" }} index.php{{ end }};
+{{- if .RewriteBlock }}
+
+    # Quy tắc viết lại đường dẫn: mẫu {{ .Rewrite }}
+{{ .RewriteBlock }}
+{{- else }}
 
     location / {
         try_files $uri $uri/ {{ if eq (printf "%s" .Type) "php" }}/index.php?$query_string{{ else }}=404{{ end }};
     }
+{{- end }}
 {{- if eq (printf "%s" .Type) "php" }}
 
     location ~ \.php$ {

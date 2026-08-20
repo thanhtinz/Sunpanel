@@ -481,6 +481,15 @@
     "minutes": "{n} phút",
     "seconds": "{n} giây"
   },
+  "rewrite": {
+    "wordpress": "WordPress",
+    "laravel": "Laravel",
+    "thinkphp": "ThinkPHP",
+    "codeigniter": "CodeIgniter",
+    "drupal": "Drupal",
+    "typecho": "Typecho",
+    "spa": "Ứng dụng một trang (Vue, React)"
+  },
   "traffic": {
     "requests": "Lượt truy cập",
     "visitors": "Khách",
@@ -1166,9 +1175,12 @@
     "unreachable": "Không gọi được plugin {plugin}. Kiểm tra dịch vụ plugin có đang chạy không."
   },
   "website": {
+    "rewrite": "Viết lại đường dẫn",
+    "rewriteHelp": "Chọn theo mã nguồn đang chạy. Thiếu quy tắc này thì trang chủ vào được nhưng mọi đường dẫn con trả về 404.",
+    "rewriteNone": "Không dùng",
+    "rewriteNote": "Mẫu này chỉ chạy khi thư mục gốc trỏ vào thư mục {dir} của mã nguồn.",
     "traffic": "Thống kê",
     "trafficOf": "Thống kê truy cập — {name}",
-    "log_unavailable": "Không đọc được nhật ký truy cập của website: {message}",
     "title": "Website",
     "sites": "Website",
     "certificates": "Chứng chỉ SSL",
@@ -1254,6 +1266,8 @@
     "selfSignedHint": "Chứng chỉ tự ký khiến trình duyệt cảnh báo. Dùng khi thử nghiệm hoặc khi tên miền chưa trỏ về máy chủ."
   },
   "websiteErr": {
+    "log_unavailable": "Không đọc được nhật ký truy cập của website: {message}",
+    "invalid_rewrite": "Mẫu viết lại đường dẫn “{value}” không có trong danh sách.",
     "not_found": "Không tìm thấy website.",
     "name_exists": "Tên website {name} đã được dùng.",
     "invalid_name": "Tên website không hợp lệ.",

@@ -481,6 +481,15 @@
     "minutes": "{n} min",
     "seconds": "{n} s"
   },
+  "rewrite": {
+    "wordpress": "WordPress",
+    "laravel": "Laravel",
+    "thinkphp": "ThinkPHP",
+    "codeigniter": "CodeIgniter",
+    "drupal": "Drupal",
+    "typecho": "Typecho",
+    "spa": "Single-page app (Vue, React)"
+  },
   "traffic": {
     "requests": "Requests",
     "visitors": "Visitors",
@@ -1166,9 +1175,12 @@
     "unreachable": "Could not reach plugin {plugin}. Check that the plugin service is running."
   },
   "website": {
+    "rewrite": "URL rewriting",
+    "rewriteHelp": "Pick the one matching your app. Without these rules the home page loads but every other path returns 404.",
+    "rewriteNone": "None",
+    "rewriteNote": "This preset only works when the site root points at the app's {dir} directory.",
     "traffic": "Traffic",
     "trafficOf": "Traffic — {name}",
-    "log_unavailable": "Cannot read the website's access log: {message}",
     "title": "Websites",
     "sites": "Websites",
     "certificates": "SSL certificates",
@@ -1254,6 +1266,8 @@
     "selfSignedHint": "A self-signed certificate triggers a browser warning. Use it for testing, or before the domain points here."
   },
   "websiteErr": {
+    "log_unavailable": "Cannot read the website's access log: {message}",
+    "invalid_rewrite": "There is no URL rewriting preset named “{value}”.",
     "not_found": "Website not found.",
     "name_exists": "Website name {name} is already taken.",
     "invalid_name": "Invalid website name.",

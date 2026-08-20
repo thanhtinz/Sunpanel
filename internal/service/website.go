@@ -28,6 +28,7 @@ type WebsiteRequest struct {
 	SSLEnabled  bool     `json:"sslEnabled"`
 	ForceHTTPS  bool     `json:"forceHttps"`
 	CertName    string   `json:"certName"`
+	Rewrite     string   `json:"rewrite"`
 	ExtraConfig string   `json:"extraConfig"`
 	Enabled     bool     `json:"enabled"`
 	Remark      string   `json:"remark"`
@@ -283,6 +284,10 @@ func (s *WebsiteService) build(
 	site.SSLEnabled = req.SSLEnabled
 	site.ForceHTTPS = req.SSLEnabled && req.ForceHTTPS
 	site.CertName = strings.TrimSpace(req.CertName)
+	site.Rewrite = strings.TrimSpace(req.Rewrite)
+	if _, ok := webserver.RewriteBody(site.Rewrite); !ok {
+		return model.Website{}, apperr.WebsiteInvalidRewrite.WithParam("value", site.Rewrite)
+	}
 	site.ExtraConfig = req.ExtraConfig
 	site.Enabled = req.Enabled
 	site.Remark = strings.TrimSpace(req.Remark)
@@ -354,6 +359,7 @@ func (s *WebsiteService) toSite(ctx context.Context, site model.Website) (webser
 		ProxyTarget: site.ProxyTarget,
 		PHPSocket:   site.PHPSocket,
 		Port:        site.Port,
+		Rewrite:     site.Rewrite,
 		ExtraConfig: site.ExtraConfig,
 		ACMEWebroot: s.acmeWebroot,
 		LogDir:      s.logDir,

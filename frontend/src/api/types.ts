@@ -485,6 +485,7 @@ export interface Website {
   sslEnabled: boolean
   forceHttps: boolean
   certName: string
+  rewrite: string
   extraConfig: string
   enabled: boolean
   remark: string
@@ -494,6 +495,14 @@ export interface Website {
   redirects: string
   createdAt: string
   updatedAt: string
+}
+
+/** Một mẫu quy tắc viết lại đường dẫn. */
+export interface RewritePreset {
+  key: string
+  body: string
+  /** Thư mục con mà thư mục gốc phải trỏ tới, nếu mẫu đòi hỏi. */
+  note?: string
 }
 
 /** Một quy tắc chuyển hướng của website. */
@@ -515,6 +524,7 @@ export interface WebsitePayload {
   sslEnabled?: boolean
   forceHttps?: boolean
   certName?: string
+  rewrite?: string
   extraConfig?: string
   enabled?: boolean
   remark?: string

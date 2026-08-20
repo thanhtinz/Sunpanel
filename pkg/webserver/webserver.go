@@ -79,6 +79,8 @@ type Site struct {
 	DenyIPs []string
 	// Redirects là các quy tắc chuyển hướng đặt trước mọi xử lý khác.
 	Redirects []Redirect
+	// Rewrite là định danh mẫu quy tắc viết lại đường dẫn; rỗng nghĩa là không dùng.
+	Rewrite string
 	// LogDir là thư mục nhật ký của website; để trống dùng /var/log/nginx.
 	//
 	// Cùng một giá trị được dùng cho cả tệp cấu hình sinh ra và trang thống kê
@@ -209,6 +211,10 @@ func ValidateSite(site Site) error {
 		if err := validateProxyTarget(site.ProxyTarget); err != nil {
 			return err
 		}
+	}
+
+	if _, ok := RewriteBody(site.Rewrite); !ok {
+		return fmt.Errorf("%w: mẫu viết lại đường dẫn %q không có", ErrInvalidConfig, site.Rewrite)
 	}
 
 	if site.SSL.Enabled {

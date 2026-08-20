@@ -283,6 +283,8 @@ var (
 	WebsiteInvalidConfig = New(http.StatusBadRequest, "website.invalid_config")
 	// WebsiteServerUnavailable là máy chủ không có phần mềm web server khả dụng.
 	WebsiteServerUnavailable = New(http.StatusServiceUnavailable, "website.server_unavailable")
+	// WebsiteInvalidRewrite là mẫu viết lại đường dẫn không có trong danh sách.
+	WebsiteInvalidRewrite = New(http.StatusBadRequest, "website.invalid_rewrite")
 	// WebsiteLogUnavailable là không đọc được nhật ký truy cập của website.
 	WebsiteLogUnavailable = New(http.StatusServiceUnavailable, "website.log_unavailable")
 	// WebsiteApplyFailed là máy chủ web từ chối cấu hình sinh ra.

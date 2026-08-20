@@ -35,6 +35,7 @@ import {
   type WebServerStatus,
   type Website,
   type RedirectRule,
+  type RewritePreset,
   type WebsiteType,
 } from '@/api'
 import WebsiteTraffic from '@/components/WebsiteTraffic.vue'
@@ -64,6 +65,7 @@ const emptySite = () => ({
   sslEnabled: false,
   forceHttps: false,
   certName: '',
+  rewrite: '',
   extraConfig: '',
   remark: '',
   authEnabled: false,
@@ -104,7 +106,28 @@ const traffic = ref<{ show: boolean; id: number | null; name: string }>({
   name: '',
 })
 
-onMounted(load)
+/**
+ * Danh sách mẫu viết lại đường dẫn.
+ *
+ * Nạp một lần cùng trang chứ không mỗi lần mở biểu mẫu: danh sách này do binary
+ * mang theo nên nó không đổi giữa hai lần bấm.
+ */
+const rewrites = ref<RewritePreset[]>([])
+
+const rewriteOptions = computed(() => [
+  { label: t('website.rewriteNone'), value: '' },
+  ...rewrites.value.map((preset) => ({ label: t(`rewrite.${preset.key}`), value: preset.key })),
+])
+
+/** Nội dung của mẫu đang chọn, để người dùng thấy trước khi lưu. */
+const rewritePreview = computed(() =>
+  rewrites.value.find((preset) => preset.key === editor.value.form.rewrite),
+)
+
+onMounted(async () => {
+  await load()
+  rewrites.value = await websiteApi.rewrites().catch(() => [])
+})
 
 function report(err: unknown): void {
   if (!(err instanceof ApiError)) {
@@ -206,6 +229,7 @@ function openEdit(site: Website): void {
       sslEnabled: site.sslEnabled,
       forceHttps: site.forceHttps,
       certName: site.certName,
+      rewrite: site.rewrite,
       extraConfig: site.extraConfig,
       remark: site.remark,
       authEnabled: site.authEnabled,
@@ -235,6 +259,7 @@ async function saveSite(): Promise<void> {
       sslEnabled: form.sslEnabled,
       forceHttps: form.forceHttps,
       certName: form.sslEnabled ? form.certName : '',
+      rewrite: form.rewrite,
       extraConfig: form.extraConfig,
       enabled: true,
       remark: form.remark.trim(),
@@ -813,6 +838,20 @@ function capitalize(value: string): string {
           >
             {{ t('website.addRedirect') }}
           </NButton>
+        </NSpace>
+      </NFormItem>
+
+      <NFormItem
+        v-if="editor.form.type !== 'proxy'"
+        :label="t('website.rewrite')"
+        :feedback="t('website.rewriteHelp')"
+      >
+        <NSpace vertical :size="8" style="width: 100%">
+          <NSelect v-model:value="editor.form.rewrite" :options="rewriteOptions" />
+          <NAlert v-if="rewritePreview?.note" type="warning" :bordered="false">
+            {{ t('website.rewriteNote', { dir: rewritePreview.note }) }}
+          </NAlert>
+          <pre v-if="rewritePreview" class="config-preview">{{ rewritePreview.body }}</pre>
         </NSpace>
       </NFormItem>
 

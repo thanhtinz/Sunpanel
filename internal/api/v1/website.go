@@ -10,6 +10,7 @@ import (
 	"github.com/thanhtinz/sunpanel/internal/middleware"
 	"github.com/thanhtinz/sunpanel/internal/response"
 	"github.com/thanhtinz/sunpanel/internal/service"
+	"github.com/thanhtinz/sunpanel/pkg/webserver"
 )
 
 // WebsiteHandler xử lý các endpoint website và chứng chỉ TLS.
@@ -75,6 +76,14 @@ func (h *WebsiteHandler) Config(c *gin.Context) {
 		return
 	}
 	response.OK(c, gin.H{"content": content})
+}
+
+// Rewrites xử lý GET /api/v1/websites/rewrites.
+//
+// Trả về cả nội dung từng mẫu chứ không chỉ tên: người dùng phải nhìn thấy
+// đúng những dòng sắp được ghi vào cấu hình máy chủ của mình trước khi bật.
+func (h *WebsiteHandler) Rewrites(c *gin.Context) {
+	response.OK(c, webserver.Rewrites())
 }
 
 // Traffic xử lý GET /api/v1/websites/:id/traffic?window=24h.

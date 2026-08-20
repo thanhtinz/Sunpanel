@@ -72,6 +72,7 @@ import type {
   SshKey,
   SystemAccount,
   SystemAccountPayload,
+  RewritePreset,
   SecurityOverview,
   TrafficReport,
   SystemService,
@@ -465,6 +466,8 @@ export const websiteApi = {
   list: () => request<Website[]>('/api/v1/websites'),
 
   config: (id: number) => request<{ content: string }>(`/api/v1/websites/${id}/config`),
+
+  rewrites: () => request<RewritePreset[]>('/api/v1/websites/rewrites'),
 
   traffic: (id: number, window: string) =>
     request<TrafficReport>(`/api/v1/websites/${id}/traffic?window=${window}`),

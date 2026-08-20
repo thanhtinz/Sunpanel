@@ -51,6 +51,11 @@ type Website struct {
 	// Lưu JSON trong một cột thay vì bảng riêng: danh sách luôn ngắn, luôn được
 	// đọc và ghi trọn vẹn cùng website, nên một bảng riêng chỉ thêm việc.
 	Redirects string `gorm:"type:text" json:"redirects"`
+	// Rewrite là định danh mẫu quy tắc viết lại đường dẫn; rỗng là không dùng.
+	//
+	// Không đặt mặc định cho cột: GORM bỏ qua trường mang giá trị zero khi cột
+	// có mặc định, và khi đó bỏ chọn mẫu sẽ không bao giờ lưu được.
+	Rewrite string `gorm:"size:32" json:"rewrite"`
 	// ExtraConfig là cấu hình bổ sung do quản trị viên tự thêm.
 	ExtraConfig string `gorm:"type:text" json:"extraConfig"`
 	// Enabled quyết định tệp cấu hình có được ghi ra đĩa hay không.
