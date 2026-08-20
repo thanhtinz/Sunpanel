@@ -170,6 +170,9 @@ func (n *Nginx) Reload(ctx context.Context) error {
 	return nil
 }
 
+// DefaultLogDir là nơi nginx ghi nhật ký trên các bản Linux phổ biến.
+const DefaultLogDir = "/var/log/nginx"
+
 // Render sinh nội dung cấu hình cho một website.
 func (n *Nginx) Render(site Site) (string, error) {
 	if err := ValidateSite(site); err != nil {
@@ -183,6 +186,9 @@ func (n *Nginx) Render(site Site) (string, error) {
 	}
 	if data.SSL.Port == 0 {
 		data.SSL.Port = 443
+	}
+	if strings.TrimSpace(data.LogDir) == "" {
+		data.LogDir = DefaultLogDir
 	}
 	if data.Type == SitePHP && strings.TrimSpace(data.PHPSocket) == "" {
 		// Đường dẫn socket mặc định của PHP-FPM trên Debian và Ubuntu.
@@ -355,8 +361,8 @@ server {
     ssl_session_timeout 1d;
 {{- end }}
 
-    access_log /var/log/nginx/{{ .Name }}.access.log;
-    error_log /var/log/nginx/{{ .Name }}.error.log;
+    access_log {{ .LogDir }}/{{ .Name }}.access.log;
+    error_log {{ .LogDir }}/{{ .Name }}.error.log;
 
     client_max_body_size 128m;
 

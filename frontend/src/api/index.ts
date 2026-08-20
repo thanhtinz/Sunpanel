@@ -73,6 +73,7 @@ import type {
   SystemAccount,
   SystemAccountPayload,
   SecurityOverview,
+  TrafficReport,
   SystemService,
   TokenPair,
   UptimeCheck,
@@ -464,6 +465,9 @@ export const websiteApi = {
   list: () => request<Website[]>('/api/v1/websites'),
 
   config: (id: number) => request<{ content: string }>(`/api/v1/websites/${id}/config`),
+
+  traffic: (id: number, window: string) =>
+    request<TrafficReport>(`/api/v1/websites/${id}/traffic?window=${window}`),
 
   create: (payload: WebsitePayload) =>
     request<Website>('/api/v1/websites', { method: 'POST', body: payload }),

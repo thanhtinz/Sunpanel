@@ -137,6 +137,54 @@ export interface LoginLog {
   createdAt: string
 }
 
+/** Một dòng trong bảng xếp hạng của thống kê truy cập. */
+export interface TrafficCount {
+  key: string
+  count: number
+  bytes: number
+}
+
+/** Lưu lượng của một khung giờ. */
+export interface TrafficBucket {
+  start: number
+  requests: number
+  errors: number
+  bytes: number
+}
+
+/** Một yêu cầu hỏng gần đây. */
+export interface TrafficFailure {
+  time: number
+  ip: string
+  path: string
+  status: number
+}
+
+/** Thống kê truy cập của một website. */
+export interface TrafficReport {
+  requests: number
+  visitors: number
+  bytes: number
+  status2xx: number
+  status3xx: number
+  status4xx: number
+  status5xx: number
+  topPaths: TrafficCount[]
+  topIps: TrafficCount[]
+  topReferrers: TrafficCount[]
+  topAgents: TrafficCount[]
+  buckets: TrafficBucket[]
+  bucketSeconds: number
+  failures: TrafficFailure[]
+  lines: number
+  skipped: number
+  truncated: boolean
+  from: number
+  to: number
+  window: string
+  logPath: string
+}
+
 /** Một địa chỉ đang bị chặn vì đăng nhập sai quá nhiều lần. */
 export interface LoginBlock {
   ip: string

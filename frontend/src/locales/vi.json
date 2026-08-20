@@ -481,6 +481,36 @@
     "minutes": "{n} phút",
     "seconds": "{n} giây"
   },
+  "traffic": {
+    "requests": "Lượt truy cập",
+    "visitors": "Khách",
+    "bandwidth": "Dữ liệu đã gửi",
+    "errorRate": "Tỉ lệ lỗi",
+    "errorSplit": "{four} lỗi phía khách · {five} lỗi phía máy chủ",
+    "errors": "Lỗi",
+    "overTime": "Lưu lượng theo thời gian",
+    "topPaths": "Trang",
+    "topIps": "Địa chỉ",
+    "topReferrers": "Nguồn dẫn",
+    "topAgents": "Trình duyệt",
+    "failures": "Yêu cầu hỏng",
+    "noFailures": "Không có yêu cầu nào hỏng trong khoảng này.",
+    "hits": "Lượt",
+    "path": "Đường dẫn",
+    "ip": "Địa chỉ",
+    "referrer": "Nguồn dẫn",
+    "agent": "Trình duyệt",
+    "status": "Mã",
+    "time": "Lúc",
+    "empty": "Chưa có lượt truy cập nào được ghi lại.",
+    "truncated": "Nhật ký lớn hơn phần đã đọc, nên số liệu chỉ tính từ giữa tệp trở đi.",
+    "window": {
+      "1h": "1 giờ",
+      "6h": "6 giờ",
+      "24h": "24 giờ",
+      "7d": "7 ngày"
+    }
+  },
   "terminal": {
     "title": "Terminal",
     "newTab": "Tab mới",
@@ -1136,6 +1166,9 @@
     "unreachable": "Không gọi được plugin {plugin}. Kiểm tra dịch vụ plugin có đang chạy không."
   },
   "website": {
+    "traffic": "Thống kê",
+    "trafficOf": "Thống kê truy cập — {name}",
+    "log_unavailable": "Không đọc được nhật ký truy cập của website: {message}",
     "title": "Website",
     "sites": "Website",
     "certificates": "Chứng chỉ SSL",

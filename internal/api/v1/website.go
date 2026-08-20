@@ -77,6 +77,22 @@ func (h *WebsiteHandler) Config(c *gin.Context) {
 	response.OK(c, gin.H{"content": content})
 }
 
+// Traffic xử lý GET /api/v1/websites/:id/traffic?window=24h.
+func (h *WebsiteHandler) Traffic(c *gin.Context) {
+	id, err := uintParam(c, "id")
+	if err != nil {
+		response.Fail(c, err)
+		return
+	}
+
+	report, err := h.websites.Traffic(c.Request.Context(), id, c.Query("window"))
+	if err != nil {
+		response.Fail(c, err)
+		return
+	}
+	response.OK(c, report)
+}
+
 // Create xử lý POST /api/v1/websites.
 func (h *WebsiteHandler) Create(c *gin.Context) {
 	var req service.WebsiteRequest

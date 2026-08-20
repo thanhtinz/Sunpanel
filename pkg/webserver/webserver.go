@@ -79,6 +79,12 @@ type Site struct {
 	DenyIPs []string
 	// Redirects là các quy tắc chuyển hướng đặt trước mọi xử lý khác.
 	Redirects []Redirect
+	// LogDir là thư mục nhật ký của website; để trống dùng /var/log/nginx.
+	//
+	// Cùng một giá trị được dùng cho cả tệp cấu hình sinh ra và trang thống kê
+	// truy cập: hai nơi tự khai đường dẫn riêng thì chỉ cần một bản cài đặt để
+	// nhật ký ở chỗ khác là trang thống kê im lặng báo "chưa có ai vào".
+	LogDir string
 	// IPv6 quyết định có sinh các chỉ thị lắng nghe IPv6 hay không.
 	//
 	// Không phải máy chủ nào cũng bật IPv6. Trên máy không có, nginx không chỉ bỏ

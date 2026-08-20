@@ -37,6 +37,7 @@ import {
   type RedirectRule,
   type WebsiteType,
 } from '@/api'
+import WebsiteTraffic from '@/components/WebsiteTraffic.vue'
 import { useAuthStore } from '@/stores/auth'
 import { translateError } from '@/locales'
 import { formatDateTime } from '@/utils/format'
@@ -97,6 +98,11 @@ function parseRedirects(raw: string): RedirectRule[] {
 const editor = ref({ show: false, saving: false, form: emptySite() })
 const certEditor = ref({ show: false, saving: false, form: emptyCert() })
 const preview = ref({ show: false, name: '', content: '', loading: false })
+const traffic = ref<{ show: boolean; id: number | null; name: string }>({
+  show: false,
+  id: null,
+  name: '',
+})
 
 onMounted(load)
 
@@ -335,6 +341,10 @@ async function removeSite(site: Website): Promise<void> {
   }
 }
 
+function openTraffic(site: Website): void {
+  traffic.value = { show: true, id: site.id, name: site.name }
+}
+
 async function showConfig(site: Website): Promise<void> {
   preview.value = { show: true, name: site.name, content: '', loading: true }
   try {
@@ -490,6 +500,15 @@ const siteColumns = computed<DataTableColumns<Website>>(() => [
               { size: 'tiny', quaternary: true, onClick: () => showConfig(row) },
               { default: () => t('website.viewConfig') },
             ),
+            // Thống kê đọc nhật ký truy cập, vốn chứa địa chỉ của khách vào
+            // website, nên nó đi cùng mức quyền với các thao tác vận hành.
+            auth.canWrite
+              ? h(
+                  NButton,
+                  { size: 'tiny', quaternary: true, onClick: () => openTraffic(row) },
+                  { default: () => t('website.traffic') },
+                )
+              : null,
             auth.canWrite
               ? h(
                   NButton,
@@ -933,6 +952,15 @@ function capitalize(value: string): string {
         {{ t('common.save') }}
       </NButton>
     </NForm>
+  </NModal>
+
+  <NModal
+    v-model:show="traffic.show"
+    preset="card"
+    :title="t('website.trafficOf', { name: traffic.name })"
+    style="width: 94vw; max-width: 1000px"
+  >
+    <WebsiteTraffic v-if="traffic.show" :site-id="traffic.id" />
   </NModal>
 
   <NModal

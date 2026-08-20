@@ -19,6 +19,7 @@ import (
 	"github.com/thanhtinz/sunpanel/internal/database"
 	"github.com/thanhtinz/sunpanel/internal/router"
 	"github.com/thanhtinz/sunpanel/internal/service"
+	"github.com/thanhtinz/sunpanel/pkg/accesslog"
 	"github.com/thanhtinz/sunpanel/pkg/appstore"
 	"github.com/thanhtinz/sunpanel/pkg/certs"
 	"github.com/thanhtinz/sunpanel/pkg/compose"
@@ -115,6 +116,12 @@ func New(cfg config.Config) (*App, error) {
 		db, webserver.NewNginx(nginxHost, cfg.Website.NginxConfDir), certificates,
 		websiteHost, cfg.Website.ACMEWebroot, cfg.Website.AuthDir, audit,
 	)
+	// Nhật ký truy cập nằm ngoài phạm vi trình quản lý tệp trên nhiều máy, và
+	// việc đọc nó không cần chạy lệnh nào.
+	websites.SetAccessLogs(
+		accesslog.New(host.NewLocalHost("/", nil).FS()), cfg.Website.LogDir,
+	)
+
 	// Chứng chỉ mới chỉ có tác dụng sau khi máy chủ web đọc lại tệp.
 	certificates.SetReloader(websites.Reload)
 

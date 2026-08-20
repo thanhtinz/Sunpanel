@@ -79,7 +79,9 @@ function buildOption(): echarts.EChartsCoreOption {
       type: 'line',
       data: s.data,
       smooth: true,
-      showSymbol: false,
+      // Chuỗi chỉ có một hai điểm thì không có đoạn thẳng nào để vẽ: giấu điểm
+      // đi là biểu đồ trống trơn trong khi số liệu vẫn có.
+      showSymbol: s.data.length <= 2,
       lineStyle: { width: 2, color: s.color },
       itemStyle: { color: s.color },
       areaStyle: {

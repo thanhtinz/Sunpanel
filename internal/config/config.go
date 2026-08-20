@@ -109,6 +109,11 @@ type WebsiteConfig struct {
 	NginxConfDir string `yaml:"nginxConfDir"`
 	// Root là thư mục mặc định chứa mã nguồn các website.
 	Root string `yaml:"root"`
+	// LogDir là thư mục máy chủ web ghi nhật ký của từng website vào.
+	//
+	// Panel vừa sinh chỉ thị access_log trỏ vào đây, vừa đọc lại chính các tệp
+	// đó để dựng trang thống kê truy cập — nên chỉ có một giá trị duy nhất.
+	LogDir string `yaml:"logDir"`
 	// AuthDir là nơi panel ghi tệp tài khoản của lớp bảo vệ bằng mật khẩu.
 	//
 	// Cùng lý do với ACMEWebroot: phải nằm NGOÀI thư mục dữ liệu của panel, vì
@@ -213,6 +218,7 @@ func Default() Config {
 			Root:         defaultWebRoot(),
 			ACMEWebroot:  defaultACMEWebroot(),
 			AuthDir:      defaultAuthDir(),
+			LogDir:       defaultWebLogDir(),
 		},
 		Log: LogConfig{
 			Level:     "info",

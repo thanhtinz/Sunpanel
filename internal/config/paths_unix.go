@@ -32,5 +32,8 @@ func defaultACMEWebroot() string { return "/var/www/sunpanel-acme" }
 // của panel.
 func defaultAuthDir() string { return "/var/www/sunpanel-auth" }
 
+// defaultWebLogDir là nơi máy chủ web ghi nhật ký của từng website.
+func defaultWebLogDir() string { return "/var/log/nginx" }
+
 // defaultSystemLogDir là thư mục nhật ký của hệ điều hành.
 func defaultSystemLogDir() string { return "/var/log" }

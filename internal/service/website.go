@@ -10,6 +10,7 @@ import (
 
 	"github.com/thanhtinz/sunpanel/internal/apperr"
 	"github.com/thanhtinz/sunpanel/internal/model"
+	"github.com/thanhtinz/sunpanel/pkg/accesslog"
 	"github.com/thanhtinz/sunpanel/pkg/host"
 	"github.com/thanhtinz/sunpanel/pkg/webserver"
 )
@@ -62,6 +63,10 @@ type WebsiteService struct {
 	acmeWebroot string
 	// authDir là nơi panel ghi tệp tài khoản của lớp bảo vệ mật khẩu.
 	authDir string
+	// logDir là thư mục máy chủ web ghi nhật ký của từng website vào.
+	logDir string
+	// traffic đọc nhật ký truy cập để dựng số liệu; nil nghĩa là tắt tính năng.
+	traffic *accesslog.Analyzer
 	audit   *AuditService
 }
 
@@ -72,7 +77,19 @@ func NewWebsiteService(
 ) *WebsiteService {
 	return &WebsiteService{
 		db: db, manager: manager, certs: certificates, host: h, authDir: authDir,
-		acmeWebroot: acmeWebroot, audit: audit,
+		acmeWebroot: acmeWebroot, logDir: webserver.DefaultLogDir, audit: audit,
+	}
+}
+
+// SetAccessLogs bật trang thống kê truy cập.
+//
+// Tách khỏi hàm khởi tạo vì đây là phần đọc thêm chứ không phải thứ website cần
+// để chạy: thiếu nó thì mọi việc quản lý website vẫn nguyên vẹn, chỉ là không
+// có số liệu.
+func (s *WebsiteService) SetAccessLogs(analyzer *accesslog.Analyzer, dir string) {
+	s.traffic = analyzer
+	if strings.TrimSpace(dir) != "" {
+		s.logDir = dir
 	}
 }
 
@@ -339,6 +356,7 @@ func (s *WebsiteService) toSite(ctx context.Context, site model.Website) (webser
 		Port:        site.Port,
 		ExtraConfig: site.ExtraConfig,
 		ACMEWebroot: s.acmeWebroot,
+		LogDir:      s.logDir,
 		SSL: webserver.SSLConfig{
 			Enabled:    site.SSLEnabled,
 			ForceHTTPS: site.ForceHTTPS,

@@ -481,6 +481,36 @@
     "minutes": "{n} min",
     "seconds": "{n} s"
   },
+  "traffic": {
+    "requests": "Requests",
+    "visitors": "Visitors",
+    "bandwidth": "Data sent",
+    "errorRate": "Error rate",
+    "errorSplit": "{four} client errors · {five} server errors",
+    "errors": "Errors",
+    "overTime": "Traffic over time",
+    "topPaths": "Pages",
+    "topIps": "Addresses",
+    "topReferrers": "Referrers",
+    "topAgents": "Browsers",
+    "failures": "Failed requests",
+    "noFailures": "No request failed in this window.",
+    "hits": "Hits",
+    "path": "Path",
+    "ip": "Address",
+    "referrer": "Referrer",
+    "agent": "Browser",
+    "status": "Code",
+    "time": "When",
+    "empty": "No request has been recorded yet.",
+    "truncated": "The log is larger than the part that was read, so these numbers start from the middle of the file.",
+    "window": {
+      "1h": "1 hour",
+      "6h": "6 hours",
+      "24h": "24 hours",
+      "7d": "7 days"
+    }
+  },
   "terminal": {
     "title": "Terminal",
     "newTab": "New tab",
@@ -1136,6 +1166,9 @@
     "unreachable": "Could not reach plugin {plugin}. Check that the plugin service is running."
   },
   "website": {
+    "traffic": "Traffic",
+    "trafficOf": "Traffic — {name}",
+    "log_unavailable": "Cannot read the website's access log: {message}",
     "title": "Websites",
     "sites": "Websites",
     "certificates": "SSL certificates",
