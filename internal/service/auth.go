@@ -14,6 +14,7 @@ import (
 	"github.com/thanhtinz/sunpanel/internal/config"
 	"github.com/thanhtinz/sunpanel/internal/model"
 	"github.com/thanhtinz/sunpanel/pkg/crypto"
+	"github.com/thanhtinz/sunpanel/pkg/loginguard"
 )
 
 // minPasswordLength là độ dài mật khẩu tối thiểu được chấp nhận.
@@ -48,11 +49,33 @@ type AuthService struct {
 	sealer *crypto.Sealer
 	cfg    config.SecurityConfig
 	audit  *AuditService
+	guard  *loginguard.Guard
 }
 
 // NewAuthService tạo service xác thực.
 func NewAuthService(db *gorm.DB, tokens *TokenIssuer, sealer *crypto.Sealer, cfg config.SecurityConfig, audit *AuditService) *AuthService {
-	return &AuthService{db: db, tokens: tokens, sealer: sealer, cfg: cfg, audit: audit}
+	guard := loginguard.New(loginguard.Options{
+		Threshold: cfg.BlockThreshold,
+		Window:    cfg.BlockWindow,
+		Duration:  cfg.BlockDuration,
+		Trusted:   cfg.AllowedIPs,
+	})
+	return &AuthService{db: db, tokens: tokens, sealer: sealer, cfg: cfg, audit: audit, guard: guard}
+}
+
+// Guard trả về bộ chặn địa chỉ dò mật khẩu, để middleware và trang bảo mật dùng chung.
+func (s *AuthService) Guard() *loginguard.Guard { return s.guard }
+
+// noteFailure ghi nhận một lần đăng nhập sai cho địa chỉ gửi yêu cầu.
+//
+// Chặn không được trả về ngay tại đây: lần sai làm tràn ngưỡng vẫn phải nhận
+// đúng lỗi "sai thông tin đăng nhập" như mọi lần khác, nếu không thì chính
+// phản hồi lại nói cho kẻ đang dò biết họ vừa chạm ngưỡng nào.
+func (s *AuthService) noteFailure(req LoginRequest) {
+	if block, blocked := s.guard.Fail(req.IP, req.Username); blocked {
+		slog.Warn("chặn tạm thời địa chỉ đăng nhập sai quá nhiều lần",
+			"ip", req.IP, "lần_sai", block.Failures, "tới", block.Until.Format(time.RFC3339))
+	}
 }
 
 // Login xác thực người dùng và cấp cặp token.
@@ -69,17 +92,23 @@ func (s *AuthService) Login(ctx context.Context, req LoginRequest) (*TokenPair, 
 			// Vẫn băm một mật khẩu giả để thời gian phản hồi không khác biệt so với
 			// trường hợp tài khoản có thật nhưng sai mật khẩu.
 			_, _ = crypto.HashPassword(req.Password)
+			s.noteFailure(req)
 			s.logLogin(ctx, req, false, "auth.invalid_credentials")
 			return nil, apperr.InvalidCredentials
 		}
 		return nil, apperr.Internal.Wrap(err)
 	}
 
+	// Hai nhánh dưới đây cũng tính là một lần thử hỏng cho địa chỉ gửi yêu cầu:
+	// nếu không, kẻ dò chỉ cần làm khóa một tài khoản là mọi lần thử sau đó của
+	// họ trở nên vô hình với lớp đếm theo địa chỉ.
 	if !user.Active {
+		s.noteFailure(req)
 		s.logLogin(ctx, req, false, "auth.account_disabled")
 		return nil, apperr.AccountDisabled
 	}
 	if user.IsLocked(now) {
+		s.noteFailure(req)
 		s.logLogin(ctx, req, false, "auth.account_locked")
 		return nil, apperr.AccountLocked.WithParam("until", user.LockedUntil.Format(time.RFC3339))
 	}
@@ -90,6 +119,7 @@ func (s *AuthService) Login(ctx context.Context, req LoginRequest) (*TokenPair, 
 	}
 	if !ok {
 		s.registerFailure(ctx, &user, now)
+		s.noteFailure(req)
 		s.logLogin(ctx, req, false, "auth.invalid_credentials")
 		return nil, apperr.InvalidCredentials
 	}
@@ -106,6 +136,7 @@ func (s *AuthService) Login(ctx context.Context, req LoginRequest) (*TokenPair, 
 		}
 		if !valid {
 			s.registerFailure(ctx, &user, now)
+			s.noteFailure(req)
 			s.logLogin(ctx, req, false, "auth.totp_invalid")
 			return nil, apperr.TOTPInvalid
 		}
@@ -115,6 +146,7 @@ func (s *AuthService) Login(ctx context.Context, req LoginRequest) (*TokenPair, 
 	if err != nil {
 		return nil, err
 	}
+	s.guard.Succeed(req.IP)
 
 	if err := s.db.WithContext(ctx).Model(&user).Updates(map[string]any{
 		"failed_attempts": 0,

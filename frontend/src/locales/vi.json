@@ -64,6 +64,7 @@
     "nodes": "Máy chủ",
     "plugins": "Plugin",
     "plugin-detail": "Plugin",
+    "security": "Chặn đăng nhập",
     "groupWorkload": "Dịch vụ chạy",
     "groupSystem": "Hệ thống",
     "groupOperations": "Vận hành",
@@ -93,6 +94,7 @@
     "plugin-detail": "Dịch vụ mở rộng chạy riêng",
     "users": "Tài khoản panel và phân quyền",
     "audit": "Mọi thao tác thay đổi trạng thái máy chủ",
+    "security": "Địa chỉ đang bị chặn vì dò mật khẩu panel",
     "profile": "Tài khoản, bảo mật và phiên đăng nhập"
   },
   "dashboard": {
@@ -219,6 +221,7 @@
   "auth": {
     "invalid_credentials": "Tên đăng nhập hoặc mật khẩu không đúng.",
     "account_locked": "Tài khoản đang bị khóa do đăng nhập sai quá nhiều lần.",
+    "ip_blocked": "Địa chỉ của bạn tạm thời bị chặn do đăng nhập sai quá nhiều lần. Thử lại sau {minutes} phút.",
     "account_disabled": "Tài khoản đã bị vô hiệu hóa.",
     "totp_required": "Vui lòng nhập mã xác thực hai lớp.",
     "totp_invalid": "Mã xác thực không đúng.",
@@ -453,6 +456,31 @@
     "invalid_name": "Tên mục theo dõi không được để trống.",
     "invalid_url": "Địa chỉ phải bắt đầu bằng http:// hoặc https://.",
     "invalid_status": "Mã trạng thái mong đợi không hợp lệ."
+  },
+  "security": {
+    "title": "Chặn đăng nhập",
+    "disabled": "Lớp chặn theo địa chỉ đang tắt. Đặt security.blockThreshold lớn hơn 0 trong tệp cấu hình để bật.",
+    "failedLastDay": "Lần đăng nhập hỏng trong 24 giờ",
+    "blockedNow": "Địa chỉ đang bị chặn",
+    "rule": "Ngưỡng chặn",
+    "ruleValue": "{n} lần sai trong {window}",
+    "ruleHint": "Vượt ngưỡng thì địa chỉ bị chặn {duration}, mỗi lần thử tiếp lại tính lại từ đầu.",
+    "blocks": "Đang bị chặn",
+    "noBlocks": "Không có địa chỉ nào đang bị chặn.",
+    "offenders": "Thử sai nhiều nhất trong 24 giờ",
+    "noOffenders": "Chưa có lần đăng nhập hỏng nào trong 24 giờ qua.",
+    "ip": "Địa chỉ",
+    "failures": "Số lần sai",
+    "lastUser": "Tên đăng nhập bị thử",
+    "blockedAt": "Chặn từ",
+    "lastAt": "Lần thử gần nhất",
+    "until": "Còn lại",
+    "blocked": "Đang chặn",
+    "unblock": "Gỡ chặn",
+    "unblockConfirm": "Cho {ip} đăng nhập lại ngay bây giờ?",
+    "unblocked": "Đã gỡ chặn {ip}.",
+    "minutes": "{n} phút",
+    "seconds": "{n} giây"
   },
   "terminal": {
     "title": "Terminal",

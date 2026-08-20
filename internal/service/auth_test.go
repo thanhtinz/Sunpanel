@@ -54,6 +54,9 @@ func newTestAuth(t *testing.T) (*AuthService, *gorm.DB) {
 		RefreshTokenTTL:  time.Hour,
 		MaxLoginAttempts: 3,
 		LockoutDuration:  time.Minute,
+		BlockThreshold:   4,
+		BlockWindow:      time.Minute,
+		BlockDuration:    time.Minute,
 	}
 	audit := NewAuditService(db)
 	auth := NewAuthService(db, NewTokenIssuer("khoa-ky-dung-cho-test", cfg.AccessTokenTTL), sealer, cfg, audit)

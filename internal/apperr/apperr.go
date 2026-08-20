@@ -87,6 +87,8 @@ var (
 	InvalidCredentials = New(http.StatusUnauthorized, "auth.invalid_credentials")
 	// AccountLocked là tài khoản đang bị khóa do đăng nhập sai quá nhiều lần.
 	AccountLocked = New(http.StatusForbidden, "auth.account_locked")
+	// IPBlocked là địa chỉ đang bị chặn tạm thời vì đăng nhập sai quá nhiều lần.
+	IPBlocked = New(http.StatusTooManyRequests, "auth.ip_blocked")
 	// AccountDisabled là tài khoản đã bị vô hiệu hóa.
 	AccountDisabled = New(http.StatusForbidden, "auth.account_disabled")
 	// TOTPRequired báo cho giao diện biết cần hỏi thêm mã xác thực hai lớp.

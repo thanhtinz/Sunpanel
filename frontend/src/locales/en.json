@@ -64,6 +64,7 @@
     "nodes": "Nodes",
     "plugins": "Plugins",
     "plugin-detail": "Plugins",
+    "security": "Login defense",
     "groupWorkload": "Workloads",
     "groupSystem": "System",
     "groupOperations": "Operations",
@@ -93,6 +94,7 @@
     "plugin-detail": "Extensions that run as their own service",
     "users": "Panel accounts and their privileges",
     "audit": "Every action that changed the server's state",
+    "security": "Addresses blocked for guessing panel passwords",
     "profile": "Account, security and active sessions"
   },
   "dashboard": {
@@ -219,6 +221,7 @@
   "auth": {
     "invalid_credentials": "Incorrect username or password.",
     "account_locked": "Account locked after too many failed sign-ins.",
+    "ip_blocked": "Your address is temporarily blocked after too many failed sign-ins. Try again in {minutes} minutes.",
     "account_disabled": "This account has been disabled.",
     "totp_required": "Please enter your two-factor code.",
     "totp_invalid": "That code is not correct.",
@@ -453,6 +456,31 @@
     "invalid_name": "The monitor name cannot be empty.",
     "invalid_url": "The address must start with http:// or https://.",
     "invalid_status": "That expected status code is not valid."
+  },
+  "security": {
+    "title": "Login defense",
+    "disabled": "Address blocking is off. Set security.blockThreshold above 0 in the config file to turn it on.",
+    "failedLastDay": "Failed logins in 24 hours",
+    "blockedNow": "Addresses blocked",
+    "rule": "Block threshold",
+    "ruleValue": "{n} failures within {window}",
+    "ruleHint": "Past the threshold an address is blocked for {duration}; every further attempt restarts the clock.",
+    "blocks": "Currently blocked",
+    "noBlocks": "No address is blocked right now.",
+    "offenders": "Most failed attempts in 24 hours",
+    "noOffenders": "No failed login in the last 24 hours.",
+    "ip": "Address",
+    "failures": "Failures",
+    "lastUser": "Username tried",
+    "blockedAt": "Blocked since",
+    "lastAt": "Last attempt",
+    "until": "Time left",
+    "blocked": "Blocked",
+    "unblock": "Unblock",
+    "unblockConfirm": "Let {ip} sign in again right now?",
+    "unblocked": "{ip} is no longer blocked.",
+    "minutes": "{n} min",
+    "seconds": "{n} s"
   },
   "terminal": {
     "title": "Terminal",

@@ -50,6 +50,7 @@ type Services struct {
 	Logs      *service.LogService
 	Disks     *service.DiskService
 	Uptime    *service.UptimeService
+	Security  *service.SecurityService
 }
 
 // New dựng handler HTTP hoàn chỉnh của panel.
@@ -114,6 +115,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	logHandler := v1.NewLogHandler(svc.Logs)
 	diskHandler := v1.NewDiskHandler(svc.Disks)
 	uptimeHandler := v1.NewUptimeHandler(svc.Uptime)
+	securityHandler := v1.NewSecurityHandler(svc.Security)
 	dockerHandler := v1.NewDockerHandler(svc.Docker)
 
 	api := engine.Group("/api/v1")
@@ -126,7 +128,10 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	limiter := middleware.NewRateLimiter(loginRatePerMinute, loginBurst).Middleware()
 	public := api.Group("/auth", limiter)
 	{
-		public.POST("/login", authHandler.Login)
+		// Lớp chặn địa chỉ chỉ gác đúng đường đăng nhập: làm mới token và đăng
+		// xuất mang theo một bí mật đã cấp, chặn chúng chỉ làm phiền người đang
+		// dùng panel thật từ cùng một mạng với kẻ đang dò.
+		public.POST("/login", middleware.LoginGuard(svc.Auth.Guard()), authHandler.Login)
 		public.POST("/refresh", authHandler.Refresh)
 		public.POST("/logout", authHandler.Logout)
 	}
@@ -465,6 +470,14 @@ func registerAPI(engine *gin.Engine, svc Services) {
 			sysUsers.GET("/:name/keys", sysUserHandler.Keys)
 			sysUsers.POST("/:name/keys", sysUserHandler.AddKey)
 			sysUsers.DELETE("/:name/keys", sysUserHandler.RemoveKey)
+		}
+
+		// Phòng thủ đăng nhập: xem địa chỉ đang bị chặn và nhật ký đăng nhập.
+		// Chỉ quản trị viên, vì nhật ký này lộ tên đăng nhập và địa chỉ của mọi người.
+		security := authenticated.Group("/security", middleware.RequireAdmin())
+		{
+			security.GET("", securityHandler.Overview)
+			security.DELETE("/blocks/:ip", securityHandler.Unblock)
 		}
 
 		// Cấu hình của chính panel: cổng, đường dẫn bí mật, HTTPS, danh sách IP.

@@ -72,6 +72,7 @@ import type {
   SshKey,
   SystemAccount,
   SystemAccountPayload,
+  SecurityOverview,
   SystemService,
   TokenPair,
   UptimeCheck,
@@ -663,6 +664,14 @@ export const dockerApi = {
   networks: () => request<DockerNetwork[]>('/api/v1/docker/networks'),
 
   prune: () => request<{ freed: number }>('/api/v1/docker/prune', { method: 'POST' }),
+}
+
+/** Các endpoint phòng thủ đăng nhập. */
+export const securityApi = {
+  overview: () => request<SecurityOverview>('/api/v1/security'),
+
+  unblock: (ip: string) =>
+    request<void>(`/api/v1/security/blocks/${encodeURIComponent(ip)}`, { method: 'DELETE' }),
 }
 
 /** Các endpoint nhật ký kiểm toán. */

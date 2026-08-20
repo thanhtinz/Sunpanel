@@ -220,6 +220,11 @@ func New(cfg config.Config) (*App, error) {
 		Logs:      logService,
 		Disks:     diskService,
 		Uptime:    uptimeMonitors,
+		Security: service.NewSecurityService(
+			db, auth, cfg.Security.BlockThreshold,
+			int(cfg.Security.BlockWindow.Seconds()),
+			int(cfg.Security.BlockDuration.Seconds()), audit,
+		),
 	}
 
 	handler, err := router.New(cfg, svc)
@@ -349,6 +354,9 @@ func (a *App) runSessionCleanup(ctx context.Context) {
 			if removed > 0 {
 				slog.Debug("đã dọn phiên hết hạn", "count", removed)
 			}
+			// Cùng nhịp dọn luôn bộ đếm đăng nhập sai: một đợt quét từ hàng vạn
+			// địa chỉ khác nhau không được phép nằm lại trong bộ nhớ mãi.
+			a.svc.Auth.Guard().Prune()
 		}
 	}
 }

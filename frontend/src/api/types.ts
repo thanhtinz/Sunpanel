@@ -137,6 +137,35 @@ export interface LoginLog {
   createdAt: string
 }
 
+/** Một địa chỉ đang bị chặn vì đăng nhập sai quá nhiều lần. */
+export interface LoginBlock {
+  ip: string
+  failures: number
+  blockedAt: string
+  until: string
+  lastUser?: string
+}
+
+/** Một địa chỉ có nhiều lần đăng nhập hỏng trong 24 giờ qua. */
+export interface LoginOffender {
+  ip: string
+  failures: number
+  lastUser: string
+  lastAt: string
+  blocked: boolean
+}
+
+/** Tình hình phòng thủ đăng nhập của panel. */
+export interface SecurityOverview {
+  enabled: boolean
+  threshold: number
+  windowSeconds: number
+  durationSeconds: number
+  blocks: LoginBlock[]
+  offenders: LoginOffender[]
+  failedLastDay: number
+}
+
 export interface PageResult<T> {
   items: T[]
   total: number

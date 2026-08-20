@@ -128,6 +128,12 @@ const router = createRouter({
           meta: { adminOnly: true },
         },
         {
+          path: 'security',
+          name: 'security',
+          component: () => import('@/views/SecurityView.vue'),
+          meta: { adminOnly: true },
+        },
+        {
           path: 'settings',
           name: 'settings',
           component: () => import('@/views/SettingsView.vue'),

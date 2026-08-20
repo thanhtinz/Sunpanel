@@ -75,6 +75,17 @@ type SecurityConfig struct {
 	MaxLoginAttempts int `yaml:"maxLoginAttempts"`
 	// LockoutDuration là thời gian khóa sau khi vượt quá số lần thử.
 	LockoutDuration time.Duration `yaml:"lockoutDuration"`
+	// BlockThreshold là số lần đăng nhập sai từ cùng một địa chỉ trước khi địa
+	// chỉ đó bị chặn tạm thời; 0 nghĩa là tắt lớp này.
+	//
+	// Tách khỏi MaxLoginAttempts vì hai lớp bảo vệ hai thứ khác nhau: khóa tài
+	// khoản chặn người dò một tài khoản, còn chặn địa chỉ chặn người rải thử
+	// nhiều tên đăng nhập khác nhau.
+	BlockThreshold int `yaml:"blockThreshold"`
+	// BlockWindow là khoảng thời gian các lần sai được cộng dồn.
+	BlockWindow time.Duration `yaml:"blockWindow"`
+	// BlockDuration là thời gian chặn mỗi lần vượt ngưỡng.
+	BlockDuration time.Duration `yaml:"blockDuration"`
 	// AllowedIPs giới hạn IP được phép truy cập panel; rỗng nghĩa là không giới hạn.
 	AllowedIPs []string `yaml:"allowedIPs"`
 	// TrustedProxies là các proxy được tin để đọc header X-Forwarded-For.
@@ -178,6 +189,9 @@ func Default() Config {
 			RefreshTokenTTL:  7 * 24 * time.Hour,
 			MaxLoginAttempts: 5,
 			LockoutDuration:  15 * time.Minute,
+			BlockThreshold:   10,
+			BlockWindow:      10 * time.Minute,
+			BlockDuration:    30 * time.Minute,
 		},
 		Monitor: MonitorConfig{
 			Interval:  5 * time.Second,
@@ -248,6 +262,9 @@ func (c *Config) Validate() error {
 	case "debug", "info", "warn", "error":
 	default:
 		return fmt.Errorf("mức log %q không hợp lệ, chọn debug/info/warn/error", c.Log.Level)
+	}
+	if c.Security.BlockThreshold > 0 && (c.Security.BlockWindow <= 0 || c.Security.BlockDuration <= 0) {
+		return fmt.Errorf("bật chặn IP thì blockWindow và blockDuration phải lớn hơn 0")
 	}
 	if c.Monitor.Interval < time.Second {
 		return fmt.Errorf("chu kỳ giám sát phải từ 1 giây trở lên")
