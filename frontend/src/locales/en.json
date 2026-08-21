@@ -1277,7 +1277,26 @@
     "last24h": "Last 24 hours",
     "noHistory": "Not enough data yet. The panel samples every minute.",
     "machineUptime": "Machine up for",
-    "cores": "{count} cores"
+    "cores": "{count} cores",
+    "files": "Files",
+    "filesOf": "Files — {name}"
+  },
+  "remoteFiles": {
+    "name": "Name",
+    "size": "Size",
+    "mode": "Mode",
+    "modified": "Modified",
+    "download": "Download",
+    "rename": "Rename",
+    "chmod": "Change mode",
+    "chmodShort": "Mode",
+    "newFolder": "New folder",
+    "folderName": "Folder name",
+    "upload": "Upload",
+    "uploaded": "{name} uploaded to the server.",
+    "saved": "Saved on the remote server.",
+    "deleted": "Deleted.",
+    "deleteConfirm": "Delete {name} on the remote server? This cannot be undone."
   },
   "nodeErr": {
     "not_found": "Node not found.",
@@ -1289,7 +1308,9 @@
     "host_key_changed": "The server's key changed. Either the machine was rebuilt or someone is impersonating it — check before connecting again.",
     "not_ssh": "This only works for servers connected over SSH.",
     "invalid_host": "{host} is not a valid host.",
-    "secret_required": "A password or private key is required."
+    "secret_required": "A password or private key is required.",
+    "sftp_unavailable": "The server could not open a file transfer session. SSH works; what's missing is the sftp subsystem on that machine.",
+    "file_failed": "The file operation on the remote server failed: {message}"
   },
   "plugin": {
     "title": "Plugins",

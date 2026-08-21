@@ -14,13 +14,16 @@ import (
 
 // NodeHandler xử lý các endpoint quản lý node.
 type NodeHandler struct {
-	nodes *service.NodeService
-	audit *service.AuditService
+	nodes  *service.NodeService
+	audit  *service.AuditService
+	tokens *service.TokenIssuer
 }
 
 // NewNodeHandler tạo handler node.
-func NewNodeHandler(nodes *service.NodeService, audit *service.AuditService) *NodeHandler {
-	return &NodeHandler{nodes: nodes, audit: audit}
+func NewNodeHandler(
+	nodes *service.NodeService, audit *service.AuditService, tokens *service.TokenIssuer,
+) *NodeHandler {
+	return &NodeHandler{nodes: nodes, audit: audit, tokens: tokens}
 }
 
 // History xử lý GET /api/v1/nodes/:id/history?hours=24.

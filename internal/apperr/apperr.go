@@ -425,6 +425,13 @@ var (
 	// Hoặc máy đã bị cài lại, hoặc có người đứng giữa đang giả làm nó. Không
 	// nhánh nào được phép kết nối tiếp trong im lặng.
 	NodeHostKeyChanged = New(http.StatusConflict, "node.host_key_changed")
+	// NodeSFTPUnavailable là máy chủ từ xa không mở được phiên truyền tệp.
+	//
+	// Tách khỏi lỗi kết nối chung vì cách sửa khác hẳn: SSH vẫn vào được, thứ
+	// thiếu là subsystem sftp trên máy đích.
+	NodeSFTPUnavailable = New(http.StatusBadGateway, "node.sftp_unavailable")
+	// NodeFileFailed là thao tác tệp trên máy chủ từ xa thất bại.
+	NodeFileFailed = New(http.StatusBadGateway, "node.file_failed")
 	// NodeNotSSH là thao tác chỉ dùng được với máy chủ kết nối qua SSH.
 	NodeNotSSH = New(http.StatusBadRequest, "node.not_ssh")
 	// NodeInvalidHost là địa chỉ máy chủ SSH không hợp lệ.

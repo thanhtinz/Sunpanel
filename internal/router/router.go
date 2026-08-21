@@ -108,7 +108,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	backupHandler := v1.NewBackupHandler(svc.Backups, svc.Audit)
 	alertHandler := v1.NewAlertHandler(svc.Alerts, svc.Audit)
 	apiKeyHandler := v1.NewAPIKeyHandler(svc.APIKeys, svc.Audit)
-	nodeHandler := v1.NewNodeHandler(svc.Nodes, svc.Audit)
+	nodeHandler := v1.NewNodeHandler(svc.Nodes, svc.Audit, svc.Tokens)
 	pluginHandler := v1.NewPluginHandler(svc.Plugins, svc.Tokens, svc.Audit)
 	firewallHandler := v1.NewFirewallHandler(svc.Firewall)
 	settingsHandler := v1.NewSettingsHandler(svc.Settings)
@@ -142,6 +142,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	// Tải tệp dùng vé ngắn hạn thay vì header Authorization, vì trình duyệt không
 	// gửi được header khi điều hướng tới một URL tải tệp.
 	api.GET("/files/download", fileHandler.Download)
+	api.GET("/nodes/files/download", nodeHandler.Download)
 
 	authenticated := api.Group("", middleware.Auth(svc.Tokens, svc.Auth, svc.APIKeys))
 	{
@@ -364,6 +365,25 @@ func registerAPI(engine *gin.Engine, svc Services) {
 			// Chạy lệnh và mở terminal trên máy chủ khác là quyền mạnh nhất panel
 			// có: nó tương đương ngồi trước máy đó với tài khoản đã khai báo.
 			nodes.GET("/:id/history", nodeHandler.History)
+
+			// Quản lý tệp trên máy khác: đọc thì cần quyền vận hành như trình quản
+			// lý tệp tại chỗ, còn sửa và xóa thì chỉ quản trị viên.
+			nodeFiles := nodes.Group("/:id/files", middleware.RequireWrite())
+			{
+				nodeFiles.GET("", nodeHandler.ListFiles)
+				nodeFiles.GET("/content", nodeHandler.ReadFile)
+				nodeFiles.POST("/ticket", nodeHandler.DownloadTicket)
+
+				nodeFilesWrite := nodeFiles.Group("", middleware.RequireAdmin())
+				{
+					nodeFilesWrite.PUT("/content", nodeHandler.WriteFile)
+					nodeFilesWrite.POST("/mkdir", nodeHandler.Mkdir)
+					nodeFilesWrite.POST("/rename", nodeHandler.RenameFile)
+					nodeFilesWrite.POST("/chmod", nodeHandler.ChmodFile)
+					nodeFilesWrite.POST("/upload", nodeHandler.UploadFile)
+					nodeFilesWrite.DELETE("", nodeHandler.RemoveFile)
+				}
+			}
 			nodes.POST("/:id/sample", middleware.RequireWrite(), nodeHandler.Sample)
 			nodes.POST("/:id/exec", middleware.RequireAdmin(), nodeHandler.Exec)
 			nodes.GET("/:id/terminal", middleware.RequireAdmin(), nodeTerminalHandler.Connect)

@@ -429,3 +429,24 @@ func TestParseMetricsToleratesMissingFields(t *testing.T) {
 		t.Errorf("trường thiếu phải là 0: %+v", metrics)
 	}
 }
+
+// Đường dẫn luôn phải tuyệt đối và sạch: đường dẫn tương đối được hiểu theo thư
+// mục làm việc của phiên SFTP, thứ người dùng không nhìn thấy và không đoán được.
+func TestCleanRemotePath(t *testing.T) {
+	cases := map[string]string{
+		"":                   "/",
+		"   ":                "/",
+		"etc/nginx":          "/etc/nginx",
+		"/etc//nginx/":       "/etc/nginx",
+		"/var/www/../log":    "/var/log",
+		"/tmp/./tep.txt":     "/tmp/tep.txt",
+		"/":                  "/",
+		"/opt/du lieu/a.txt": "/opt/du lieu/a.txt",
+	}
+
+	for input, want := range cases {
+		if got := cleanRemotePath(input); got != want {
+			t.Errorf("cleanRemotePath(%q) = %q, mong %q", input, got, want)
+		}
+	}
+}

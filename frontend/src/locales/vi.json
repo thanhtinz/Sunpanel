@@ -1277,7 +1277,26 @@
     "last24h": "24 giờ qua",
     "noHistory": "Chưa đủ dữ liệu để vẽ. Panel lấy mẫu mỗi phút.",
     "machineUptime": "Máy đã chạy",
-    "cores": "{count} nhân"
+    "cores": "{count} nhân",
+    "files": "Tệp",
+    "filesOf": "Tệp — {name}"
+  },
+  "remoteFiles": {
+    "name": "Tên",
+    "size": "Dung lượng",
+    "mode": "Quyền",
+    "modified": "Sửa lần cuối",
+    "download": "Tải về",
+    "rename": "Đổi tên",
+    "chmod": "Đổi quyền",
+    "chmodShort": "Quyền",
+    "newFolder": "Thư mục mới",
+    "folderName": "Tên thư mục",
+    "upload": "Tải lên",
+    "uploaded": "Đã tải {name} lên máy chủ.",
+    "saved": "Đã lưu tệp trên máy chủ từ xa.",
+    "deleted": "Đã xóa.",
+    "deleteConfirm": "Xóa {name} trên máy chủ từ xa? Thao tác này không hoàn lại được."
   },
   "nodeErr": {
     "not_found": "Không tìm thấy node.",
@@ -1289,7 +1308,9 @@
     "host_key_changed": "Khóa của máy chủ đã thay đổi. Hoặc máy vừa được cài lại, hoặc có người đang giả làm nó — kiểm tra trước khi kết nối tiếp.",
     "not_ssh": "Thao tác này chỉ dùng được với máy chủ kết nối qua SSH.",
     "invalid_host": "Địa chỉ máy chủ {host} không hợp lệ.",
-    "secret_required": "Phải nhập mật khẩu hoặc khóa riêng."
+    "secret_required": "Phải nhập mật khẩu hoặc khóa riêng.",
+    "sftp_unavailable": "Máy chủ không mở được phiên truyền tệp. SSH vẫn vào được, thứ thiếu là subsystem sftp trên máy đó.",
+    "file_failed": "Thao tác tệp trên máy chủ từ xa thất bại: {message}"
   },
   "plugin": {
     "title": "Plugin",

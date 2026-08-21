@@ -75,6 +75,7 @@ import type {
   DomainReport,
   HealthReport,
   NodeSample,
+  RemoteFile,
   RemoteResult,
   RewritePreset,
   SecurityOverview,
@@ -301,6 +302,57 @@ export const nodeApi = {
     request<Node>(`/api/v1/nodes/${id}`, { method: 'PUT', body: payload }),
 
   remove: (id: number) => request<void>(`/api/v1/nodes/${id}`, { method: 'DELETE' }),
+
+  /** Quản lý tệp trên máy chủ từ xa. */
+  files: {
+    list: (id: number, path: string) =>
+      request<RemoteFile[]>(`/api/v1/nodes/${id}/files?path=${encodeURIComponent(path)}`),
+
+    read: (id: number, path: string) =>
+      request<{ content: string }>(
+        `/api/v1/nodes/${id}/files/content?path=${encodeURIComponent(path)}`,
+      ),
+
+    write: (id: number, path: string, content: string) =>
+      request<void>(`/api/v1/nodes/${id}/files/content`, {
+        method: 'PUT',
+        body: { path, content },
+      }),
+
+    mkdir: (id: number, path: string) =>
+      request<void>(`/api/v1/nodes/${id}/files/mkdir`, { method: 'POST', body: { path } }),
+
+    rename: (id: number, path: string, newPath: string) =>
+      request<void>(`/api/v1/nodes/${id}/files/rename`, { method: 'POST', body: { path, newPath } }),
+
+    chmod: (id: number, path: string, mode: string) =>
+      request<void>(`/api/v1/nodes/${id}/files/chmod`, { method: 'POST', body: { path, mode } }),
+
+    remove: (id: number, path: string) =>
+      request<void>(`/api/v1/nodes/${id}/files?path=${encodeURIComponent(path)}`, {
+        method: 'DELETE',
+      }),
+
+    upload: (id: number, dir: string, file: File) => {
+      const form = new FormData()
+      form.append('path', dir)
+      form.append('file', file)
+      return request<{ size: number }>(`/api/v1/nodes/${id}/files/upload`, {
+        method: 'POST',
+        body: form,
+      })
+    },
+
+    /** Đường dẫn tải tệp: vé ngắn hạn thay cho header, vì trình duyệt không gửi
+     *  được header khi điều hướng tới URL tải tệp. */
+    downloadUrl: async (id: number, path: string) => {
+      const { ticket } = await request<{ ticket: string }>(`/api/v1/nodes/${id}/files/ticket`, {
+        method: 'POST',
+        body: { path },
+      })
+      return `${baseUrl()}/api/v1/nodes/files/download?ticket=${encodeURIComponent(ticket)}`
+    },
+  },
 
   history: (id: number, hours = 24) =>
     request<NodeSample[]>(`/api/v1/nodes/${id}/history?hours=${hours}`),

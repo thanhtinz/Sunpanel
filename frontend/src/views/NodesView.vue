@@ -37,6 +37,7 @@ import {
   type RemoteResult,
 } from '@/api'
 import LineChart from '@/components/LineChart.vue'
+import RemoteFiles from '@/components/RemoteFiles.vue'
 import TerminalPane from '@/components/TerminalPane.vue'
 import { useAuthStore } from '@/stores/auth'
 import { translateError } from '@/locales'
@@ -249,6 +250,12 @@ function openTerminal(node: Node): void {
   terminal.value = { show: true, node }
 }
 
+const remoteFiles = ref({ show: false, node: null as Node | null })
+
+function openFiles(node: Node): void {
+  remoteFiles.value = { show: true, node }
+}
+
 function openConsole(node: Node): void {
   console_.value = { show: true, node, command: '', running: false, result: null }
 }
@@ -426,6 +433,7 @@ const columns = computed<DataTableColumns<Node>>(() => [
 function rowActions(node: Node) {
   return [
     { label: t('node.details'), key: 'details', disabled: !node.online },
+    ...(node.kind === 'ssh' ? [{ label: t('node.files'), key: 'files', disabled: !node.online }] : []),
     ...(auth.isAdmin
       ? [
           { label: t('common.edit'), key: 'edit' },
@@ -440,6 +448,9 @@ function runRowAction(key: string, node: Node): void {
   switch (key) {
     case 'details':
       void openDetails(node)
+      break
+    case 'files':
+      openFiles(node)
       break
     case 'edit':
       openEdit(node)
@@ -592,6 +603,15 @@ function runRowAction(key: string, node: Node): void {
         {{ t('node.saveAndConnect') }}
       </NButton>
     </NForm>
+  </NModal>
+
+  <NModal
+    v-model:show="remoteFiles.show"
+    preset="card"
+    :title="t('node.filesOf', { name: remoteFiles.node?.name ?? '' })"
+    style="width: 94vw; max-width: 1100px"
+  >
+    <RemoteFiles v-if="remoteFiles.show && remoteFiles.node" :node-id="remoteFiles.node.id" />
   </NModal>
 
   <NModal

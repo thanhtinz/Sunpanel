@@ -973,6 +973,19 @@ export interface NodePayload {
   passphrase?: string
 }
 
+/** Một mục trong thư mục trên máy chủ từ xa. */
+export interface RemoteFile {
+  name: string
+  path: string
+  size: number
+  isDir: boolean
+  isLink: boolean
+  mode: string
+  modTime: number
+  owner: number
+  group: number
+}
+
 /** Một lần đo tài nguyên của máy chủ từ xa. */
 export interface NodeSample {
   id: number

@@ -20,6 +20,8 @@ type DownloadClaims struct {
 	Path string `json:"path"`
 	// UserID để ghi nhật ký ai đã tải tệp.
 	UserID uint `json:"uid"`
+	// NodeID là máy chủ từ xa chứa tệp; 0 nghĩa là tệp nằm trên máy này.
+	NodeID uint `json:"nid,omitempty"`
 }
 
 // IssueDownloadTicket cấp một vé tải xuống ngắn hạn cho đúng một đường dẫn.
@@ -29,6 +31,15 @@ type DownloadClaims struct {
 // khiến nó lọt vào lịch sử trình duyệt và header Referer. Vé này thay thế:
 // nó chỉ mở được đúng một tệp, sống 60 giây, và không dùng được cho việc gì khác.
 func (t *TokenIssuer) IssueDownloadTicket(userID uint, path string) (string, error) {
+	return t.issueTicket(userID, 0, path)
+}
+
+// IssueNodeDownloadTicket cấp vé tải một tệp nằm trên máy chủ từ xa.
+func (t *TokenIssuer) IssueNodeDownloadTicket(userID, nodeID uint, path string) (string, error) {
+	return t.issueTicket(userID, nodeID, path)
+}
+
+func (t *TokenIssuer) issueTicket(userID, nodeID uint, path string) (string, error) {
 	now := time.Now()
 	claims := DownloadClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -39,6 +50,7 @@ func (t *TokenIssuer) IssueDownloadTicket(userID uint, path string) (string, err
 		},
 		Path:   path,
 		UserID: userID,
+		NodeID: nodeID,
 	}
 
 	signed, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(t.secret)
