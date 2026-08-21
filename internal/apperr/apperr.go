@@ -420,6 +420,17 @@ var (
 	NodeUnauthorized = New(http.StatusUnauthorized, "node.unauthorized")
 	// NodeUnreachable là không kết nối được tới agent.
 	NodeUnreachable = New(http.StatusBadGateway, "node.unreachable")
+	// NodeHostKeyChanged là khóa máy chủ SSH khác với lần kết nối trước.
+	//
+	// Hoặc máy đã bị cài lại, hoặc có người đứng giữa đang giả làm nó. Không
+	// nhánh nào được phép kết nối tiếp trong im lặng.
+	NodeHostKeyChanged = New(http.StatusConflict, "node.host_key_changed")
+	// NodeNotSSH là thao tác chỉ dùng được với máy chủ kết nối qua SSH.
+	NodeNotSSH = New(http.StatusBadRequest, "node.not_ssh")
+	// NodeInvalidHost là địa chỉ máy chủ SSH không hợp lệ.
+	NodeInvalidHost = New(http.StatusBadRequest, "node.invalid_host")
+	// NodeSecretRequired là thiếu mật khẩu hoặc khóa riêng.
+	NodeSecretRequired = New(http.StatusBadRequest, "node.secret_required")
 	// NodeVersionMismatch là phiên bản agent không khớp với panel.
 	NodeVersionMismatch = New(http.StatusBadGateway, "node.version_mismatch")
 )

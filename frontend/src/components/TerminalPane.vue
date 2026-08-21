@@ -8,7 +8,11 @@ import { wsUrl } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 
-const props = defineProps<{ startPath?: string }>()
+const props = defineProps<{
+  startPath?: string
+  /** Mở terminal trên một máy chủ từ xa thay vì máy đang chạy panel. */
+  nodeId?: number
+}>()
 const emit = defineEmits<{ status: ['connecting' | 'connected' | 'disconnected'] }>()
 
 const auth = useAuthStore()
@@ -43,7 +47,13 @@ function connect(): void {
   params.set('rows', String(term.rows))
   if (props.startPath) params.set('path', props.startPath)
 
-  socket = new WebSocket(`${wsUrl('/api/v1/terminal/ws', auth.accessToken)}&${params}`)
+  // Cùng một cửa sổ dùng cho cả máy này lẫn máy ở xa: hai bên nói cùng một giao
+  // thức trên WebSocket, chỉ khác đường dẫn.
+  const path = props.nodeId
+    ? `/api/v1/nodes/${props.nodeId}/terminal`
+    : '/api/v1/terminal/ws'
+
+  socket = new WebSocket(`${wsUrl(path, auth.accessToken)}&${params}`)
   socket.binaryType = 'arraybuffer'
 
   socket.onopen = () => {

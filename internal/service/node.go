@@ -22,17 +22,36 @@ const nodeProbeTimeout = 15 * time.Second
 
 // NodeRequest là dữ liệu thêm hoặc sửa một node.
 type NodeRequest struct {
-	Name    string `json:"name" binding:"required"`
-	Address string `json:"address" binding:"required"`
+	Name string `json:"name" binding:"required"`
+	// Kind là "agent" hoặc "ssh"; để trống hiểu là agent.
+	Kind string `json:"kind"`
+	// Address là địa chỉ agent, chỉ dùng với kiểu agent.
+	Address string `json:"address"`
 	// Token để trống khi sửa nghĩa là giữ nguyên.
 	Token      string `json:"token"`
 	SkipVerify bool   `json:"skipVerify"`
 	Remark     string `json:"remark"`
+
+	// Các trường dưới đây chỉ dùng với kiểu ssh.
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	User     string `json:"user"`
+	AuthType string `json:"authType"`
+	// Secret là mật khẩu hoặc khóa riêng; để trống khi sửa nghĩa là giữ nguyên.
+	Secret     string `json:"secret"`
+	Passphrase string `json:"passphrase"`
 }
 
 // NodeInfo là node kèm trạng thái kết nối hiện tại.
 type NodeInfo struct {
 	model.Node
+	// Load1 và các trường dung lượng chỉ có với máy chủ nối bằng SSH: agent đã
+	// có kênh giám sát riêng, còn ở đây mỗi lần đọc là một vòng SSH.
+	Load1       float64 `json:"load1,omitempty"`
+	MemoryUsed  int64   `json:"memoryUsed,omitempty"`
+	MemoryTotal int64   `json:"memoryTotal,omitempty"`
+	DiskUsed    int64   `json:"diskUsed,omitempty"`
+	DiskTotal   int64   `json:"diskTotal,omitempty"`
 	// Online cho biết panel có nối được tới agent hay không.
 	Online bool `json:"online"`
 	// Uptime là thời gian agent đã chạy.
@@ -79,6 +98,10 @@ func (s *NodeService) List(ctx context.Context) ([]NodeInfo, error) {
 // Node không nối được không phải lỗi của cả danh sách: đó chính là thông tin
 // người dùng đang muốn biết.
 func (s *NodeService) describe(ctx context.Context, record model.Node) NodeInfo {
+	if record.Kind == model.NodeSSH {
+		return s.describeSSH(ctx, record)
+	}
+
 	info := NodeInfo{Node: record}
 
 	remote, err := s.hostFor(record)
@@ -207,13 +230,20 @@ func (s *NodeService) Create(ctx context.Context, req NodeRequest) (NodeInfo, er
 	if err != nil {
 		return NodeInfo{}, err
 	}
-	if req.Token == "" {
+	if record.Kind == model.NodeAgent && req.Token == "" {
 		return NodeInfo{}, apperr.BadRequest.WithParam("field", "token")
 	}
+	if record.Kind == model.NodeSSH && record.Secret == "" {
+		return NodeInfo{}, apperr.NodeSecretRequired
+	}
 
-	// Thử nối trước khi lưu: một node sai token mà chỉ lộ ra lúc cần dùng thì
-	// người dùng không biết mình gõ nhầm ở đâu.
-	if err := s.probe(ctx, record); err != nil {
+	// Thử nối trước khi lưu: một máy chủ sai mật khẩu mà chỉ lộ ra lúc cần dùng
+	// thì người dùng không biết mình gõ nhầm ở đâu.
+	//
+	// Lần đầu cũng là lúc ghi lại dấu vân tay khóa máy chủ, nên phải lấy bản ghi
+	// mà probe trả về chứ không phải bản ghi ban đầu.
+	record, err = s.probeAndStamp(ctx, record)
+	if err != nil {
 		return NodeInfo{}, err
 	}
 
@@ -234,7 +264,8 @@ func (s *NodeService) Update(ctx context.Context, id uint, req NodeRequest) (Nod
 	if err != nil {
 		return NodeInfo{}, err
 	}
-	if err := s.probe(ctx, record); err != nil {
+	record, err = s.probeAndStamp(ctx, record)
+	if err != nil {
 		return NodeInfo{}, err
 	}
 
@@ -248,23 +279,21 @@ func (s *NodeService) Update(ctx context.Context, id uint, req NodeRequest) (Nod
 func (s *NodeService) build(
 	ctx context.Context, base model.Node, req NodeRequest, selfID uint,
 ) (model.Node, error) {
+	if err := s.checkNameFree(ctx, strings.TrimSpace(req.Name), selfID); err != nil {
+		return model.Node{}, err
+	}
+	if kindOf(req) == model.NodeSSH {
+		return s.buildSSH(base, req)
+	}
+
 	address := strings.TrimRight(strings.TrimSpace(req.Address), "/")
 	if !strings.HasPrefix(address, "https://") && !strings.HasPrefix(address, "http://") {
 		return model.Node{}, apperr.NodeInvalidAddress.WithParam("address", req.Address)
 	}
 
 	name := strings.TrimSpace(req.Name)
-	var count int64
-	err := s.db.WithContext(ctx).Model(&model.Node{}).
-		Where("name = ? AND id <> ?", name, selfID).Count(&count).Error
-	if err != nil {
-		return model.Node{}, apperr.Internal.Wrap(err)
-	}
-	if count > 0 {
-		return model.Node{}, apperr.NodeNameExists.WithParam("name", name)
-	}
-
 	record := base
+	record.Kind = model.NodeAgent
 	record.Name = name
 	record.Address = address
 	record.SkipVerify = req.SkipVerify

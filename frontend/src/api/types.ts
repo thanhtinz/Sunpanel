@@ -923,10 +923,25 @@ export interface SystemInfo {
   virtualization: string
 }
 
+/** Kiểu kết nối tới một máy chủ từ xa. */
+export type NodeKind = 'agent' | 'ssh'
+
 export interface Node {
   id: number
   name: string
+  kind: NodeKind
   address: string
+  /** Các trường dưới đây chỉ có với máy chủ kết nối qua SSH. */
+  host?: string
+  port?: number
+  user?: string
+  authType?: 'password' | 'key'
+  fingerprint?: string
+  load1?: number
+  memoryUsed?: number
+  memoryTotal?: number
+  diskUsed?: number
+  diskTotal?: number
   skipVerify: boolean
   remark: string
   hostname: string
@@ -944,10 +959,25 @@ export interface Node {
 
 export interface NodePayload {
   name: string
-  address: string
+  kind: NodeKind
+  address?: string
   token?: string
-  skipVerify: boolean
+  skipVerify?: boolean
   remark?: string
+  host?: string
+  port?: number
+  user?: string
+  authType?: 'password' | 'key'
+  /** Mật khẩu hoặc khóa riêng; để trống khi sửa nghĩa là giữ nguyên. */
+  secret?: string
+  passphrase?: string
+}
+
+/** Kết quả chạy một lệnh trên máy chủ từ xa. */
+export interface RemoteResult {
+  stdout: string
+  stderr: string
+  exitCode: number
 }
 
 export interface PluginManifest {

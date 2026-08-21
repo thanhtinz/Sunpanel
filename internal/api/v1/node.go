@@ -20,6 +20,34 @@ func NewNodeHandler(nodes *service.NodeService, audit *service.AuditService) *No
 	return &NodeHandler{nodes: nodes, audit: audit}
 }
 
+// Exec xử lý POST /api/v1/nodes/:id/exec — chạy một lệnh trên máy chủ từ xa.
+func (h *NodeHandler) Exec(c *gin.Context) {
+	id, err := uintParam(c, "id")
+	if err != nil {
+		response.Fail(c, err)
+		return
+	}
+
+	var req struct {
+		Command string `json:"command" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Fail(c, apperr.BadRequest.Wrap(err))
+		return
+	}
+
+	result, err := h.nodes.Exec(c.Request.Context(), id, req.Command, service.AuditEntry{
+		UserID:   middleware.UserID(c),
+		Username: middleware.Username(c),
+		IP:       c.ClientIP(),
+	})
+	if err != nil {
+		response.Fail(c, err)
+		return
+	}
+	response.OK(c, result)
+}
+
 // List xử lý GET /api/v1/nodes.
 func (h *NodeHandler) List(c *gin.Context) {
 	nodes, err := h.nodes.List(c.Request.Context())

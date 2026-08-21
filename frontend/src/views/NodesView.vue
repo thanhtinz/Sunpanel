@@ -11,17 +11,29 @@ import {
   NForm,
   NFormItem,
   NInput,
+  NInputNumber,
   NModal,
-  NPopconfirm,
+  NRadioButton,
+  NRadioGroup,
+  NDropdown,
+  NSelect,
   NSpace,
   NSwitch,
   NTag,
   NText,
+  useDialog,
   useMessage,
   type DataTableColumns,
 } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
-import { ApiError, nodeApi, type Node } from '@/api'
+import {
+  ApiError,
+  nodeApi,
+  type Node,
+  type NodeKind,
+  type RemoteResult,
+} from '@/api'
+import TerminalPane from '@/components/TerminalPane.vue'
 import { useAuthStore } from '@/stores/auth'
 import { translateError } from '@/locales'
 import { formatBytes, formatDateTime } from '@/utils/format'
@@ -29,6 +41,7 @@ import { formatBytes, formatDateTime } from '@/utils/format'
 const { t } = useI18n()
 const auth = useAuthStore()
 const message = useMessage()
+const dialog = useDialog()
 
 const nodes = ref<Node[]>([])
 const loading = ref(false)
@@ -36,14 +49,41 @@ const loading = ref(false)
 const emptyNode = () => ({
   id: 0,
   name: '',
+  // Mặc định là SSH: đó là cách dùng được ngay với một VPS vừa mua về, còn
+  // agent thì phải cài thêm phần mềm lên máy đích trước.
+  kind: 'ssh' as NodeKind,
   address: 'https://',
   token: '',
   skipVerify: true,
   remark: '',
+  host: '',
+  port: 22,
+  user: 'root',
+  authType: 'password' as 'password' | 'key',
+  secret: '',
+  passphrase: '',
 })
 
 const editor = ref({ show: false, saving: false, form: emptyNode() })
 const details = ref({ show: false, node: null as Node | null })
+const terminal = ref({ show: false, node: null as Node | null })
+const console_ = ref({
+  show: false,
+  node: null as Node | null,
+  command: '',
+  running: false,
+  result: null as RemoteResult | null,
+})
+
+const kindOptions = computed(() => [
+  { label: t('node.kindSsh'), value: 'ssh' },
+  { label: t('node.kindAgent'), value: 'agent' },
+])
+
+const authOptions = computed(() => [
+  { label: t('node.authPassword'), value: 'password' },
+  { label: t('node.authKey'), value: 'key' },
+])
 
 onMounted(load)
 
@@ -83,20 +123,36 @@ function openEdit(node: Node): void {
     show: true,
     saving: false,
     form: {
+      ...emptyNode(),
       id: node.id,
       name: node.name,
+      kind: node.kind,
       address: node.address,
-      // Token không bao giờ được trả về từ máy chủ; để trống nghĩa là giữ nguyên.
+      // Token và mật khẩu không bao giờ được trả về từ máy chủ; để trống nghĩa
+      // là giữ nguyên cái đã lưu.
       token: '',
       skipVerify: node.skipVerify,
       remark: node.remark,
+      host: node.host ?? '',
+      port: node.port ?? 22,
+      user: node.user ?? 'root',
+      authType: node.authType ?? 'password',
+      secret: '',
     },
   }
 }
 
 const canSave = computed(() => {
   const form = editor.value.form
-  if (!form.name.trim() || !/^https?:\/\/.+/.test(form.address.trim())) return false
+  if (!form.name.trim()) return false
+
+  if (form.kind === 'ssh') {
+    if (!form.host.trim() || !form.user.trim()) return false
+    // Sửa một máy đã lưu thì được để trống bí mật; thêm mới thì không.
+    return form.id !== 0 || form.secret.trim().length > 0
+  }
+
+  if (!/^https?:\/\/.+/.test(form.address.trim())) return false
   return form.id !== 0 || form.token.trim().length > 0
 })
 
@@ -104,13 +160,27 @@ async function save(): Promise<void> {
   const form = editor.value.form
   editor.value.saving = true
   try {
-    const payload = {
-      name: form.name.trim(),
-      address: form.address.trim(),
-      token: form.token.trim(),
-      skipVerify: form.skipVerify,
-      remark: form.remark.trim(),
-    }
+    const payload =
+      form.kind === 'ssh'
+        ? {
+            name: form.name.trim(),
+            kind: form.kind,
+            host: form.host.trim(),
+            port: form.port,
+            user: form.user.trim(),
+            authType: form.authType,
+            secret: form.secret,
+            passphrase: form.passphrase,
+            remark: form.remark.trim(),
+          }
+        : {
+            name: form.name.trim(),
+            kind: form.kind,
+            address: form.address.trim(),
+            token: form.token.trim(),
+            skipVerify: form.skipVerify,
+            remark: form.remark.trim(),
+          }
     if (form.id === 0) {
       await nodeApi.create(payload)
       message.success(t('node.added'))
@@ -141,6 +211,28 @@ function openDetails(node: Node): void {
   details.value = { show: true, node }
 }
 
+function openTerminal(node: Node): void {
+  terminal.value = { show: true, node }
+}
+
+function openConsole(node: Node): void {
+  console_.value = { show: true, node, command: '', running: false, result: null }
+}
+
+async function runCommand(): Promise<void> {
+  const state = console_.value
+  if (!state.node || !state.command.trim()) return
+
+  state.running = true
+  try {
+    state.result = await nodeApi.exec(state.node.id, state.command)
+  } catch (err) {
+    report(err)
+  } finally {
+    state.running = false
+  }
+}
+
 /** Tên hệ điều hành đầy đủ.
  *
  * gopsutil trả platform đã kèm sẵn số phiên bản trên phần lớn distro, nên ghép
@@ -163,11 +255,22 @@ function formatUptime(nanoseconds?: number): string {
 }
 
 const columns = computed<DataTableColumns<Node>>(() => [
-  { title: t('node.name'), key: 'name', width: 170 },
+  { title: t('node.name'), key: 'name', width: 150 },
+  {
+    title: t('node.kind'),
+    key: 'kind',
+    width: 90,
+    render: (row) =>
+      h(
+        NTag,
+        { size: 'small', bordered: false, type: row.kind === 'ssh' ? 'info' : 'default' },
+        { default: () => (row.kind === 'ssh' ? t('node.kindSsh') : t('node.kindAgent')) },
+      ),
+  },
   {
     title: t('node.address'),
     key: 'address',
-    minWidth: 200,
+    minWidth: 190,
     render: (row) => h('code', { style: 'font-size:12px' }, row.address),
   },
   {
@@ -208,56 +311,118 @@ const columns = computed<DataTableColumns<Node>>(() => [
     },
   },
   {
-    title: t('node.agentVersion'),
-    key: 'agentVersion',
-    width: 150,
-    render: (row) =>
-      row.agentVersion
-        ? h('code', { style: 'font-size:12px' }, row.agentVersion)
-        : h(NText, { depth: 3 }, { default: () => '—' }),
+    title: t('node.load'),
+    key: 'load',
+    width: 170,
+    render: (row) => {
+      // Máy nối bằng agent báo phiên bản agent, máy nối bằng SSH báo mức dùng
+      // tài nguyên: mỗi kiểu chỉ có đúng con số mà nó đọc được.
+      if (row.kind === 'agent') {
+        return row.agentVersion
+          ? h('code', { style: 'font-size:12px' }, row.agentVersion)
+          : h(NText, { depth: 3 }, { default: () => '—' })
+      }
+      if (!row.online) return h(NText, { depth: 3 }, { default: () => '—' })
+      return h(
+        NText,
+        { depth: 3, style: 'font-size:12px' },
+        {
+          default: () =>
+            `${t('node.loadShort')} ${row.load1?.toFixed(2) ?? '—'} · ` +
+            `${formatBytes(row.memoryUsed ?? 0)}/${formatBytes(row.memoryTotal ?? 0)}`,
+        },
+      )
+    },
   },
   {
     title: t('common.actions'),
     key: 'actions',
-    width: 200,
+    width: 240,
     render: (row) =>
       h(
         NSpace,
-        { size: 4 },
+        { size: 4, wrap: false },
         {
           default: () => [
-            h(
-              NButton,
-              { size: 'tiny', quaternary: true, disabled: !row.online, onClick: () => openDetails(row) },
-              { default: () => t('node.details') },
-            ),
-            auth.isAdmin
+            // Hai thao tác hay dùng nhất nằm ngoài; phần còn lại vào menu, nếu
+            // không cột thao tác rộng hơn cả cột địa chỉ và tràn ra ngoài bảng.
+            auth.isAdmin && row.kind === 'ssh'
               ? h(
                   NButton,
-                  { size: 'tiny', quaternary: true, onClick: () => openEdit(row) },
-                  { default: () => t('common.edit') },
-                )
-              : null,
-            auth.isAdmin
-              ? h(
-                  NPopconfirm,
-                  { onPositiveClick: () => remove(row) },
                   {
-                    trigger: () =>
-                      h(
-                        NButton,
-                        { size: 'tiny', quaternary: true, type: 'error' },
-                        { default: () => t('node.remove') },
-                      ),
-                    default: () => t('node.removeConfirm', { name: row.name }),
+                    size: 'tiny',
+                    quaternary: true,
+                    disabled: !row.online,
+                    onClick: () => openTerminal(row),
                   },
+                  { default: () => t('node.terminal') },
                 )
               : null,
+            auth.isAdmin && row.kind === 'ssh'
+              ? h(
+                  NButton,
+                  {
+                    size: 'tiny',
+                    quaternary: true,
+                    disabled: !row.online,
+                    onClick: () => openConsole(row),
+                  },
+                  { default: () => t('node.runCommand') },
+                )
+              : null,
+            h(
+              NDropdown,
+              {
+                options: rowActions(row),
+                trigger: 'click',
+                onSelect: (key: string) => runRowAction(key, row),
+              },
+              {
+                default: () =>
+                  h(NButton, { size: 'tiny', quaternary: true }, { default: () => t('node.more') }),
+              },
+            ),
           ],
         },
       ),
   },
 ])
+
+/** Các thao tác phụ của một máy chủ. */
+function rowActions(node: Node) {
+  return [
+    { label: t('node.details'), key: 'details', disabled: !node.online },
+    ...(auth.isAdmin
+      ? [
+          { label: t('common.edit'), key: 'edit' },
+          { type: 'divider', key: 'ngan' },
+          { label: t('node.remove'), key: 'remove' },
+        ]
+      : []),
+  ]
+}
+
+function runRowAction(key: string, node: Node): void {
+  switch (key) {
+    case 'details':
+      openDetails(node)
+      break
+    case 'edit':
+      openEdit(node)
+      break
+    case 'remove':
+      // Gỡ máy chủ là thao tác không lấy lại được thông tin đăng nhập đã lưu,
+      // nên nó vẫn phải hỏi lại một lần dù đã nằm trong menu.
+      dialog.warning({
+        title: t('node.remove'),
+        content: t('node.removeConfirm', { name: node.name }),
+        positiveText: t('node.remove'),
+        negativeText: t('common.cancel'),
+        onPositiveClick: () => void remove(node),
+      })
+      break
+  }
+}
 </script>
 
 <template>
@@ -301,28 +466,83 @@ const columns = computed<DataTableColumns<Node>>(() => [
     style="width: 92vw; max-width: 560px"
   >
     <NForm @submit.prevent="save">
+      <NFormItem :label="t('node.kind')">
+        <NRadioGroup v-model:value="editor.form.kind" :disabled="editor.form.id !== 0">
+          <NRadioButton v-for="option in kindOptions" :key="option.value" :value="option.value">
+            {{ option.label }}
+          </NRadioButton>
+        </NRadioGroup>
+      </NFormItem>
+
       <NAlert type="info" :bordered="false" style="margin-bottom: 14px">
-        {{ t('node.setupHint') }}
+        {{ editor.form.kind === 'ssh' ? t('node.sshHint') : t('node.setupHint') }}
       </NAlert>
 
       <NFormItem :label="t('node.name')">
         <NInput v-model:value="editor.form.name" autofocus />
       </NFormItem>
 
-      <NFormItem :label="t('node.address')" :feedback="t('node.addressHelp')">
-        <NInput v-model:value="editor.form.address" placeholder="https://10.0.0.5:9528" />
-      </NFormItem>
+      <template v-if="editor.form.kind === 'ssh'">
+        <NSpace :size="12">
+          <NFormItem :label="t('node.host')" :feedback="t('node.hostHelp')">
+            <NInput v-model:value="editor.form.host" placeholder="203.0.113.10" style="width: 260px" />
+          </NFormItem>
+          <NFormItem :label="t('node.port')">
+            <NInputNumber v-model:value="editor.form.port" :min="1" :max="65535" style="width: 120px" />
+          </NFormItem>
+        </NSpace>
 
-      <NFormItem
-        :label="t('node.token')"
-        :feedback="editor.form.id === 0 ? t('node.tokenHelp') : t('node.tokenKeepHelp')"
-      >
-        <NInput v-model:value="editor.form.token" type="password" show-password-on="click" />
-      </NFormItem>
+        <NFormItem :label="t('node.user')">
+          <NInput v-model:value="editor.form.user" placeholder="root" />
+        </NFormItem>
 
-      <NFormItem :label="t('node.skipVerify')" :feedback="t('node.skipVerifyHelp')">
-        <NSwitch v-model:value="editor.form.skipVerify" />
-      </NFormItem>
+        <NFormItem :label="t('node.authType')">
+          <NSelect v-model:value="editor.form.authType" :options="authOptions" />
+        </NFormItem>
+
+        <NFormItem
+          v-if="editor.form.authType === 'password'"
+          :label="t('node.password')"
+          :feedback="editor.form.id === 0 ? '' : t('node.secretKeepHelp')"
+        >
+          <NInput v-model:value="editor.form.secret" type="password" show-password-on="click" />
+        </NFormItem>
+
+        <template v-else>
+          <NFormItem
+            :label="t('node.privateKey')"
+            :feedback="editor.form.id === 0 ? t('node.privateKeyHelp') : t('node.secretKeepHelp')"
+          >
+            <NInput
+              v-model:value="editor.form.secret"
+              type="textarea"
+              :rows="4"
+              placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
+              class="sp-metric"
+            />
+          </NFormItem>
+          <NFormItem :label="t('node.passphrase')" :feedback="t('node.passphraseHelp')">
+            <NInput v-model:value="editor.form.passphrase" type="password" show-password-on="click" />
+          </NFormItem>
+        </template>
+      </template>
+
+      <template v-else>
+        <NFormItem :label="t('node.address')" :feedback="t('node.addressHelp')">
+          <NInput v-model:value="editor.form.address" placeholder="https://10.0.0.5:9528" />
+        </NFormItem>
+
+        <NFormItem
+          :label="t('node.token')"
+          :feedback="editor.form.id === 0 ? t('node.tokenHelp') : t('node.tokenKeepHelp')"
+        >
+          <NInput v-model:value="editor.form.token" type="password" show-password-on="click" />
+        </NFormItem>
+
+        <NFormItem :label="t('node.skipVerify')" :feedback="t('node.skipVerifyHelp')">
+          <NSwitch v-model:value="editor.form.skipVerify" />
+        </NFormItem>
+      </template>
 
       <NFormItem :label="t('node.remark')">
         <NInput v-model:value="editor.form.remark" />
@@ -338,6 +558,46 @@ const columns = computed<DataTableColumns<Node>>(() => [
         {{ t('node.saveAndConnect') }}
       </NButton>
     </NForm>
+  </NModal>
+
+  <NModal
+    v-model:show="terminal.show"
+    preset="card"
+    :title="t('node.terminalOf', { name: terminal.node?.name ?? '' })"
+    style="width: 94vw; max-width: 1000px"
+  >
+    <!-- Dựng lại từ đầu mỗi lần mở: một cửa sổ terminal đã đóng không nối lại
+         được, và giữ nó lại chỉ để trống trơn. -->
+    <TerminalPane v-if="terminal.show && terminal.node" :node-id="terminal.node.id" />
+  </NModal>
+
+  <NModal
+    v-model:show="console_.show"
+    preset="card"
+    :title="t('node.runOn', { name: console_.node?.name ?? '' })"
+    style="width: 94vw; max-width: 760px"
+  >
+    <NSpace vertical :size="12">
+      <NInput
+        v-model:value="console_.command"
+        :placeholder="t('node.commandPlaceholder')"
+        class="sp-metric"
+        @keyup.enter="runCommand"
+      />
+      <NButton type="primary" :loading="console_.running" :disabled="!console_.command.trim()" @click="runCommand">
+        {{ t('node.run') }}
+      </NButton>
+
+      <template v-if="console_.result">
+        <NText depth="3" style="font-size: 12px">
+          {{ t('node.exitCode', { code: console_.result.exitCode }) }}
+        </NText>
+        <pre v-if="console_.result.stdout" class="command-output">{{ console_.result.stdout }}</pre>
+        <pre v-if="console_.result.stderr" class="command-output command-error">{{
+          console_.result.stderr
+        }}</pre>
+      </template>
+    </NSpace>
   </NModal>
 
   <NModal
@@ -377,3 +637,23 @@ const columns = computed<DataTableColumns<Node>>(() => [
     </NDescriptions>
   </NModal>
 </template>
+
+<style scoped>
+.command-output {
+  margin: 0;
+  padding: 10px 12px;
+  max-height: 320px;
+  overflow: auto;
+  font-family: var(--sp-font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: var(--sp-surface-sunken);
+  border-radius: var(--sp-radius-control);
+}
+
+.command-error {
+  color: var(--sp-danger);
+}
+</style>

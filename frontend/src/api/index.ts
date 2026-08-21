@@ -74,6 +74,7 @@ import type {
   SystemAccountPayload,
   DomainReport,
   HealthReport,
+  RemoteResult,
   RewritePreset,
   SecurityOverview,
   TrafficReport,
@@ -299,6 +300,9 @@ export const nodeApi = {
     request<Node>(`/api/v1/nodes/${id}`, { method: 'PUT', body: payload }),
 
   remove: (id: number) => request<void>(`/api/v1/nodes/${id}`, { method: 'DELETE' }),
+
+  exec: (id: number, command: string) =>
+    request<RemoteResult>(`/api/v1/nodes/${id}/exec`, { method: 'POST', body: { command } }),
 }
 
 /** Các endpoint cảnh báo. */

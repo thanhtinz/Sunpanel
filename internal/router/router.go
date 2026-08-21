@@ -118,6 +118,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	uptimeHandler := v1.NewUptimeHandler(svc.Uptime)
 	securityHandler := v1.NewSecurityHandler(svc.Security)
 	healthHandler := v1.NewHealthHandler(svc.Health)
+	nodeTerminalHandler := v1.NewNodeTerminalHandler(svc.Nodes)
 	dockerHandler := v1.NewDockerHandler(svc.Docker)
 
 	api := engine.Group("/api/v1")
@@ -359,6 +360,11 @@ func registerAPI(engine *gin.Engine, svc Services) {
 		{
 			nodes.GET("", nodeHandler.List)
 			nodes.GET("/:id", nodeHandler.Get)
+
+			// Chạy lệnh và mở terminal trên máy chủ khác là quyền mạnh nhất panel
+			// có: nó tương đương ngồi trước máy đó với tài khoản đã khai báo.
+			nodes.POST("/:id/exec", middleware.RequireAdmin(), nodeHandler.Exec)
+			nodes.GET("/:id/terminal", middleware.RequireAdmin(), nodeTerminalHandler.Connect)
 
 			nodeWrite := nodes.Group("", middleware.RequireAdmin())
 			{
