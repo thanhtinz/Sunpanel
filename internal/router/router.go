@@ -51,6 +51,7 @@ type Services struct {
 	Disks     *service.DiskService
 	Uptime    *service.UptimeService
 	Security  *service.SecurityService
+	Health    *service.HealthService
 }
 
 // New dựng handler HTTP hoàn chỉnh của panel.
@@ -116,6 +117,7 @@ func registerAPI(engine *gin.Engine, svc Services) {
 	diskHandler := v1.NewDiskHandler(svc.Disks)
 	uptimeHandler := v1.NewUptimeHandler(svc.Uptime)
 	securityHandler := v1.NewSecurityHandler(svc.Security)
+	healthHandler := v1.NewHealthHandler(svc.Health)
 	dockerHandler := v1.NewDockerHandler(svc.Docker)
 
 	api := engine.Group("/api/v1")
@@ -476,6 +478,10 @@ func registerAPI(engine *gin.Engine, svc Services) {
 			sysUsers.POST("/:name/keys", sysUserHandler.AddKey)
 			sysUsers.DELETE("/:name/keys", sysUserHandler.RemoveKey)
 		}
+
+		// Rà soát tình trạng: gom số liệu của nhiều trang, trong đó có thiết lập
+		// bảo mật của chính panel, nên chỉ quản trị viên được xem.
+		authenticated.GET("/health/report", middleware.RequireAdmin(), healthHandler.Report)
 
 		// Phòng thủ đăng nhập: xem địa chỉ đang bị chặn và nhật ký đăng nhập.
 		// Chỉ quản trị viên, vì nhật ký này lộ tên đăng nhập và địa chỉ của mọi người.

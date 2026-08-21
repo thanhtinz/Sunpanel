@@ -63,6 +63,7 @@
     "nodes": "Máy chủ",
     "plugins": "Plugin",
     "plugin-detail": "Plugin",
+    "health": "Tình trạng",
     "security": "Chặn đăng nhập",
     "groupWorkload": "Dịch vụ chạy",
     "groupSystem": "Hệ thống",
@@ -93,6 +94,7 @@
     "plugin-detail": "Dịch vụ mở rộng chạy riêng",
     "users": "Tài khoản panel và phân quyền",
     "audit": "Mọi thao tác thay đổi trạng thái máy chủ",
+    "health": "Rà soát tài nguyên, bảo mật và sao lưu trong một trang",
     "security": "Địa chỉ đang bị chặn vì dò mật khẩu panel",
     "profile": "Tài khoản, bảo mật và phiên đăng nhập"
   },
@@ -480,6 +482,90 @@
     "unblocked": "Đã gỡ chặn {ip}.",
     "minutes": "{n} phút",
     "seconds": "{n} giây"
+  },
+  "health": {
+    "title": "Tình trạng máy chủ",
+    "allGood": "Không có việc nào cần làm ngay.",
+    "summary": "{criticals} việc cần làm ngay · {warnings} việc nên làm",
+    "fix": "Xử lý",
+    "group": {
+      "resource": "Tài nguyên",
+      "panel": "Panel",
+      "web": "Website",
+      "data": "Dữ liệu"
+    },
+    "level": {
+      "ok": "Đạt",
+      "warn": "Nên sửa",
+      "critical": "Cần làm ngay"
+    },
+    "item": {
+      "disk": "Dung lượng ổ đĩa",
+      "memory": "Bộ nhớ",
+      "swap": "Swap",
+      "certs": "Chứng chỉ HTTPS",
+      "backups": "Sao lưu",
+      "uptime": "Theo dõi uptime",
+      "https": "HTTPS cho panel",
+      "loginGuard": "Chặn dò mật khẩu",
+      "totp": "Xác thực hai lớp",
+      "firewall": "Tường lửa"
+    },
+    "detail": {
+      "disk": {
+        "ok": "Đã dùng {percent}% ổ đĩa.",
+        "high": "Đã dùng {percent}% ổ đĩa. Dọn bớt trước khi đầy hẳn.",
+        "full": "Đã dùng {percent}% ổ đĩa. Đầy đĩa là lúc mọi dịch vụ ngừng ghi được dữ liệu."
+      },
+      "memory": {
+        "ok": "Đã dùng {percent}% bộ nhớ.",
+        "high": "Đã dùng {percent}% bộ nhớ.",
+        "full": "Đã dùng {percent}% bộ nhớ. Nhân hệ điều hành sắp phải giết tiến trình để lấy chỗ."
+      },
+      "swap": {
+        "ok": "Có swap, hoặc máy đủ bộ nhớ để không cần.",
+        "missing": "Máy dưới 2 GB bộ nhớ mà không có swap: hết RAM là tiến trình bị giết giữa chừng."
+      },
+      "certs": {
+        "ok": "Cả {count} chứng chỉ đều còn hạn, sớm nhất còn {days} ngày.",
+        "none": "Chưa có chứng chỉ nào.",
+        "expiring": "{count} chứng chỉ sắp hết hạn.",
+        "expired": "{count} chứng chỉ đã hết hạn hoặc mất tệp.",
+        "unreadable": "Không đọc được kho chứng chỉ."
+      },
+      "backups": {
+        "ok": "{count} kế hoạch sao lưu đang chạy bình thường.",
+        "none": "Chưa có kế hoạch sao lưu nào.",
+        "disabled": "Có kế hoạch sao lưu nhưng đều đang tắt.",
+        "never": "Kế hoạch sao lưu chưa chạy lần nào.",
+        "failed": "{count} kế hoạch sao lưu hỏng ở lần chạy gần nhất.",
+        "unreadable": "Không đọc được danh sách kế hoạch sao lưu."
+      },
+      "uptime": {
+        "ok": "Mọi mục theo dõi đều trả lời bình thường.",
+        "none": "Chưa theo dõi địa chỉ nào.",
+        "down": "{count} mục đang không truy cập được.",
+        "unreadable": "Không đọc được danh sách theo dõi."
+      },
+      "https": {
+        "on": "Panel đang phục vụ qua HTTPS.",
+        "off": "Panel chạy HTTP: mật khẩu và token đi qua mạng dưới dạng chữ thường."
+      },
+      "loginGuard": {
+        "on": "Địa chỉ dò mật khẩu bị chặn tạm thời.",
+        "off": "Lớp chặn địa chỉ đang tắt, máy quét thử được bao nhiêu lần tùy ý."
+      },
+      "totp": {
+        "on": "Mọi quản trị viên đều đã bật xác thực hai lớp.",
+        "off": "{count} quản trị viên chưa bật xác thực hai lớp.",
+        "unreadable": "Không đọc được danh sách người dùng."
+      },
+      "firewall": {
+        "on": "Tường lửa {backend} đang bật.",
+        "off": "Tường lửa {backend} đã cài nhưng chưa bật.",
+        "missing": "Máy không có công cụ tường lửa nào panel điều khiển được."
+      }
+    }
   },
   "domainStatus": {
     "here": "Trỏ về máy này",

@@ -73,6 +73,7 @@ import type {
   SystemAccount,
   SystemAccountPayload,
   DomainReport,
+  HealthReport,
   RewritePreset,
   SecurityOverview,
   TrafficReport,
@@ -674,6 +675,11 @@ export const dockerApi = {
   networks: () => request<DockerNetwork[]>('/api/v1/docker/networks'),
 
   prune: () => request<{ freed: number }>('/api/v1/docker/prune', { method: 'POST' }),
+}
+
+/** Endpoint rà soát tình trạng máy chủ. */
+export const healthApi = {
+  report: () => request<HealthReport>('/api/v1/health/report'),
 }
 
 /** Các endpoint phòng thủ đăng nhập. */

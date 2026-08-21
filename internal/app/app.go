@@ -227,6 +227,9 @@ func New(cfg config.Config) (*App, error) {
 		Logs:      logService,
 		Disks:     diskService,
 		Uptime:    uptimeMonitors,
+		Health: service.NewHealthService(
+			db, cfg, monitor, certificates, backups, uptimeMonitors, firewallSvc,
+		),
 		Security: service.NewSecurityService(
 			db, auth, cfg.Security.BlockThreshold,
 			int(cfg.Security.BlockWindow.Seconds()),

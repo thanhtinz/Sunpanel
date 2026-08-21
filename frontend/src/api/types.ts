@@ -497,6 +497,24 @@ export interface Website {
   updatedAt: string
 }
 
+/** Một mục trong bản rà soát tình trạng. */
+export interface HealthItem {
+  key: string
+  group: string
+  level: 'ok' | 'warn' | 'critical'
+  detail: string
+  params?: Record<string, string | number>
+  route?: string
+}
+
+/** Kết quả một lần rà soát. */
+export interface HealthReport {
+  score: number
+  warnings: number
+  criticals: number
+  items: HealthItem[]
+}
+
 /** Kết quả tra cứu một tên miền. */
 export interface DomainResult {
   domain: string

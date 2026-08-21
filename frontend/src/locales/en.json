@@ -63,6 +63,7 @@
     "nodes": "Nodes",
     "plugins": "Plugins",
     "plugin-detail": "Plugins",
+    "health": "Health",
     "security": "Login defense",
     "groupWorkload": "Workloads",
     "groupSystem": "System",
@@ -93,6 +94,7 @@
     "plugin-detail": "Extensions that run as their own service",
     "users": "Panel accounts and their privileges",
     "audit": "Every action that changed the server's state",
+    "health": "Resources, security and backups reviewed on one page",
     "security": "Addresses blocked for guessing panel passwords",
     "profile": "Account, security and active sessions"
   },
@@ -480,6 +482,90 @@
     "unblocked": "{ip} is no longer blocked.",
     "minutes": "{n} min",
     "seconds": "{n} s"
+  },
+  "health": {
+    "title": "Server health",
+    "allGood": "Nothing needs your attention.",
+    "summary": "{criticals} to fix now · {warnings} worth fixing",
+    "fix": "Open",
+    "group": {
+      "resource": "Resources",
+      "panel": "Panel",
+      "web": "Websites",
+      "data": "Data"
+    },
+    "level": {
+      "ok": "Good",
+      "warn": "Worth fixing",
+      "critical": "Fix now"
+    },
+    "item": {
+      "disk": "Disk space",
+      "memory": "Memory",
+      "swap": "Swap",
+      "certs": "HTTPS certificates",
+      "backups": "Backups",
+      "uptime": "Uptime monitors",
+      "https": "Panel HTTPS",
+      "loginGuard": "Login defense",
+      "totp": "Two-factor auth",
+      "firewall": "Firewall"
+    },
+    "detail": {
+      "disk": {
+        "ok": "{percent}% of the disk is in use.",
+        "high": "{percent}% of the disk is in use. Clear some space before it fills up.",
+        "full": "{percent}% of the disk is in use. A full disk stops every service from writing."
+      },
+      "memory": {
+        "ok": "{percent}% of memory is in use.",
+        "high": "{percent}% of memory is in use.",
+        "full": "{percent}% of memory is in use. The kernel is about to start killing processes."
+      },
+      "swap": {
+        "ok": "Swap is present, or there is enough memory to go without.",
+        "missing": "Under 2 GB of memory and no swap: running out of RAM kills processes outright."
+      },
+      "certs": {
+        "ok": "All {count} certificates are valid; the closest expires in {days} days.",
+        "none": "No certificate yet.",
+        "expiring": "{count} certificates expire soon.",
+        "expired": "{count} certificates have expired or lost their files.",
+        "unreadable": "The certificate store could not be read."
+      },
+      "backups": {
+        "ok": "{count} backup plans are running normally.",
+        "none": "No backup plan yet.",
+        "disabled": "Backup plans exist but all of them are off.",
+        "never": "The backup plan has never run.",
+        "failed": "{count} backup plans failed on their last run.",
+        "unreadable": "The backup plans could not be read."
+      },
+      "uptime": {
+        "ok": "Every monitor is answering.",
+        "none": "No address is being monitored.",
+        "down": "{count} monitors cannot be reached.",
+        "unreadable": "The monitor list could not be read."
+      },
+      "https": {
+        "on": "The panel is served over HTTPS.",
+        "off": "The panel runs on HTTP: passwords and tokens cross the network in the clear."
+      },
+      "loginGuard": {
+        "on": "Addresses guessing passwords get blocked.",
+        "off": "Address blocking is off, so a scanner can try as often as it likes."
+      },
+      "totp": {
+        "on": "Every administrator has two-factor auth on.",
+        "off": "{count} administrators have not turned on two-factor auth.",
+        "unreadable": "The user list could not be read."
+      },
+      "firewall": {
+        "on": "The {backend} firewall is on.",
+        "off": "The {backend} firewall is installed but not enabled.",
+        "missing": "No firewall tool the panel can drive is installed."
+      }
+    }
   },
   "domainStatus": {
     "here": "Points here",
