@@ -1270,7 +1270,14 @@
     "load": "Load / version",
     "loadShort": "Load",
     "fingerprint": "Host key fingerprint",
-    "more": "More"
+    "more": "More",
+    "cpuPercent": "CPU",
+    "memoryPercent": "Memory",
+    "diskPercent": "Disk",
+    "last24h": "Last 24 hours",
+    "noHistory": "Not enough data yet. The panel samples every minute.",
+    "machineUptime": "Machine up for",
+    "cores": "{count} cores"
   },
   "nodeErr": {
     "not_found": "Node not found.",

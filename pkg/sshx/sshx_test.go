@@ -375,3 +375,57 @@ func TestUnreachableHost(t *testing.T) {
 		t.Errorf("lỗi = %v, mong ErrUnreachable", err)
 	}
 }
+
+// Mức dùng CPU là hiệu của hai lần đọc /proc/stat: đọc một lần chỉ cho ra mức
+// trung bình kể từ ngày bật máy, và con số đó gần như không bao giờ đổi.
+func TestParseMetricsUsesDelta(t *testing.T) {
+	output := strings.Join([]string{
+		"SP_CPU1=1000 9000",
+		"SP_CPU2=1300 9700",
+		"SP_MEM=4000000 1000000",
+		"SP_DISK=1000000 250000",
+		"SP_LOAD=1.25",
+	}, "\n")
+
+	metrics := parseMetrics(output)
+
+	// Giữa hai lần đọc: bận thêm 300, rỗi thêm 700 — tức 30% của một nghìn nhịp.
+	if metrics.CPUPercent < 29.9 || metrics.CPUPercent > 30.1 {
+		t.Errorf("CPU = %.2f%%, mong 30%%", metrics.CPUPercent)
+	}
+	if metrics.MemoryPercent != 75 {
+		t.Errorf("bộ nhớ = %.2f%%, mong 75%%", metrics.MemoryPercent)
+	}
+	if metrics.DiskPercent != 25 {
+		t.Errorf("ổ đĩa = %.2f%%, mong 25%%", metrics.DiskPercent)
+	}
+	if metrics.Load1 != 1.25 {
+		t.Errorf("tải = %.2f", metrics.Load1)
+	}
+}
+
+// Số liệu đọc từ máy khác không phải lúc nào cũng nhất quán; một cột âm hay
+// vượt 100 vẽ ra biểu đồ vô nghĩa.
+func TestParseMetricsClampsRange(t *testing.T) {
+	metrics := parseMetrics("SP_CPU1=5000 9000\nSP_CPU2=1000 9500\nSP_MEM=100 500\n")
+
+	if metrics.CPUPercent != 0 {
+		t.Errorf("CPU khi bộ đếm đặt lại = %.2f, mong 0", metrics.CPUPercent)
+	}
+	if metrics.MemoryPercent != 0 {
+		t.Errorf("bộ nhớ khi khả dụng lớn hơn tổng = %.2f, mong 0", metrics.MemoryPercent)
+	}
+}
+
+// Thiếu dữ liệu không được làm cả lần lấy mẫu hỏng: một bản Linux gọn nhẹ có
+// thể không có df hoặc không có /proc/loadavg.
+func TestParseMetricsToleratesMissingFields(t *testing.T) {
+	metrics := parseMetrics("SP_MEM=1000 400\n")
+
+	if metrics.MemoryPercent != 60 {
+		t.Errorf("bộ nhớ = %.2f%%, mong 60%%", metrics.MemoryPercent)
+	}
+	if metrics.CPUPercent != 0 || metrics.DiskPercent != 0 {
+		t.Errorf("trường thiếu phải là 0: %+v", metrics)
+	}
+}

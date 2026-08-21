@@ -1270,7 +1270,14 @@
     "load": "Tải / phiên bản",
     "loadShort": "Tải",
     "fingerprint": "Vân tay khóa máy chủ",
-    "more": "Thao tác khác"
+    "more": "Thao tác khác",
+    "cpuPercent": "CPU",
+    "memoryPercent": "Bộ nhớ",
+    "diskPercent": "Ổ đĩa",
+    "last24h": "24 giờ qua",
+    "noHistory": "Chưa đủ dữ liệu để vẽ. Panel lấy mẫu mỗi phút.",
+    "machineUptime": "Máy đã chạy",
+    "cores": "{count} nhân"
   },
   "nodeErr": {
     "not_found": "Không tìm thấy node.",

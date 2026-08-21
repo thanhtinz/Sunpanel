@@ -1,6 +1,9 @@
 package v1
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/thanhtinz/sunpanel/internal/apperr"
@@ -18,6 +21,38 @@ type NodeHandler struct {
 // NewNodeHandler tạo handler node.
 func NewNodeHandler(nodes *service.NodeService, audit *service.AuditService) *NodeHandler {
 	return &NodeHandler{nodes: nodes, audit: audit}
+}
+
+// History xử lý GET /api/v1/nodes/:id/history?hours=24.
+func (h *NodeHandler) History(c *gin.Context) {
+	id, err := uintParam(c, "id")
+	if err != nil {
+		response.Fail(c, err)
+		return
+	}
+
+	hours, _ := strconv.Atoi(c.Query("hours"))
+	samples, err := h.nodes.History(c.Request.Context(), id, time.Duration(hours)*time.Hour)
+	if err != nil {
+		response.Fail(c, err)
+		return
+	}
+	response.OK(c, samples)
+}
+
+// Sample xử lý POST /api/v1/nodes/:id/sample — lấy một mẫu ngay lập tức.
+func (h *NodeHandler) Sample(c *gin.Context) {
+	id, err := uintParam(c, "id")
+	if err != nil {
+		response.Fail(c, err)
+		return
+	}
+
+	if err := h.nodes.SampleNow(c.Request.Context(), id); err != nil {
+		response.Fail(c, err)
+		return
+	}
+	response.NoContent(c)
 }
 
 // Exec xử lý POST /api/v1/nodes/:id/exec — chạy một lệnh trên máy chủ từ xa.

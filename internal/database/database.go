@@ -87,7 +87,7 @@ func migrate(db *gorm.DB) error {
 		&model.AlertRule{},
 		&model.AlertEvent{},
 		&model.APIKey{},
-		&model.Node{},
+		&model.Node{}, &model.NodeSample{},
 		&model.UptimeMonitor{},
 		&model.UptimeCheck{},
 	}

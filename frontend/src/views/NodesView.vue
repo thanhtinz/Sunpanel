@@ -15,9 +15,11 @@ import {
   NModal,
   NRadioButton,
   NRadioGroup,
+  NDivider,
   NDropdown,
   NSelect,
   NSpace,
+  NSpin,
   NSwitch,
   NTag,
   NText,
@@ -31,8 +33,10 @@ import {
   nodeApi,
   type Node,
   type NodeKind,
+  type NodeSample,
   type RemoteResult,
 } from '@/api'
+import LineChart from '@/components/LineChart.vue'
 import TerminalPane from '@/components/TerminalPane.vue'
 import { useAuthStore } from '@/stores/auth'
 import { translateError } from '@/locales'
@@ -207,9 +211,39 @@ async function remove(node: Node): Promise<void> {
   }
 }
 
-function openDetails(node: Node): void {
+const history = ref<NodeSample[]>([])
+const historyLoading = ref(false)
+
+async function openDetails(node: Node): Promise<void> {
   details.value = { show: true, node }
+  history.value = []
+  if (node.kind !== 'ssh') return
+
+  historyLoading.value = true
+  try {
+    // Lấy một mẫu ngay: biểu đồ của máy vừa thêm không phải chờ hết một chu kỳ
+    // mới có điểm đầu tiên.
+    await nodeApi.sample(node.id).catch(() => undefined)
+    history.value = await nodeApi.history(node.id, 24)
+  } catch (err) {
+    report(err)
+  } finally {
+    historyLoading.value = false
+  }
 }
+
+/** Nhãn trục hoành: giờ và phút của từng mẫu. */
+const historyLabels = computed(() =>
+  history.value.map((sample) =>
+    new Date(sample.at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }),
+  ),
+)
+
+const historySeries = computed(() => [
+  { name: t('node.cpuPercent'), data: history.value.map((s) => s.cpu), color: '#15a34a' },
+  { name: t('node.memoryPercent'), data: history.value.map((s) => s.memory), color: '#2563eb' },
+  { name: t('node.diskPercent'), data: history.value.map((s) => s.disk), color: '#e8930c' },
+])
 
 function openTerminal(node: Node): void {
   terminal.value = { show: true, node }
@@ -405,7 +439,7 @@ function rowActions(node: Node) {
 function runRowAction(key: string, node: Node): void {
   switch (key) {
     case 'details':
-      openDetails(node)
+      void openDetails(node)
       break
     case 'edit':
       openEdit(node)
@@ -620,7 +654,13 @@ function runRowAction(key: string, node: Node): void {
         {{ details.node.system.arch }}
       </NDescriptionsItem>
       <NDescriptionsItem :label="t('node.cpu')">
-        {{ details.node.system.cpuModel }} ({{ details.node.system.cpuCores }})
+        <!-- Máy nối bằng SSH không đọc được tên CPU; hiện "(4)" trơ trọi thì
+             người xem tưởng dữ liệu hỏng. -->
+        {{
+          details.node.system.cpuModel
+            ? `${details.node.system.cpuModel} (${details.node.system.cpuCores})`
+            : t('node.cores', { count: details.node.system.cpuCores })
+        }}
       </NDescriptionsItem>
       <NDescriptionsItem :label="t('node.memory')">
         {{ formatBytes(details.node.system.totalMemory) }}
@@ -628,13 +668,33 @@ function runRowAction(key: string, node: Node): void {
       <NDescriptionsItem v-if="details.node.system.virtualization" :label="t('node.virtualization')">
         {{ details.node.system.virtualization }}
       </NDescriptionsItem>
-      <NDescriptionsItem :label="t('node.agentUptime')">
+      <NDescriptionsItem
+        :label="details.node.kind === 'ssh' ? t('node.machineUptime') : t('node.agentUptime')"
+      >
         {{ formatUptime(details.node.uptime) }}
       </NDescriptionsItem>
       <NDescriptionsItem :label="t('node.lastSeen')">
         {{ formatDateTime(details.node.lastSeenAt) }}
       </NDescriptionsItem>
+      <NDescriptionsItem v-if="details.node.fingerprint" :label="t('node.fingerprint')">
+        <NText class="sp-metric" style="font-size: 12px">{{ details.node.fingerprint }}</NText>
+      </NDescriptionsItem>
     </NDescriptions>
+
+    <template v-if="details.node?.kind === 'ssh'">
+      <NDivider>{{ t('node.last24h') }}</NDivider>
+      <NSpin :show="historyLoading">
+        <LineChart
+          v-if="history.length > 1"
+          :labels="historyLabels"
+          :series="historySeries"
+          unit="%"
+          :max="100"
+          height="220px"
+        />
+        <NEmpty v-else :description="t('node.noHistory')" />
+      </NSpin>
+    </template>
   </NModal>
 </template>
 

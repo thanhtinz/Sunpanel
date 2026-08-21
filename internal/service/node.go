@@ -15,6 +15,7 @@ import (
 	"github.com/thanhtinz/sunpanel/pkg/agent"
 	"github.com/thanhtinz/sunpanel/pkg/crypto"
 	"github.com/thanhtinz/sunpanel/pkg/host"
+	"github.com/thanhtinz/sunpanel/pkg/sshx"
 )
 
 // nodeProbeTimeout giới hạn thời gian thử kết nối tới một node.
@@ -71,12 +72,17 @@ type NodeService struct {
 	// Mỗi RemoteHost mang một http.Client riêng với pool kết nối; dựng mới cho
 	// từng lời gọi sẽ bắt tay TLS lại từ đầu mỗi lần.
 	hosts map[uint]*agent.RemoteHost
-	mu    sync.Mutex
+	// sshClients giữ kết nối SSH đang mở, dùng lại cho các lần lấy mẫu sau.
+	sshClients map[uint]*sshx.Client
+	mu         sync.Mutex
 }
 
 // NewNodeService tạo dịch vụ node.
 func NewNodeService(db *gorm.DB, sealer *crypto.Sealer, audit *AuditService) *NodeService {
-	return &NodeService{db: db, sealer: sealer, audit: audit, hosts: map[uint]*agent.RemoteHost{}}
+	return &NodeService{
+		db: db, sealer: sealer, audit: audit,
+		hosts: map[uint]*agent.RemoteHost{}, sshClients: map[uint]*sshx.Client{},
+	}
 }
 
 // List liệt kê node kèm trạng thái kết nối.
@@ -194,6 +200,8 @@ func (s *NodeService) hostFor(record model.Node) (*agent.RemoteHost, error) {
 // Phải gọi sau khi sửa hoặc xóa node, nếu không panel sẽ tiếp tục dùng địa chỉ
 // và token cũ cho tới lần khởi động lại.
 func (s *NodeService) forget(id uint) {
+	s.dropSSH(id)
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

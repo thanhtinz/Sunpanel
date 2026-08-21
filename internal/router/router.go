@@ -363,6 +363,8 @@ func registerAPI(engine *gin.Engine, svc Services) {
 
 			// Chạy lệnh và mở terminal trên máy chủ khác là quyền mạnh nhất panel
 			// có: nó tương đương ngồi trước máy đó với tài khoản đã khai báo.
+			nodes.GET("/:id/history", nodeHandler.History)
+			nodes.POST("/:id/sample", middleware.RequireWrite(), nodeHandler.Sample)
 			nodes.POST("/:id/exec", middleware.RequireAdmin(), nodeHandler.Exec)
 			nodes.GET("/:id/terminal", middleware.RequireAdmin(), nodeTerminalHandler.Connect)
 

@@ -282,6 +282,7 @@ func (a *App) Run() error {
 	go a.svc.Certs.RunRenewal(ctx)
 	go a.svc.Alerts.Run(ctx)
 	go a.svc.Uptime.Run(ctx)
+	go a.svc.Nodes.RunSampling(ctx)
 
 	go a.runSessionCleanup(ctx)
 

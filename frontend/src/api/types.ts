@@ -973,6 +973,17 @@ export interface NodePayload {
   passphrase?: string
 }
 
+/** Một lần đo tài nguyên của máy chủ từ xa. */
+export interface NodeSample {
+  id: number
+  nodeId: number
+  at: string
+  cpu: number
+  memory: number
+  disk: number
+  load1: number
+}
+
 /** Kết quả chạy một lệnh trên máy chủ từ xa. */
 export interface RemoteResult {
   stdout: string

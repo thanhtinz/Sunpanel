@@ -74,6 +74,7 @@ import type {
   SystemAccountPayload,
   DomainReport,
   HealthReport,
+  NodeSample,
   RemoteResult,
   RewritePreset,
   SecurityOverview,
@@ -300,6 +301,11 @@ export const nodeApi = {
     request<Node>(`/api/v1/nodes/${id}`, { method: 'PUT', body: payload }),
 
   remove: (id: number) => request<void>(`/api/v1/nodes/${id}`, { method: 'DELETE' }),
+
+  history: (id: number, hours = 24) =>
+    request<NodeSample[]>(`/api/v1/nodes/${id}/history?hours=${hours}`),
+
+  sample: (id: number) => request<void>(`/api/v1/nodes/${id}/sample`, { method: 'POST' }),
 
   exec: (id: number, command: string) =>
     request<RemoteResult>(`/api/v1/nodes/${id}/exec`, { method: 'POST', body: { command } }),
