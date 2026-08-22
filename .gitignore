@@ -19,6 +19,9 @@ coverage.out
 master.key
 config.yaml
 
+# Binary lọt ra khi chạy go build ./... trong thư mục ứng dụng máy tính
+/desktop/desktop
+
 # Sản phẩm build của ứng dụng Android
 /mobile/android/.gradle/
 /mobile/android/build/
