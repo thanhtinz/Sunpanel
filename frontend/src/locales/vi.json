@@ -1279,7 +1279,14 @@
     "machineUptime": "Máy đã chạy",
     "cores": "{count} nhân",
     "files": "Tệp",
-    "filesOf": "Tệp — {name}"
+    "filesOf": "Tệp — {name}",
+    "alerts": "Cảnh báo",
+    "alertOffline": "Báo khi mất kết nối",
+    "alertOfflineHelp": "Gửi thông báo qua các kênh đã cấu hình ở trang Cảnh báo.",
+    "alertCpu": "Ngưỡng CPU (%)",
+    "alertMemory": "Ngưỡng bộ nhớ (%)",
+    "alertDisk": "Ngưỡng ổ đĩa (%)",
+    "alertHelp": "Để 0 là tắt ngưỡng đó. Chỉ báo khi vượt ngưỡng ba lần đo liên tiếp, và báo lại một lần nữa khi đã hạ xuống."
   },
   "remoteFiles": {
     "name": "Tên",

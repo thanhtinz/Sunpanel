@@ -280,6 +280,10 @@ func (s *NodeService) buildSSH(base model.Node, req NodeRequest) (model.Node, er
 	record.Port = port
 	record.User = user
 	record.Remark = strings.TrimSpace(req.Remark)
+	record.AlertOffline = req.AlertOffline
+	record.AlertCPU = clampPercent(req.AlertCPU)
+	record.AlertMemory = clampPercent(req.AlertMemory)
+	record.AlertDisk = clampPercent(req.AlertDisk)
 	record.AuthType = model.AuthPassword
 	if req.AuthType == model.AuthKey {
 		record.AuthType = model.AuthKey
@@ -313,6 +317,17 @@ func (s *NodeService) buildSSH(base model.Node, req NodeRequest) (model.Node, er
 		record.Fingerprint = ""
 	}
 	return record, nil
+}
+
+// clampPercent kẹp một ngưỡng phần trăm về khoảng hợp lệ.
+//
+// Ngưỡng 0 là tắt, còn ngưỡng trên 100 thì không bao giờ chạm tới — cả hai đều
+// nghĩa là không cảnh báo, nên gộp chúng lại thành 0 cho rõ ràng.
+func clampPercent(value int) int {
+	if value <= 0 || value > 100 {
+		return 0
+	}
+	return value
 }
 
 // probeAndStamp thử kết nối và ghi lại những gì đọc được vào bản ghi.

@@ -67,6 +67,10 @@ const emptyNode = () => ({
   authType: 'password' as 'password' | 'key',
   secret: '',
   passphrase: '',
+  alertOffline: true,
+  alertCpu: 90,
+  alertMemory: 90,
+  alertDisk: 90,
 })
 
 const editor = ref({ show: false, saving: false, form: emptyNode() })
@@ -143,6 +147,10 @@ function openEdit(node: Node): void {
       user: node.user ?? 'root',
       authType: node.authType ?? 'password',
       secret: '',
+      alertOffline: node.alertOffline ?? false,
+      alertCpu: node.alertCpu ?? 0,
+      alertMemory: node.alertMemory ?? 0,
+      alertDisk: node.alertDisk ?? 0,
     },
   }
 }
@@ -177,6 +185,10 @@ async function save(): Promise<void> {
             secret: form.secret,
             passphrase: form.passphrase,
             remark: form.remark.trim(),
+            alertOffline: form.alertOffline,
+            alertCpu: form.alertCpu,
+            alertMemory: form.alertMemory,
+            alertDisk: form.alertDisk,
           }
         : {
             name: form.name.trim(),
@@ -587,6 +599,30 @@ function runRowAction(key: string, node: Node): void {
         <NFormItem :label="t('node.skipVerify')" :feedback="t('node.skipVerifyHelp')">
           <NSwitch v-model:value="editor.form.skipVerify" />
         </NFormItem>
+      </template>
+
+      <template v-if="editor.form.kind === 'ssh'">
+        <NDivider>{{ t('node.alerts') }}</NDivider>
+
+        <NFormItem :label="t('node.alertOffline')" :feedback="t('node.alertOfflineHelp')">
+          <NSwitch v-model:value="editor.form.alertOffline" />
+        </NFormItem>
+
+        <NSpace :size="12">
+          <NFormItem :label="t('node.alertCpu')">
+            <NInputNumber v-model:value="editor.form.alertCpu" :min="0" :max="100" style="width: 120px" />
+          </NFormItem>
+          <NFormItem :label="t('node.alertMemory')">
+            <NInputNumber v-model:value="editor.form.alertMemory" :min="0" :max="100" style="width: 120px" />
+          </NFormItem>
+          <NFormItem :label="t('node.alertDisk')">
+            <NInputNumber v-model:value="editor.form.alertDisk" :min="0" :max="100" style="width: 120px" />
+          </NFormItem>
+        </NSpace>
+
+        <NText depth="3" style="font-size: 12px; display: block; margin-bottom: 14px">
+          {{ t('node.alertHelp') }}
+        </NText>
       </template>
 
       <NFormItem :label="t('node.remark')">

@@ -147,6 +147,10 @@ func New(cfg config.Config) (*App, error) {
 	backups.SetAlerts(alerts)
 	certificates.SetAlerts(alerts)
 
+	// Một VPS ở xa tắt lúc nửa đêm là thứ không ai nhìn thấy cho tới sáng, trừ
+	// khi có người báo.
+	nodes.SetAlerts(alerts)
+
 	// Dò công cụ tường lửa một lần lúc khởi động: việc dò phải chạy vài lệnh, và
 	// công cụ trên máy không đổi giữa chừng.
 	firewallManager := firewall.Detect(context.Background(), localHost)

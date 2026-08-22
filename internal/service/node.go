@@ -41,6 +41,12 @@ type NodeRequest struct {
 	// Secret là mật khẩu hoặc khóa riêng; để trống khi sửa nghĩa là giữ nguyên.
 	Secret     string `json:"secret"`
 	Passphrase string `json:"passphrase"`
+
+	// Ngưỡng cảnh báo; 0 nghĩa là tắt ngưỡng đó.
+	AlertOffline bool `json:"alertOffline"`
+	AlertCPU     int  `json:"alertCpu"`
+	AlertMemory  int  `json:"alertMemory"`
+	AlertDisk    int  `json:"alertDisk"`
 }
 
 // NodeInfo là node kèm trạng thái kết nối hiện tại.
@@ -74,7 +80,11 @@ type NodeService struct {
 	hosts map[uint]*agent.RemoteHost
 	// sshClients giữ kết nối SSH đang mở, dùng lại cho các lần lấy mẫu sau.
 	sshClients map[uint]*sshx.Client
-	mu         sync.Mutex
+	// alertStates giữ trạng thái cảnh báo của từng máy chủ.
+	alertStates map[uint]*nodeAlertState
+	// alerts gửi thông báo; nil nghĩa là tắt phần cảnh báo.
+	alerts *AlertService
+	mu     sync.Mutex
 }
 
 // NewNodeService tạo dịch vụ node.
@@ -82,8 +92,15 @@ func NewNodeService(db *gorm.DB, sealer *crypto.Sealer, audit *AuditService) *No
 	return &NodeService{
 		db: db, sealer: sealer, audit: audit,
 		hosts: map[uint]*agent.RemoteHost{}, sshClients: map[uint]*sshx.Client{},
+		alertStates: map[uint]*nodeAlertState{},
 	}
 }
+
+// SetAlerts bật phần cảnh báo cho các máy chủ từ xa.
+//
+// Tách khỏi hàm khởi tạo vì cảnh báo là phần thêm: thiếu nó thì việc quản lý
+// máy chủ vẫn nguyên vẹn, chỉ là không ai báo khi một máy tắt lúc nửa đêm.
+func (s *NodeService) SetAlerts(alerts *AlertService) { s.alerts = alerts }
 
 // List liệt kê node kèm trạng thái kết nối.
 func (s *NodeService) List(ctx context.Context) ([]NodeInfo, error) {
@@ -201,6 +218,7 @@ func (s *NodeService) hostFor(record model.Node) (*agent.RemoteHost, error) {
 // và token cũ cho tới lần khởi động lại.
 func (s *NodeService) forget(id uint) {
 	s.dropSSH(id)
+	s.forgetAlertState(id)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()

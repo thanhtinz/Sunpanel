@@ -937,6 +937,10 @@ export interface Node {
   user?: string
   authType?: 'password' | 'key'
   fingerprint?: string
+  alertOffline?: boolean
+  alertCpu?: number
+  alertMemory?: number
+  alertDisk?: number
   load1?: number
   memoryUsed?: number
   memoryTotal?: number
@@ -971,6 +975,11 @@ export interface NodePayload {
   /** Mật khẩu hoặc khóa riêng; để trống khi sửa nghĩa là giữ nguyên. */
   secret?: string
   passphrase?: string
+  /** Ngưỡng cảnh báo tính bằng phần trăm; 0 nghĩa là tắt. */
+  alertOffline?: boolean
+  alertCpu?: number
+  alertMemory?: number
+  alertDisk?: number
 }
 
 /** Một mục trong thư mục trên máy chủ từ xa. */

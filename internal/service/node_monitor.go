@@ -70,9 +70,14 @@ func (s *NodeService) sampleAll(ctx context.Context) {
 }
 
 // sample đo và lưu một mẫu của một máy chủ.
+//
+// Mọi đường lấy mẫu đều đi qua đây — vòng lặp định kỳ lẫn nút bấm tay — nên
+// phần đánh giá cảnh báo cũng nằm ở đây: đặt nó ở vòng lặp thì một máy chủ tắt
+// vẫn im lặng cho tới chu kỳ sau, dù người dùng vừa bấm kiểm tra và thấy lỗi.
 func (s *NodeService) sample(ctx context.Context, record model.Node) error {
 	client, err := s.sshClient(ctx, record)
 	if err != nil {
+		s.noteSampleFailure(ctx, record, err)
 		return err
 	}
 
@@ -81,6 +86,7 @@ func (s *NodeService) sample(ctx context.Context, record model.Node) error {
 		// Kết nối đang giữ có thể đã chết từ lâu mà chưa ai chạm tới; bỏ nó đi để
 		// lần sau mở lại thay vì lặp lại đúng lỗi này mỗi phút.
 		s.dropSSH(record.ID)
+		s.noteSampleFailure(ctx, record, err)
 		return err
 	}
 
@@ -89,7 +95,12 @@ func (s *NodeService) sample(ctx context.Context, record model.Node) error {
 		CPUPercent: metrics.CPUPercent, MemoryPercent: metrics.MemoryPercent,
 		DiskPercent: metrics.DiskPercent, Load1: metrics.Load1,
 	}
-	return s.db.WithContext(ctx).Create(&sample).Error
+	if err := s.db.WithContext(ctx).Create(&sample).Error; err != nil {
+		return err
+	}
+
+	s.noteSample(ctx, record, metrics)
+	return nil
 }
 
 // pruneSamples xóa các mẫu quá cũ.

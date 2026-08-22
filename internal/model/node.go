@@ -53,6 +53,16 @@ type Node struct {
 	Secret string `gorm:"type:text" json:"-"`
 	// Passphrase mở khóa riêng, cũng đã mã hóa.
 	Passphrase string `gorm:"type:text" json:"-"`
+	// AlertOffline bật cảnh báo khi máy chủ mất kết nối.
+	AlertOffline bool `json:"alertOffline"`
+	// AlertCPU, AlertMemory và AlertDisk là ngưỡng phần trăm; 0 nghĩa là tắt.
+	//
+	// Không đặt mặc định cho cột: GORM bỏ qua trường mang giá trị zero khi cột
+	// có mặc định, và khi đó người dùng không bao giờ tắt được một ngưỡng.
+	AlertCPU    int `json:"alertCpu"`
+	AlertMemory int `json:"alertMemory"`
+	AlertDisk   int `json:"alertDisk"`
+
 	// Fingerprint là dấu vân tay khóa máy chủ ghi nhận ở lần kết nối đầu tiên.
 	//
 	// Từ lần sau khóa phải khớp: khóa đổi nghĩa là hoặc máy đã bị cài lại, hoặc

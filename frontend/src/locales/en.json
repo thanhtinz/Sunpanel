@@ -1279,7 +1279,14 @@
     "machineUptime": "Machine up for",
     "cores": "{count} cores",
     "files": "Files",
-    "filesOf": "Files — {name}"
+    "filesOf": "Files — {name}",
+    "alerts": "Alerts",
+    "alertOffline": "Alert when unreachable",
+    "alertOfflineHelp": "Sent through the channels configured on the Alerts page.",
+    "alertCpu": "CPU threshold (%)",
+    "alertMemory": "Memory threshold (%)",
+    "alertDisk": "Disk threshold (%)",
+    "alertHelp": "0 turns a threshold off. Alerts fire after three consecutive samples above the threshold, and once more when it drops back."
   },
   "remoteFiles": {
     "name": "Name",
