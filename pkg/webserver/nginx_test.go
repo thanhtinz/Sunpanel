@@ -219,8 +219,36 @@ func TestValidateDomain(t *testing.T) {
 	}
 }
 
+// mainConfig dựng cấu hình nginx tối giản có include thư mục của panel.
+//
+// pid và nhật ký phải nằm trong thư mục tạm: nginx -t mở chúng theo đường dẫn
+// biên dịch sẵn (/run/nginx.pid, /var/log/nginx), mà đó là chỗ chỉ root ghi được.
+func mainConfig(mainConf, confDir string) string {
+	dir := filepath.Dir(mainConf)
+	return "pid " + filepath.Join(dir, "nginx.pid") + ";\n" +
+		"error_log " + filepath.Join(dir, "error.log") + ";\n" +
+		"events {}\nhttp {\n" +
+		"    access_log " + filepath.Join(dir, "access.log") + ";\n" +
+		"    include " + confDir + "/*.conf;\n}\n"
+}
+
+// requireRootForNginxTest bỏ qua bài kiểm thử khi không chạy được đầy đủ.
+//
+// nginx -t không chỉ đọc cấu hình mà còn mở luôn cổng lắng nghe để chắc chắn mở
+// được. Cấu hình thật dùng cổng 80 và 443, nên chỉ root mới kiểm được — và uốn
+// cấu hình sang cổng cao chỉ để chiều bài kiểm thử thì nó không còn kiểm đúng
+// thứ panel sinh ra nữa.
+func requireRootForNginxTest(t *testing.T) {
+	t.Helper()
+	if os.Geteuid() != 0 {
+		t.Skip("nginx -t mở cổng 80 và 443 nên cần chạy dưới quyền root")
+	}
+}
+
 // Cấu hình sinh ra phải được chính nginx chấp nhận, không chỉ "trông đúng".
 func TestGeneratedConfigPassesNginxTest(t *testing.T) {
+	requireRootForNginxTest(t)
+
 	manager, confDir := newNginx(t)
 	ctx := context.Background()
 
@@ -229,10 +257,13 @@ func TestGeneratedConfigPassesNginxTest(t *testing.T) {
 	}
 
 	root := t.TempDir()
+	// nginx -t mở cả tệp nhật ký, nên nhật ký phải nằm trong thư mục tạm chứ
+	// không phải /var/log/nginx — chỗ đó chỉ root ghi được.
+	logDir := t.TempDir()
 	sites := []Site{
-		{Name: "tinh", Domains: []string{"static.example.com"}, Type: SiteStatic, Root: root},
+		{Name: "tinh", Domains: []string{"static.example.com"}, Type: SiteStatic, Root: root, LogDir: logDir},
 		{Name: "proxy", Domains: []string{"app.example.com"}, Type: SiteProxy,
-			ProxyTarget: "http://127.0.0.1:3000", ACMEWebroot: root},
+			ProxyTarget: "http://127.0.0.1:3000", ACMEWebroot: root, LogDir: logDir},
 	}
 
 	for _, site := range sites {
@@ -249,7 +280,11 @@ func TestGeneratedConfigPassesNginxTest(t *testing.T) {
 	// Dựng một cấu hình nginx tối giản có include thư mục của panel, rồi nhờ
 	// chính nginx kiểm tra.
 	mainConf := filepath.Join(t.TempDir(), "nginx.conf")
-	content := "events {}\nhttp {\n    include " + confDir + "/*.conf;\n}\n"
+	// pid và error_log phải nằm trong thư mục tạm: nginx -t mở tệp pid theo đường
+	// dẫn biên dịch sẵn (/run/nginx.pid), mà một tiến trình không phải root thì
+	// không ghi được vào đó — và bài kiểm thử này chạy dưới tài khoản thường trên
+	// máy dựng bản.
+	content := mainConfig(mainConf, confDir)
 	if err := os.WriteFile(mainConf, []byte(content), 0o644); err != nil {
 		t.Fatalf("ghi cấu hình chính: %v", err)
 	}
@@ -360,6 +395,8 @@ func TestRenderProxySiteServesACMEPathLocally(t *testing.T) {
 // nginx từ chối nạp cấu hình, kéo sập mọi website trên máy — và Ubuntu 22.04,
 // Debian 12, Rocky 9 đều còn dùng bản cũ hơn mốc đó.
 func TestSSLConfigPassesNginxTest(t *testing.T) {
+	requireRootForNginxTest(t)
+
 	manager, confDir := newNginx(t)
 	ctx := context.Background()
 
@@ -372,7 +409,7 @@ func TestSSLConfigPassesNginxTest(t *testing.T) {
 
 	site := Site{
 		Name: "https", Domains: []string{"secure.example.com"},
-		Type: SiteStatic, Root: root, ACMEWebroot: root,
+		Type: SiteStatic, Root: root, ACMEWebroot: root, LogDir: t.TempDir(),
 		SSL: SSLConfig{Enabled: true, ForceHTTPS: true, CertFile: certFile, KeyFile: keyFile},
 	}
 
@@ -386,7 +423,11 @@ func TestSSLConfigPassesNginxTest(t *testing.T) {
 	}
 
 	mainConf := filepath.Join(t.TempDir(), "nginx.conf")
-	content := "events {}\nhttp {\n    include " + confDir + "/*.conf;\n}\n"
+	// pid và error_log phải nằm trong thư mục tạm: nginx -t mở tệp pid theo đường
+	// dẫn biên dịch sẵn (/run/nginx.pid), mà một tiến trình không phải root thì
+	// không ghi được vào đó — và bài kiểm thử này chạy dưới tài khoản thường trên
+	// máy dựng bản.
+	content := mainConfig(mainConf, confDir)
 	if err := os.WriteFile(mainConf, []byte(content), 0o644); err != nil {
 		t.Fatalf("ghi cấu hình chính: %v", err)
 	}

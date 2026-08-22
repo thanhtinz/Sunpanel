@@ -51,6 +51,9 @@ type Result struct {
 // defaultDirMode là quyền dùng cho thư mục mà tệp nén không nói rõ quyền.
 const defaultDirMode fs.FileMode = 0o755
 
+// ownerDirBits là quyền tối thiểu của chủ sở hữu trên một thư mục vừa giải nén.
+const ownerDirBits fs.FileMode = 0o700
+
 // defaultFileMode là quyền dùng cho tệp mà tệp nén không nói rõ quyền.
 //
 // Nhiều tệp zip tạo trên Windows không mang quyền kiểu Unix, và mode 0 sẽ tạo
@@ -99,7 +102,11 @@ func (g *guard) dir(ctx context.Context, name string, mode fs.FileMode) error {
 	if mode.Perm() == 0 {
 		mode = defaultDirMode
 	}
-	if err := g.sink.Dir(ctx, clean, mode.Perm()); err != nil {
+	// Chủ sở hữu phải vào và ghi được thư mục vừa tạo. Rất nhiều tệp nén khai
+	// quyền thiếu bit thực thi cho thư mục — tệp zip không mang quyền Unix là ví
+	// dụ thường gặp nhất — và một thư mục không vào được thì phần bung ra sau đó
+	// hỏng theo, kể cả với chính người vừa giải nén.
+	if err := g.sink.Dir(ctx, clean, mode.Perm()|ownerDirBits); err != nil {
 		return err
 	}
 	g.result.Dirs++

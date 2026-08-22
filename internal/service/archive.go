@@ -100,13 +100,22 @@ func (s *FileService) writeZip(ctx context.Context, w io.Writer, sources []strin
 	for _, source := range sources {
 		base := path.Dir(normalizePath(source))
 		err := s.walk(ctx, source, func(p string, info host.FileInfo) error {
-			name := archiveName(base, p)
+			// Create() không ghi quyền kiểu Unix vào tệp nén: tệp bung ra mất hết
+			// quyền, và thư mục thì thành drw-rw-rw- — không ai vào được, kể cả
+			// chủ sở hữu. CreateHeader kèm SetMode mới giữ được quyền thật.
+			header := &zip.FileHeader{Name: archiveName(base, p), Modified: info.ModTime}
 			if info.IsDir {
-				_, err := zw.Create(name + "/")
+				header.Name += "/"
+				header.SetMode(info.Mode | fs.ModeDir)
+				// Thư mục không có nội dung để nén.
+				header.Method = zip.Store
+				_, err := zw.CreateHeader(header)
 				return err
 			}
 
-			entry, err := zw.Create(name)
+			header.SetMode(info.Mode)
+			header.Method = zip.Deflate
+			entry, err := zw.CreateHeader(header)
 			if err != nil {
 				return err
 			}

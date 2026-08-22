@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -152,6 +153,56 @@ func TestChmod(t *testing.T) {
 		if err := svc.Chmod(ctx, "/script.sh", invalid); !errors.Is(err, apperr.FileInvalidMode) {
 			t.Errorf("chuỗi quyền %q: lỗi = %v, mong đợi FileInvalidMode", invalid, err)
 		}
+	}
+}
+
+func TestZipGiuQuyenVaThuMucVaoDuoc(t *testing.T) {
+	svc, root := newTestFileService(t)
+	writeFile(t, filepath.Join(root, "duan", "con", "b.txt"), "tệp B")
+	if err := os.Chmod(filepath.Join(root, "duan", "con"), 0o750); err != nil {
+		t.Fatalf("đặt quyền: %v", err)
+	}
+	if err := os.Chmod(filepath.Join(root, "duan", "con", "b.txt"), 0o640); err != nil {
+		t.Fatalf("đặt quyền: %v", err)
+	}
+	ctx := context.Background()
+
+	if err := svc.Compress(ctx, []string{"/duan"}, "/luu-tru.zip", FormatZip); err != nil {
+		t.Fatalf("nén: %v", err)
+	}
+
+	// Đọc thẳng tệp nén: quyền phải nằm trong đó, chứ không phải chỉ đúng nhờ
+	// giá trị mặc định lúc giải nén.
+	reader, err := zip.OpenReader(filepath.Join(root, "luu-tru.zip"))
+	if err != nil {
+		t.Fatalf("mở tệp nén: %v", err)
+	}
+	defer reader.Close()
+
+	found := map[string]fs.FileMode{}
+	for _, entry := range reader.File {
+		found[entry.Name] = entry.Mode().Perm()
+		if strings.HasSuffix(entry.Name, "/") && entry.Mode().Perm()&0o100 == 0 {
+			t.Errorf("thư mục %s trong tệp nén không có bit thực thi (%04o): giải nén ra sẽ không vào được",
+				entry.Name, entry.Mode().Perm())
+		}
+	}
+	if got := found["duan/con/"]; got != 0o750 {
+		t.Errorf("quyền thư mục = %04o, mong đợi 750", got)
+	}
+	if got := found["duan/con/b.txt"]; got != 0o640 {
+		t.Errorf("quyền tệp = %04o, mong đợi 640", got)
+	}
+
+	if _, err := svc.Extract(ctx, "/luu-tru.zip", "/ra"); err != nil {
+		t.Fatalf("giải nén: %v", err)
+	}
+	info, err := os.Stat(filepath.Join(root, "ra", "duan", "con"))
+	if err != nil {
+		t.Fatalf("đọc thư mục đã giải nén: %v", err)
+	}
+	if info.Mode().Perm()&0o700 != 0o700 {
+		t.Errorf("thư mục giải ra có quyền %04o: chủ sở hữu phải vào và ghi được", info.Mode().Perm())
 	}
 }
 
