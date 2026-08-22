@@ -1,0 +1,10 @@
+# Cầu nối cho các bản Linux chỉ còn WebKitGTK 4.1.
+#
+# Thư viện webview khai phụ thuộc theo tên "webkit2gtk-4.0", nhưng Ubuntu 24.04
+# và các bản mới hơn chỉ đóng gói 4.1. Hai bản này giống nhau ở phần API mà ứng
+# dụng dùng — khác biệt nằm ở thư viện HTTP bên dưới — nên chuyển tiếp thẳng
+# sang 4.1 là đủ, thay vì bắt người build tự vá máy của mình.
+Name: webkit2gtk-4.0
+Description: Chuyển tiếp sang webkit2gtk-4.1
+Version: 4.1
+Requires: webkit2gtk-4.1

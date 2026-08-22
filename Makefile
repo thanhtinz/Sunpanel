@@ -80,6 +80,17 @@ release: frontend ## Build binary cho mọi nền tảng vào dist/
 	@cd $(DIST) && sha256sum * > SHA256SUMS
 	@ls -lh $(DIST)
 
+# Ứng dụng máy tính là một mô-đun Go riêng vì nó cần cgo (WebKit/WebView2/WKWebView),
+# còn binary panel phải giữ CGO_ENABLED=0 để biên dịch chéo được.
+.PHONY: desktop
+desktop: ## Build ứng dụng máy tính vào bin/sunpanel-desktop
+	cd desktop && PKG_CONFIG_PATH=$(CURDIR)/desktop/pkgconfig:$$PKG_CONFIG_PATH \
+		go build -trimpath -o $(CURDIR)/bin/sunpanel-desktop$(if $(filter windows,$(GOOS)),.exe,) .
+
+.PHONY: desktop-test
+desktop-test: ## Chạy test của ứng dụng máy tính
+	cd desktop && PKG_CONFIG_PATH=$(CURDIR)/desktop/pkgconfig:$$PKG_CONFIG_PATH go test ./...
+
 .PHONY: clean
 clean: ## Xóa sản phẩm build
 	rm -rf bin $(DIST) coverage.out web/dist/assets web/dist/index.html web/dist/favicon.svg

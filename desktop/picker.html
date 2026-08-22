@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SunPanel</title>
+    <style>
+      :root {
+        --bg: #f4f6f3; --surface: #ffffff; --border: #e0e4dd;
+        --text: #161917; --muted: #6a706c; --action: #15a34a;
+        --sun: #e8930c; --danger: #dc2626;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0e100f; --surface: #171a18; --border: #262a27;
+          --text: #e8ebe8; --muted: #9aa19c; --action: #31b866; --sun: #f2a93b;
+        }
+      }
+      * { box-sizing: border-box }
+      body {
+        margin: 0; padding: 40px 24px; background: var(--bg); color: var(--text);
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+      .wrap { max-width: 560px; margin: 0 auto }
+      .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 6px }
+      .brand svg { width: 30px; height: 30px }
+      .brand b { font-size: 19px; font-weight: 650 }
+      .brand b span { color: var(--sun) }
+      .lead { color: var(--muted); font-size: 13px; margin: 0 0 22px }
+      .card {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 10px; padding: 4px 14px; margin-bottom: 16px;
+      }
+      .row {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 0; border-bottom: 1px solid var(--border);
+      }
+      .row:last-child { border-bottom: none }
+      .row .info { flex: 1; min-width: 0 }
+      .row .name { font-weight: 600; font-size: 14px }
+      .row .url {
+        color: var(--muted); font-size: 12px; margin-top: 2px;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+      }
+      button {
+        font: inherit; font-size: 13px; padding: 7px 14px; border-radius: 7px;
+        border: 1px solid var(--border); background: var(--surface);
+        color: var(--text); cursor: pointer;
+      }
+      button:hover { border-color: var(--muted) }
+      button.primary { background: var(--action); border-color: var(--action); color: #fff }
+      button.link { border: none; background: none; color: var(--muted); padding: 7px 8px }
+      button.link.danger:hover { color: var(--danger) }
+      .empty { color: var(--muted); font-size: 13px; padding: 22px 0; text-align: center }
+      form { display: grid; gap: 10px }
+      label { font-size: 12px; color: var(--muted) }
+      input {
+        font: inherit; font-size: 14px; width: 100%; padding: 9px 11px;
+        border-radius: 7px; border: 1px solid var(--border);
+        background: var(--bg); color: var(--text);
+      }
+      input:focus { outline: 2px solid var(--action); outline-offset: -1px }
+      .actions { display: flex; gap: 8px; justify-content: flex-end }
+      .error { color: var(--danger); font-size: 12px; min-height: 16px }
+      .hint { color: var(--muted); font-size: 12px; text-align: center; margin-top: 18px }
+      kbd {
+        font-family: inherit; font-size: 11px; border: 1px solid var(--border);
+        border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="brand">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <defs><clipPath id="s"><rect x="7" y="18" width="50" height="36" /></clipPath></defs>
+          <rect x="2" y="5" width="60" height="54" rx="10" fill="#011c3e" />
+          <rect x="7" y="18" width="50" height="36" fill="#fff" />
+          <circle cx="11.5" cy="11.5" r="2.3" fill="#42f2a3" />
+          <circle cx="18.5" cy="11.5" r="2.3" fill="#00d2f6" />
+          <circle cx="25.5" cy="11.5" r="2.3" fill="#33aba1" />
+          <g clip-path="url(#s)">
+            <g stroke="#f0a500" stroke-width="2.4" stroke-linecap="round">
+              <path d="M32 21v5.5" /><path d="M21.6 25.3l3.4 4.3" /><path d="M42.4 25.3l-3.4 4.3" />
+              <path d="M14.6 33.4l4.9 2.4" /><path d="M49.4 33.4l-4.9 2.4" />
+            </g>
+            <circle cx="32" cy="44.6" r="10.6" fill="#f0a500" />
+            <path d="M7 54V50.6C10 46.8 15 46.8 18 50.6 22 44 30.6 44 34.6 50.6 38 46.2 43.4 46.2 46.8 50.6 49.4 48 54.4 48 57 50.4V54Z" fill="#011c3e" />
+          </g>
+        </svg>
+        <b><span>Sun</span>Panel</b>
+      </div>
+      <p class="lead">Chọn máy chủ để mở bảng điều khiển.</p>
+
+      <div class="card" id="list"></div>
+
+      <div class="card" style="padding: 14px">
+        <form id="form">
+          <input type="hidden" id="id" />
+          <div>
+            <label for="name">Tên gợi nhớ</label>
+            <input id="name" placeholder="VPS Sài Gòn" autocomplete="off" />
+          </div>
+          <div>
+            <label for="url">Địa chỉ panel (kèm đường dẫn bí mật)</label>
+            <input id="url" placeholder="http://203.0.113.10:9527/abc123xyz/" autocomplete="off" />
+          </div>
+          <div class="error" id="error"></div>
+          <div class="actions">
+            <button type="button" class="link" id="cancel" hidden>Hủy</button>
+            <button type="submit" class="primary" id="submit">Thêm máy chủ</button>
+          </div>
+        </form>
+      </div>
+
+      <p class="hint">Đang mở một máy chủ? Nhấn <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd> để quay lại đây.</p>
+    </div>
+
+    <script>
+      const list = document.getElementById('list')
+      const form = document.getElementById('form')
+      const error = document.getElementById('error')
+      const cancel = document.getElementById('cancel')
+      const submit = document.getElementById('submit')
+
+      function escapeHTML(value) {
+        return String(value).replace(/[&<>"']/g, (c) =>
+          ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+        )
+      }
+
+      // Xóa cần hai nhịp: một địa chỉ panel kèm đường dẫn bí mật gõ lại không dễ,
+      // và ba nút nằm sát nhau nên bấm nhầm là chuyện thường.
+      let pendingRemove = ''
+
+      async function render() {
+        const servers = await window.listServers()
+        if (!servers.length) {
+          list.innerHTML = '<div class="empty">Chưa có máy chủ nào. Thêm một cái bên dưới.</div>'
+          return
+        }
+
+        // Dựng bằng chuỗi nhưng mọi giá trị đều đi qua escapeHTML: tên và địa chỉ
+        // là dữ liệu người dùng gõ vào, và cửa sổ này chạy cùng quyền với ứng dụng.
+        list.innerHTML = servers
+          .map(
+            (s) => `
+            <div class="row">
+              <div class="info">
+                <div class="name">${escapeHTML(s.name)}</div>
+                <div class="url">${escapeHTML(s.url)}</div>
+              </div>
+              <button class="primary" data-open="${escapeHTML(s.id)}">Kết nối</button>
+              <button class="link" data-edit="${escapeHTML(s.id)}">Sửa</button>
+              <button class="link danger" data-remove="${escapeHTML(s.id)}">${
+                s.id === pendingRemove ? 'Xóa thật?' : 'Xóa'
+              }</button>
+            </div>`,
+          )
+          .join('')
+      }
+
+      list.addEventListener('click', async (event) => {
+        const target = event.target.closest('button')
+        if (!target) return
+
+        if (target.dataset.open) {
+          await window.openServer(target.dataset.open)
+          return
+        }
+        if (target.dataset.remove) {
+          if (pendingRemove !== target.dataset.remove) {
+            pendingRemove = target.dataset.remove
+            await render()
+            return
+          }
+          pendingRemove = ''
+          await window.removeServer(target.dataset.remove)
+          await render()
+          return
+        }
+
+        // Bấm bất kỳ nút nào khác là đổi ý: bỏ trạng thái chờ xác nhận.
+        if (pendingRemove) {
+          pendingRemove = ''
+          await render()
+        }
+        if (target.dataset.edit) {
+          const servers = await window.listServers()
+          const server = servers.find((s) => s.id === target.dataset.edit)
+          if (!server) return
+          document.getElementById('id').value = server.id
+          document.getElementById('name').value = server.name
+          document.getElementById('url').value = server.url
+          submit.textContent = 'Lưu'
+          cancel.hidden = false
+          document.getElementById('name').focus()
+        }
+      })
+
+      cancel.addEventListener('click', reset)
+
+      function reset() {
+        // Bỏ luôn trạng thái chờ xác nhận xóa: định danh được cấp lại sau khi
+        // xóa, nên một máy chủ vừa thêm có thể trùng định danh đang chờ.
+        pendingRemove = ''
+        form.reset()
+        document.getElementById('id').value = ''
+        submit.textContent = 'Thêm máy chủ'
+        cancel.hidden = true
+        error.textContent = ''
+      }
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault()
+        error.textContent = ''
+
+        const result = await window.saveServer(
+          document.getElementById('id').value,
+          document.getElementById('name').value,
+          document.getElementById('url').value,
+        )
+        if (result) {
+          error.textContent = result
+          return
+        }
+        reset()
+        await render()
+      })
+
+      render()
+    </script>
+  </body>
+</html>

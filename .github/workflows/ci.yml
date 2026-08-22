@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 env:
-  GO_VERSION: '1.24'
+  GO_VERSION: '1.25'
   NODE_VERSION: '22'
 
 jobs:
@@ -87,6 +87,49 @@ jobs:
 
       - name: Độ phủ
         run: go tool cover -func=coverage.out | tail -1
+
+  desktop:
+    name: Ứng dụng máy tính
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: desktop/go.sum
+
+      # Trình duyệt nhúng là thư viện hệ thống, nên không biên dịch chéo được:
+      # job này chỉ kiểm được bản Linux, Windows và macOS phải build trên chính nó.
+      - name: Cài WebKitGTK
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
+
+      - name: Kiểm tra định dạng
+        working-directory: desktop
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "Các tệp sau chưa được gofmt:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Test
+        working-directory: desktop
+        env:
+          PKG_CONFIG_PATH: ${{ github.workspace }}/desktop/pkgconfig
+        run: |
+          go vet ./...
+          go test ./...
+
+      - name: Build
+        working-directory: desktop
+        env:
+          PKG_CONFIG_PATH: ${{ github.workspace }}/desktop/pkgconfig
+        run: go build -trimpath -o /tmp/sunpanel-desktop .
 
   build:
     name: Build ${{ matrix.goos }}/${{ matrix.goarch }}

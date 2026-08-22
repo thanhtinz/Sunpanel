@@ -96,6 +96,10 @@ sunpanel reset-password -user admin
   để panel điều khiển máy đó từ xa qua kênh TLS có token.
 - **Plugin**: mở rộng panel bằng dịch vụ chạy riêng khai báo qua YAML; panel
   chuyển tiếp yêu cầu kèm danh tính người gọi — xem [hướng dẫn](docs/PLUGINS.md).
+- **Ứng dụng máy tính**: bản gốc cho Windows, macOS và Linux mở panel trong cửa sổ
+  riêng của hệ điều hành, nhớ sẵn nhiều máy chủ và vào thẳng máy dùng lần trước —
+  xem [hướng dẫn](docs/DESKTOP.md). Trên điện thoại, panel cài được thẳng ra màn
+  hình chính từ trình duyệt.
 - **Giao diện**: chế độ sáng/tối, chuyển ngôn ngữ tức thời, bảng lệnh nhanh Ctrl+K
   (tìm được cả khi gõ không dấu), bố cục riêng cho điện thoại.
 
@@ -251,6 +255,10 @@ sunpanel reset-password -user admin
   to have the panel drive it remotely over a token-authenticated TLS channel.
 - **Plugins**: extend the panel with a separate service declared in YAML; the panel
   forwards requests along with the caller's identity — see the [guide](docs/PLUGINS.md).
+- **Desktop app**: a native build for Windows, macOS and Linux that opens the panel
+  in its own OS window, remembers several servers and goes straight to the last one
+  you used — see the [guide](docs/DESKTOP.md). On phones, the panel installs to the
+  home screen straight from the browser.
 - **UI**: light/dark theme, instant language switching, Ctrl+K command palette
   (matches Vietnamese text typed without diacritics), dedicated mobile layout.
 
