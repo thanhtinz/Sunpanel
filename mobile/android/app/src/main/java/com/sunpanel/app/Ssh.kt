@@ -137,7 +137,9 @@ class SshSession private constructor(private val session: Session, val hostKey: 
 
             val session = jsch.getSession(server.user, server.host, server.port)
             if (server.privateKey.isBlank()) {
-                session.setPassword(password)
+                // Bản nhận String đã bị bỏ: nó giữ mật khẩu trong một chuỗi bất
+                // biến nằm lại trong bộ nhớ cho tới khi bộ dọn rác đi qua.
+                session.setPassword(password.toByteArray(Charsets.UTF_8))
             }
             // Máy chủ có thể hỏi thêm bằng keyboard-interactive thay vì nhận mật
             // khẩu thẳng; trả lời bằng chính mật khẩu đã nhập.
