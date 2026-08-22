@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <title>SunPanel — Terminal</title>
+    <link rel="stylesheet" href="/assets/xterm.css" />
+    <style>
+      :root {
+        --nen: #f4f6f3;
+        --the: #ffffff;
+        --vien: #e3e6e2;
+        --chu: #1f2225;
+        --mo: #6b7280;
+        --xanh: #18a058;
+        --do: #d03050;
+        --term-nen: #0b1220;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --nen: #101014;
+          --the: #18181c;
+          --vien: #2a2a30;
+          --chu: #e6e6e8;
+          --mo: #9aa0a6;
+          --xanh: #63e2b7;
+        }
+      }
+
+      * { box-sizing: border-box; }
+      html, body { height: 100%; margin: 0; }
+      body {
+        background: var(--nen);
+        color: var(--chu);
+        font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 10px 16px;
+        background: var(--the);
+        border-bottom: 1px solid var(--vien);
+      }
+      .ten { font-weight: 600; }
+      .dia-chi { color: var(--mo); font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; }
+      .day { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+
+      .so { display: flex; align-items: baseline; gap: 6px; font-size: 12px; color: var(--mo); }
+      .so b { font-size: 14px; color: var(--chu); font-variant-numeric: tabular-nums; }
+      .thanh { width: 54px; height: 5px; border-radius: 3px; background: var(--vien); overflow: hidden; }
+      .thanh span { display: block; height: 100%; background: var(--xanh); width: 0; transition: width .4s ease; }
+      .thanh.cao span { background: var(--do); }
+
+      button {
+        font: inherit;
+        border: 1px solid var(--vien);
+        background: transparent;
+        color: var(--chu);
+        border-radius: 6px;
+        padding: 5px 12px;
+        cursor: pointer;
+      }
+      button:hover { border-color: var(--xanh); color: var(--xanh); }
+
+      main { flex: 1; min-height: 0; display: flex; }
+      #term { flex: 1; min-width: 0; padding: 8px; background: var(--term-nen); }
+      #term .xterm { height: 100%; }
+
+      aside {
+        width: 320px;
+        border-left: 1px solid var(--vien);
+        background: var(--the);
+        display: none;
+        flex-direction: column;
+      }
+      aside.hien { display: flex; }
+      .duong-dan {
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--vien);
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 12px;
+        color: var(--mo);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        direction: rtl;
+        text-align: left;
+      }
+      .tep-list { flex: 1; overflow-y: auto; }
+      .tep {
+        display: flex; align-items: center; gap: 8px;
+        padding: 6px 12px; font-size: 13px; cursor: default;
+      }
+      .tep.thu-muc { cursor: pointer; }
+      .tep.thu-muc:hover { background: var(--nen); color: var(--xanh); }
+      .tep .ten { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .tep .co { color: var(--mo); font-size: 11px; font-variant-numeric: tabular-nums; }
+      .tep-loi { padding: 12px; font-size: 12px; color: var(--do); }
+
+      .bao { padding: 8px 16px; background: var(--do); color: #fff; font-size: 13px; display: none; }
+      .bao.hien { display: block; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <div class="ten" id="ten">Đang kết nối…</div>
+        <div class="dia-chi" id="dia-chi"></div>
+      </div>
+      <div class="day">
+        <div class="so">CPU <div class="thanh" id="thanh-cpu"><span></span></div> <b id="cpu">—</b></div>
+        <div class="so">RAM <div class="thanh" id="thanh-ram"><span></span></div> <b id="ram">—</b></div>
+        <div class="so">Đĩa <div class="thanh" id="thanh-dia"><span></span></div> <b id="dia">—</b></div>
+        <button id="nut-tep">Tệp</button>
+        <button id="ve">Danh sách máy chủ</button>
+      </div>
+    </header>
+
+    <div class="bao" id="bao"></div>
+    <main>
+      <div id="term"></div>
+      <aside id="khung-tep">
+        <div class="duong-dan" id="duong-dan"></div>
+        <div class="tep-list" id="tep-list"></div>
+      </aside>
+    </main>
+
+    <script src="/assets/xterm.js"></script>
+    <script src="/assets/addon-fit.js"></script>
+    <script>
+      const id = new URLSearchParams(location.search).get('id') || ''
+      const bao = document.getElementById('bao')
+
+      function baoLoi(text) {
+        bao.textContent = text
+        bao.classList.add('hien')
+      }
+
+      const term = new Terminal({
+        fontFamily: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
+        fontSize: 13,
+        cursorBlink: true,
+        theme: { background: '#0b1220', foreground: '#dbe2ef', cursor: '#63e2b7' },
+      })
+      const fit = new FitAddon.FitAddon()
+      term.loadAddon(fit)
+      term.open(document.getElementById('term'))
+      fit.fit()
+
+      const socket = new WebSocket(
+        `ws://${location.host}/ws/terminal?id=${encodeURIComponent(id)}&cols=${term.cols}&rows=${term.rows}`,
+      )
+      socket.binaryType = 'arraybuffer'
+
+      // Đo lại và báo kích thước ngay khi kết nối mở.
+      //
+      // Lần đo đầu chạy trước khi trình duyệt xong việc dàn trang, nên số cột có
+      // thể lệch vài đơn vị so với thứ hiện trên màn hình. Máy chủ ngắt dòng theo
+      // số cột nó được báo, nên lệch một cột là dòng lệnh dài bị gấp sai chỗ và
+      // chữ đè lên nhau.
+      socket.onopen = () => {
+        doiKichThuoc()
+        term.focus()
+      }
+
+      socket.onmessage = (event) => {
+        // Máy chủ gửi byte thô: giải mã UTF-8 để tiếng Việt trong đầu ra hiện đúng.
+        term.write(new TextDecoder().decode(new Uint8Array(event.data)))
+      }
+      socket.onclose = () => baoLoi('Phiên đã kết thúc. Quay lại danh sách rồi kết nối lại.')
+      socket.onerror = () => baoLoi('Mất kết nối tới máy chủ.')
+
+      term.onData((data) => {
+        if (socket.readyState === WebSocket.OPEN) socket.send(new TextEncoder().encode(data))
+      })
+
+      // Đổi kích thước cửa sổ phải báo cho máy chủ, nếu không thì trình soạn thảo
+      // và những thứ vẽ toàn màn hình sẽ vẽ sai chỗ.
+      const doiKichThuoc = () => {
+        fit.fit()
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ type: 'resize', cols: term.cols, rows: term.rows }))
+        }
+      }
+      window.addEventListener('resize', doiKichThuoc)
+      // Thanh thông số phía trên đổi chiều cao khi tên máy dài xuống dòng, và
+      // window.resize không bắt được chuyện đó.
+      if (window.ResizeObserver) {
+        new ResizeObserver(doiKichThuoc).observe(document.getElementById('term'))
+      }
+
+      async function napThongTin() {
+        try {
+          const res = await fetch(`/api/info?id=${encodeURIComponent(id)}`)
+          if (!res.ok) return
+          const data = await res.json()
+          document.getElementById('ten').textContent = data.name
+          document.getElementById('dia-chi').textContent =
+            `${data.addr} · ${data.info.os || ''} · ${data.info.kernel || ''}`.trim()
+        } catch (e) {
+          /* thông tin chỉ để hiển thị; terminal vẫn dùng được khi thiếu nó */
+        }
+      }
+
+      function ve(khoa, phanTram) {
+        document.getElementById(khoa).textContent = `${Math.round(phanTram)}%`
+        const thanh = document.getElementById('thanh-' + khoa)
+        thanh.firstElementChild.style.width = Math.min(100, phanTram) + '%'
+        thanh.classList.toggle('cao', phanTram >= 85)
+      }
+
+      async function napThongSo() {
+        try {
+          const res = await fetch(`/api/metrics?id=${encodeURIComponent(id)}`)
+          if (!res.ok) return
+          const m = await res.json()
+          ve('cpu', m.cpu)
+          ve('ram', m.memory)
+          ve('dia', m.disk)
+        } catch (e) {
+          /* mất một nhịp đo không đáng làm phiền người đang gõ lệnh */
+        }
+      }
+
+      // --- Duyệt tệp qua SFTP ---
+      const khungTep = document.getElementById('khung-tep')
+      const tepList = document.getElementById('tep-list')
+      let duongDan = '.'
+
+      function coChu(byte) {
+        if (byte < 1024) return byte + ' B'
+        const donVi = ['KB', 'MB', 'GB', 'TB']
+        let so = byte / 1024
+        let i = 0
+        while (so >= 1024 && i < donVi.length - 1) {
+          so /= 1024
+          i++
+        }
+        return (so < 10 ? so.toFixed(1) : Math.round(so)) + ' ' + donVi[i]
+      }
+
+      function thoat(giaTri) {
+        return String(giaTri).replace(/[&<>"']/g, (c) =>
+          ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+        )
+      }
+
+      async function napTep(dan) {
+        try {
+          const res = await fetch(`/api/files?id=${encodeURIComponent(id)}&path=${encodeURIComponent(dan)}`)
+          const data = await res.json()
+          if (!res.ok) {
+            tepList.innerHTML = `<div class="tep-loi">${thoat(data.error || 'không đọc được thư mục')}</div>`
+            return
+          }
+
+          duongDan = data.path
+          document.getElementById('duong-dan').textContent = data.path
+          const muc = data.entries || []
+
+          // Thư mục lên trên, rồi xếp theo tên: đúng thứ tự người ta quen tìm.
+          muc.sort((a, b) => (a.isDir === b.isDir ? a.name.localeCompare(b.name) : a.isDir ? -1 : 1))
+
+          tepList.innerHTML =
+            `<div class="tep thu-muc" data-di="..">📁 <span class="ten">..</span></div>` +
+            muc
+              .map(
+                (m) => `<div class="tep ${m.isDir ? 'thu-muc" data-di="' + thoat(m.name) : ''}">
+                  ${m.isDir ? '📁' : m.isLink ? '🔗' : '📄'}
+                  <span class="ten">${thoat(m.name)}</span>
+                  <span class="co">${m.isDir ? '' : coChu(m.size)}</span>
+                </div>`,
+              )
+              .join('')
+        } catch (e) {
+          tepList.innerHTML = '<div class="tep-loi">mất kết nối tới máy chủ</div>'
+        }
+      }
+
+      tepList.addEventListener('click', (event) => {
+        const muc = event.target.closest('[data-di]')
+        if (!muc) return
+        const ten = muc.dataset.di
+        napTep(ten === '..' ? duongDan + '/..' : duongDan + '/' + ten)
+      })
+
+      document.getElementById('nut-tep').addEventListener('click', () => {
+        const dangHien = khungTep.classList.toggle('hien')
+        if (dangHien && !tepList.childElementCount) napTep('.')
+        doiKichThuoc()
+      })
+
+      document.getElementById('ve').addEventListener('click', () => {
+        if (window.showPicker) window.showPicker()
+      })
+
+      napThongTin()
+      napThongSo()
+      // Mỗi lần đo là một phiên SSH mới trên máy chủ, nên năm giây một lần là đủ
+      // để thấy thay đổi mà không làm phiền máy.
+      setInterval(napThongSo, 5000)
+    </script>
+  </body>
+</html>

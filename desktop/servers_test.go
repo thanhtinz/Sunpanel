@@ -51,6 +51,113 @@ func newTestStore(t *testing.T) (*Store, string) {
 	return store, path
 }
 
+func TestLuuMayChuSSH(t *testing.T) {
+	store, path := newTestStore(t)
+
+	saved, err := store.Save(Server{Kind: KindSSH, Name: "VPS Sài Gòn", Host: "203.0.113.10", User: "root"})
+	if err != nil {
+		t.Fatalf("Save lỗi: %v", err)
+	}
+	if saved.Port != 22 {
+		t.Fatalf("cổng mặc định phải là 22, có %d", saved.Port)
+	}
+	if got := saved.Label(); got != "root@203.0.113.10:22" {
+		t.Fatalf("Label() = %q", got)
+	}
+
+	// Tên trống thì lấy user@host, vì một dòng trống trong danh sách thì vô dụng.
+	trong, err := store.Save(Server{Kind: KindSSH, Host: "10.0.0.9", User: "quantri", Port: 2222})
+	if err != nil {
+		t.Fatalf("Save lỗi: %v", err)
+	}
+	if trong.Name != "quantri@10.0.0.9" {
+		t.Fatalf("tên tự đặt sai: %q", trong.Name)
+	}
+
+	// Ghi nhớ khóa máy chủ rồi mở lại từ đĩa: đây là thứ chặn người đứng giữa ở
+	// lần kết nối sau, nên nó phải sống qua một lần tắt ứng dụng.
+	if err := store.RememberFingerprint(saved.ID, "SHA256:abc"); err != nil {
+		t.Fatalf("RememberFingerprint lỗi: %v", err)
+	}
+	lai, err := openStore(path)
+	if err != nil {
+		t.Fatalf("mở lại kho lỗi: %v", err)
+	}
+	got, ok := lai.ByID(saved.ID)
+	if !ok || got.Fingerprint != "SHA256:abc" || got.Kind != KindSSH {
+		t.Fatalf("sau khi mở lại: %+v (%v)", got, ok)
+	}
+}
+
+func TestDoiMayChuThiBoKhoaCu(t *testing.T) {
+	store, _ := newTestStore(t)
+
+	saved, _ := store.Save(Server{Kind: KindSSH, Host: "203.0.113.10", User: "root"})
+	if err := store.RememberFingerprint(saved.ID, "SHA256:abc"); err != nil {
+		t.Fatalf("RememberFingerprint lỗi: %v", err)
+	}
+
+	// Đổi mỗi tên thì vẫn là máy đó, khóa giữ nguyên.
+	doiTen, err := store.Save(Server{ID: saved.ID, Kind: KindSSH, Name: "Máy chính", Host: "203.0.113.10", User: "root"})
+	if err != nil {
+		t.Fatalf("Save lỗi: %v", err)
+	}
+	if doiTen.Fingerprint != "SHA256:abc" {
+		t.Fatalf("đổi tên không được làm mất khóa đã ghi nhận")
+	}
+
+	// Đổi sang máy khác thì khóa cũ không còn nói lên điều gì.
+	doiMay, err := store.Save(Server{ID: saved.ID, Kind: KindSSH, Host: "198.51.100.7", User: "root"})
+	if err != nil {
+		t.Fatalf("Save lỗi: %v", err)
+	}
+	if doiMay.Fingerprint != "" {
+		t.Fatalf("đổi địa chỉ phải bỏ khóa cũ, còn %q", doiMay.Fingerprint)
+	}
+}
+
+func TestTuChoiMayChuSSHThieuThongTin(t *testing.T) {
+	store, _ := newTestStore(t)
+
+	cases := []struct {
+		name   string
+		server Server
+	}{
+		{"thiếu địa chỉ", Server{Kind: KindSSH, User: "root"}},
+		{"thiếu tài khoản", Server{Kind: KindSSH, Host: "10.0.0.1"}},
+		{"cổng ngoài khoảng", Server{Kind: KindSSH, Host: "10.0.0.1", User: "root", Port: 70000}},
+		{"địa chỉ có khoảng trắng", Server{Kind: KindSSH, Host: "10.0.0.1 rm -rf", User: "root"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if _, err := store.Save(tc.server); err == nil {
+				t.Fatal("mong đợi lỗi")
+			}
+		})
+	}
+}
+
+func TestBanGhiCuKhongCoKieuHieuLaPanel(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "servers.json")
+	// Đây đúng là thứ phiên bản trước ghi ra đĩa.
+	old := `[{"id":"s1","name":"Máy chủ nhà","url":"http://127.0.0.1:9527/abc/","last":true}]`
+	if err := os.WriteFile(path, []byte(old), 0o600); err != nil {
+		t.Fatalf("ghi tệp lỗi: %v", err)
+	}
+
+	store, err := openStore(path)
+	if err != nil {
+		t.Fatalf("openStore lỗi: %v", err)
+	}
+	got, ok := store.ByID("s1")
+	if !ok || got.Kind != KindPanel {
+		t.Fatalf("bản ghi cũ phải được hiểu là panel: %+v", got)
+	}
+	if last, ok := store.Last(); !ok || last.ID != "s1" {
+		t.Fatalf("mất đánh dấu máy chủ mở gần nhất")
+	}
+}
+
 func TestStoreLuuSuaXoa(t *testing.T) {
 	store, path := newTestStore(t)
 
@@ -58,7 +165,7 @@ func TestStoreLuuSuaXoa(t *testing.T) {
 		t.Fatalf("kho mới phải rỗng, có %d mục", len(got))
 	}
 
-	first, err := store.Save(Server{Name: "Máy chủ nhà", URL: "127.0.0.1:9527/qvzQfJuo56JQ"})
+	first, err := store.Save(Server{Kind: KindPanel, Name: "Máy chủ nhà", URL: "127.0.0.1:9527/qvzQfJuo56JQ"})
 	if err != nil {
 		t.Fatalf("Save lỗi: %v", err)
 	}

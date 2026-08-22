@@ -10,11 +10,13 @@
 package main
 
 import (
-	_ "embed"
+	"context"
+	"embed"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/webview/webview_go"
@@ -22,6 +24,17 @@ import (
 
 //go:embed picker.html
 var pickerHTML []byte
+
+//go:embed terminal.html
+var terminalHTML []byte
+
+// assetsFS chứa xterm.js và biểu định kiểu của nó.
+//
+// Nhúng vào binary chứ không tải từ mạng: ứng dụng phải mở được terminal của một
+// máy chủ trong mạng nội bộ ngay cả khi máy đang dùng không ra được Internet.
+//
+//go:embed assets
+var assetsFS embed.FS
 
 // Kích thước cửa sổ lúc mở.
 //
@@ -59,12 +72,15 @@ func main() {
 		log.Fatalf("không mở được danh sách máy chủ: %v", err)
 	}
 
+	sessions := NewSessions()
+	defer sessions.Close()
+
 	// Trang chọn máy chủ được phục vụ từ một cổng cục bộ ngẫu nhiên thay vì nhúng
 	// thẳng bằng data: — trang data: không có gốc riêng, và trình duyệt nhúng từ
 	// chối phần lớn thứ chạy trên đó.
-	pickerURL, err := servePicker()
+	localURL, err := serveLocal(sessions)
 	if err != nil {
-		log.Fatalf("không mở được trang chọn máy chủ: %v", err)
+		log.Fatalf("không mở được máy chủ cục bộ: %v", err)
 	}
 
 	view := webview.New(false)
@@ -74,23 +90,26 @@ func main() {
 	view.SetSize(windowWidth, windowHeight, webview.HintNone)
 	view.SetSize(minWidth, minHeight, webview.HintMin)
 
-	bind(view, store, pickerURL)
+	bind(view, store, sessions, localURL)
 	view.Init(backToPickerJS)
 
-	// Mở thẳng máy chủ dùng lần trước: người quản trị mở ứng dụng này để xem một
+	// Mở thẳng panel dùng lần trước: người quản trị mở ứng dụng này để xem một
 	// máy cụ thể, không phải để chọn lại từ đầu mỗi sáng.
-	if last, ok := store.Last(); ok {
+	//
+	// Máy chủ SSH thì không tự mở: kết nối SSH cần mật khẩu hoặc mật khẩu mở
+	// khóa, và hỏi ngay khi vừa bật ứng dụng thì không khác gì bắt đăng nhập.
+	if last, ok := store.Last(); ok && last.Kind == KindPanel {
 		view.SetTitle("SunPanel — " + last.Name)
 		view.Navigate(last.URL)
 	} else {
-		view.Navigate(pickerURL)
+		view.Navigate(localURL)
 	}
 
 	view.Run()
 }
 
 // bind gắn các hàm Go mà trang chọn máy chủ gọi được.
-func bind(view webview.WebView, store *Store, pickerURL string) {
+func bind(view webview.WebView, store *Store, sessions *Sessions, localURL string) {
 	must := func(err error) {
 		if err != nil {
 			log.Printf("không gắn được hàm cho giao diện: %v", err)
@@ -101,8 +120,8 @@ func bind(view webview.WebView, store *Store, pickerURL string) {
 
 	// Trả về chuỗi lỗi thay vì error: bên gọi là JavaScript, và một lời hứa bị
 	// từ chối ở đó khó hiển thị hơn hẳn một câu ngắn hiện ngay dưới ô nhập.
-	must(view.Bind("saveServer", func(id, name, address string) string {
-		if _, err := store.Save(Server{ID: id, Name: name, URL: address}); err != nil {
+	must(view.Bind("saveServer", func(server Server) string {
+		if _, err := store.Save(server); err != nil {
 			return err.Error()
 		}
 		return ""
@@ -115,32 +134,61 @@ func bind(view webview.WebView, store *Store, pickerURL string) {
 		return ""
 	}))
 
-	must(view.Bind("openServer", func(id string) string {
-		for _, server := range store.List() {
-			if server.ID != id {
-				continue
-			}
-			if err := store.MarkLast(id); err != nil {
-				log.Printf("không ghi nhớ được máy chủ vừa mở: %v", err)
-			}
+	// openServer nhận thêm mật khẩu vừa nhập cho máy chủ SSH; panel bỏ qua nó.
+	must(view.Bind("openServer", func(id, password string) string {
+		server, ok := store.ByID(id)
+		if !ok {
+			return "không tìm thấy máy chủ"
+		}
+		if err := store.MarkLast(id); err != nil {
+			log.Printf("không ghi nhớ được máy chủ vừa mở: %v", err)
+		}
+
+		if server.Kind == KindPanel {
 			view.SetTitle("SunPanel — " + server.Name)
 			view.Navigate(server.URL)
 			return ""
 		}
-		return "không tìm thấy máy chủ"
+
+		_, fingerprint, err := sessions.Open(context.Background(), server, password)
+		if err != nil {
+			return err.Error()
+		}
+		// Lần đầu kết nối thì ghi nhận khóa máy chủ; từ lần sau khóa phải khớp,
+		// nếu không sshx từ chối và người dùng thấy cảnh báo thay vì im lặng nối
+		// vào một máy khác.
+		if err := store.RememberFingerprint(id, fingerprint); err != nil {
+			log.Printf("không ghi nhớ được khóa máy chủ: %v", err)
+		}
+
+		view.SetTitle("SunPanel — " + server.Name)
+		view.Navigate(localURL + "terminal?id=" + url.QueryEscape(id))
+		return ""
 	}))
 
 	must(view.Bind("showPicker", func() {
 		view.SetTitle("SunPanel")
-		view.Navigate(pickerURL)
+		view.Navigate(localURL)
 	}))
 }
 
-// servePicker phục vụ trang chọn máy chủ trên một cổng cục bộ.
-func servePicker() (string, error) {
+// serveLocal phục vụ giao diện của chính ứng dụng trên một cổng cục bộ.
+//
+// Trang được phục vụ qua HTTP thay vì nhúng thẳng bằng data: — trang data: không
+// có gốc riêng, và trình duyệt nhúng từ chối phần lớn thứ chạy trên đó, kể cả
+// WebSocket mà terminal cần.
+func serveLocal(sessions *Sessions) (string, error) {
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		return "", err
+	}
+
+	page := func(body []byte) http.HandlerFunc {
+		return func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.Header().Set("Cache-Control", "no-store")
+			_, _ = w.Write(body)
+		}
 	}
 
 	mux := http.NewServeMux()
@@ -149,10 +197,14 @@ func servePicker() (string, error) {
 			http.NotFound(w, r)
 			return
 		}
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.Header().Set("Cache-Control", "no-store")
-		_, _ = w.Write(pickerHTML)
+		page(pickerHTML)(w, r)
 	})
+	mux.HandleFunc("/terminal", page(terminalHTML))
+	mux.Handle("/assets/", http.FileServer(http.FS(assetsFS)))
+	mux.HandleFunc("/ws/terminal", terminalHandler(sessions))
+	mux.HandleFunc("/api/info", infoHandler(sessions))
+	mux.HandleFunc("/api/metrics", metricsHandler(sessions))
+	mux.HandleFunc("/api/files", filesHandler(sessions))
 
 	server := &http.Server{Handler: mux}
 	go func() {

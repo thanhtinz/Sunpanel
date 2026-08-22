@@ -60,6 +60,12 @@ type Files struct {
 // Close đóng phiên SFTP.
 func (f *Files) Close() error { return f.client.Close() }
 
+// Getwd trả về thư mục làm việc của phiên SFTP.
+//
+// Dùng để biết "." đang là ở đâu: người dùng cần thấy đường dẫn thật chứ không
+// phải một dấu chấm, và mọi bước đi tiếp đều dựng từ đường dẫn đó.
+func (f *Files) Getwd() (string, error) { return f.client.Getwd() }
+
 // List liệt kê nội dung một thư mục.
 func (f *Files) List(dir string) ([]FileInfo, error) {
 	dir = cleanRemotePath(dir)

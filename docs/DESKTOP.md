@@ -9,9 +9,16 @@ lên là vào thẳng.
 chính panel đang chạy. Nâng cấp panel là ứng dụng có ngay bản mới, không có
 chuyện app và máy chủ lệch phiên bản.
 
-## Cách dùng
+Ứng dụng nối tới máy chủ theo hai cách, chọn bằng hai thẻ trong biểu mẫu:
 
-Lần đầu mở lên, ứng dụng hiện trang chọn máy chủ. Thêm một máy chủ cần hai thứ:
+| Kiểu | Dùng khi |
+|---|---|
+| **Panel đã cài** | Máy chủ đã có SunPanel; ứng dụng mở thẳng giao diện panel. |
+| **SSH thẳng vào VPS** | Máy chủ chưa cài gì. Ứng dụng tự nối SSH và cho terminal, thông số máy, duyệt tệp. |
+
+## Panel đã cài
+
+Thêm một panel cần hai thứ:
 
 | Ô | Ví dụ |
 |---|---|
@@ -23,9 +30,29 @@ giao thức thì ứng dụng tự hiểu là `http://`, và tự thêm dấu g�
 đường dẫn — nếu không, thẻ `base` của panel phân giải sai và giao diện nạp tài
 nguyên từ thư mục cha.
 
-Bấm **Kết nối** để mở máy chủ. Máy chủ vừa mở được ghi nhớ, lần chạy sau ứng
-dụng vào thẳng máy đó. Đang ở trong panel, bấm **Ctrl+Shift+H** để quay về danh
-sách máy chủ.
+Bấm **Kết nối** để mở. Panel vừa mở được ghi nhớ, lần chạy sau ứng dụng vào
+thẳng máy đó. Đang ở trong panel, bấm **Ctrl+Shift+H** để quay về danh sách.
+
+## SSH thẳng vào VPS
+
+Điền địa chỉ máy, cổng (mặc định 22), tên đăng nhập, và một trong hai cách xác
+thực: đường dẫn tới tệp khóa riêng trên máy này, hoặc mật khẩu.
+
+Bấm **Kết nối** là mở một cửa sổ có:
+
+- **Terminal thật** — cùng thứ `ssh` trong dòng lệnh cho, gõ được `vim`, `htop`,
+  `docker logs -f`; đổi kích thước cửa sổ thì máy chủ được báo ngay.
+- **Thanh thông số** — CPU, bộ nhớ và ổ đĩa của máy chủ, năm giây đo lại một lần.
+- **Duyệt tệp** — bấm nút *Tệp* để mở khung SFTP bên phải, đi vào từng thư mục.
+
+Mật khẩu **không được lưu** trừ khi bạn tự đánh dấu *Nhớ mật khẩu trên máy này*;
+mặc định ứng dụng hỏi lại mỗi lần kết nối. Một tệp trên đĩa không phải chỗ cho
+mật khẩu root, còn với khóa riêng thì ứng dụng chỉ lưu đường dẫn tới tệp khóa.
+
+Lần kết nối đầu, khóa của máy chủ được ghi nhận. Từ lần sau khóa phải khớp: khóa
+đổi thì ứng dụng từ chối và nói rõ vì sao — máy chủ có thể vừa được cài lại, cũng
+có thể ai đó đang giả làm nó. Đây đúng là cách panel đối xử với máy chủ từ xa của
+nó, vì cùng dùng chung một lõi SSH (`pkg/sshx`).
 
 Danh sách nằm ở `servers.json` trong thư mục cấu hình của người dùng
 (`~/.config/sunpanel/` trên Linux, `%AppData%\sunpanel\` trên Windows,
