@@ -29,4 +29,25 @@
     <string name="err_url_malformed">Không đọc được địa chỉ này.</string>
     <string name="err_url_scheme">Địa chỉ phải bắt đầu bằng http:// hoặc https://</string>
     <string name="err_url_host">Địa chỉ thiếu tên máy chủ.</string>
+
+    <string name="kind_panel">Panel đã cài</string>
+    <string name="kind_ssh">SSH thẳng vào VPS</string>
+    <string name="ssh_host">Địa chỉ máy chủ</string>
+    <string name="ssh_host_hint">203.0.113.10</string>
+    <string name="ssh_port">Cổng</string>
+    <string name="ssh_user">Tên đăng nhập</string>
+    <string name="ssh_user_hint">root</string>
+    <string name="ssh_key">Khóa riêng (dán nội dung, để trống nếu dùng mật khẩu)</string>
+    <string name="ssh_password">Mật khẩu</string>
+    <string name="ssh_remember">Nhớ mật khẩu trên máy này</string>
+    <string name="ssh_remember_note">Không nhớ thì mỗi lần kết nối sẽ hỏi lại.</string>
+    <string name="ssh_ask_password">Mật khẩu đăng nhập</string>
+    <string name="ssh_ask_passphrase">Mật khẩu mở khóa riêng</string>
+    <string name="connect">Kết nối</string>
+    <string name="connecting">Đang nối…</string>
+    <string name="err_ssh_host_key">Khóa của máy chủ khác lần kết nối trước. Máy có thể vừa được cài lại — cũng có thể ai đó đang giả làm nó. Chỉ sửa lại máy chủ này để xóa khóa cũ khi bạn chắc chắn vì sao khóa đổi.</string>
+    <string name="err_ssh_auth">Máy chủ từ chối đăng nhập: sai mật khẩu, sai khóa, hoặc tài khoản không được phép.</string>
+    <string name="err_ssh_unreachable">Không nối được tới máy chủ: máy không trả lời, sai cổng, hoặc tường lửa chặn.</string>
+    <string name="err_url_user">Hãy nhập tên đăng nhập.</string>
+    <string name="err_url_port">Cổng phải nằm trong khoảng 1–65535.</string>
 </resources>

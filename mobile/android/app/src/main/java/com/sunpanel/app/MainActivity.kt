@@ -18,7 +18,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
 
@@ -44,6 +48,10 @@ class MainActivity : ComponentActivity() {
 
                 var openId by rememberSaveable { mutableStateOf<String?>(null) }
                 var openedLast by rememberSaveable { mutableStateOf(false) }
+                var sshSession by remember { mutableStateOf<SshSession?>(null) }
+                var dangNoi by remember { mutableStateOf<String?>(null) }
+                var loiNoi by remember { mutableStateOf<String?>(null) }
+                val scope = rememberCoroutineScope()
 
                 // Mở thẳng máy chủ dùng lần trước, nhưng chỉ một lần cho mỗi lần chạy:
                 // sau khi người dùng bấm quay lại để về danh sách, xoay ngang màn hình
@@ -51,40 +59,81 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     if (!openedLast) {
                         openedLast = true
-                        openId = store.last()?.id
+                        // Chỉ panel mới tự mở lại: kết nối SSH cần mật khẩu, mà
+                        // hỏi ngay khi vừa bật ứng dụng thì không khác gì bắt
+                        // đăng nhập.
+                        openId = store.last()?.takeIf { it.kind == Kind.PANEL }?.id
                     }
                 }
 
                 val open = openId?.let { store.byId(it) }
+                val session = sshSession
 
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    if (open == null) {
-                        ServerListScreen(
-                            servers = servers,
-                            onOpen = { server ->
-                                store.markLast(server.id)
-                                openId = server.id
-                            },
-                            onSave = { id, name, url -> saveServer(store, id, name, url) },
-                            onRemove = store::remove,
-                        )
-                    } else {
-                        PanelScreen(
-                            server = open,
-                            onTrustCertificate = { fingerprint -> store.trustCertificate(open.id, fingerprint) },
-                            onFileChooser = ::showFileChooser,
-                            onExit = { openId = null },
-                        )
+                    when {
+                        open != null && open.kind == Kind.SSH && session != null ->
+                            TerminalScreen(
+                                server = open,
+                                session = session,
+                                onExit = {
+                                    session.close()
+                                    sshSession = null
+                                    openId = null
+                                },
+                            )
+
+                        open != null && open.kind == Kind.PANEL ->
+                            PanelScreen(
+                                server = open,
+                                onTrustCertificate = { fingerprint -> store.trustCertificate(open.id, fingerprint) },
+                                onFileChooser = ::showFileChooser,
+                                onExit = { openId = null },
+                            )
+
+                        else ->
+                            ServerListScreen(
+                                servers = servers,
+                                dangNoi = dangNoi,
+                                loi = loiNoi,
+                                onOpen = { server, matKhau ->
+                                    loiNoi = null
+                                    if (server.kind == Kind.PANEL) {
+                                        store.markLast(server.id)
+                                        openId = server.id
+                                    } else {
+                                        dangNoi = server.id
+                                        scope.launch {
+                                            // Bắt tay SSH đi qua mạng, có thể mất
+                                            // vài giây; chạy ở luồng nền để giao
+                                            // diện không đứng hình.
+                                            val ketQua = withContext(Dispatchers.IO) {
+                                                runCatching { SshSession.open(server, matKhau) }
+                                            }
+                                            dangNoi = null
+                                            ketQua
+                                                .onSuccess { moi ->
+                                                    store.trustHostKey(server.id, moi.hostKey)
+                                                    store.markLast(server.id)
+                                                    sshSession = moi
+                                                    openId = server.id
+                                                }
+                                                .onFailure { loiNoi = describeSshError(it) }
+                                        }
+                                    }
+                                },
+                                onSave = { draft -> saveServer(store, draft) },
+                                onRemove = store::remove,
+                            )
                     }
                 }
             }
         }
     }
 
-    /** Lưu máy chủ, trả về câu lỗi đã dịch nếu địa chỉ không dùng được. */
-    private fun saveServer(store: ServerStore, id: String, name: String, url: String): String? {
+    /** Lưu máy chủ, trả về câu lỗi đã dịch nếu thông tin không dùng được. */
+    private fun saveServer(store: ServerStore, draft: Server): String? {
         return try {
-            store.save(id, name, url)
+            store.save(draft)
             null
         } catch (e: InvalidAddress) {
             getString(
@@ -93,8 +142,21 @@ class MainActivity : ComponentActivity() {
                     InvalidAddress.Reason.MALFORMED -> R.string.err_url_malformed
                     InvalidAddress.Reason.SCHEME -> R.string.err_url_scheme
                     InvalidAddress.Reason.HOST -> R.string.err_url_host
+                    InvalidAddress.Reason.USER -> R.string.err_url_user
+                    InvalidAddress.Reason.PORT -> R.string.err_url_port
                 }
             )
+        }
+    }
+
+    /** Đổi lỗi SSH thành câu nói rõ chuyện gì xảy ra và làm gì tiếp. */
+    private fun describeSshError(error: Throwable): String {
+        val ssh = error as? SshError ?: return error.message ?: error.toString()
+        return when (ssh.reason) {
+            SshError.Reason.HOST_KEY_CHANGED -> getString(R.string.err_ssh_host_key)
+            SshError.Reason.AUTH_FAILED -> getString(R.string.err_ssh_auth)
+            SshError.Reason.UNREACHABLE -> getString(R.string.err_ssh_unreachable)
+            SshError.Reason.OTHER -> ssh.detail.ifEmpty { getString(R.string.err_ssh_unreachable) }
         }
     }
 

@@ -19,9 +19,7 @@ class ServerStore(context: Context) {
     /** Danh sách hiện tại, giao diện đọc trực tiếp và tự vẽ lại khi đổi. */
     val servers: State<List<Server>> get() = state
 
-    fun save(id: String, name: String, url: String) {
-        write(Servers.save(state.value, id, name, url))
-    }
+    fun save(draft: Server) = write(Servers.save(state.value, draft))
 
     fun remove(id: String) = write(Servers.remove(state.value, id))
 
@@ -29,6 +27,8 @@ class ServerStore(context: Context) {
 
     fun trustCertificate(id: String, fingerprint: String) =
         write(Servers.trustCertificate(state.value, id, fingerprint))
+
+    fun trustHostKey(id: String, fingerprint: String) = write(Servers.trustHostKey(state.value, id, fingerprint))
 
     fun last(): Server? = Servers.last(state.value)
 

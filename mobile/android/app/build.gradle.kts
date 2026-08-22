@@ -55,6 +55,10 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.webkit:webkit:1.12.1")
 
+    // Nhánh JSch còn được bảo trì: bản gốc dừng từ 2018 và không có các thuật
+    // toán mà sshd đời mới yêu cầu, nên nó không nối được vào một VPS mới cài.
+    implementation("com.github.mwiede:jsch:2.28.7")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     // org.json trong bản Android chỉ là khung rỗng khi chạy test trên JVM, nên

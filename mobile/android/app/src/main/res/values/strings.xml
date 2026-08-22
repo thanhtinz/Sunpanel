@@ -31,4 +31,25 @@
     <string name="err_url_malformed">That address cannot be read.</string>
     <string name="err_url_scheme">The address must start with http:// or https://</string>
     <string name="err_url_host">The address is missing a host name.</string>
+
+    <string name="kind_panel">Installed panel</string>
+    <string name="kind_ssh">Direct SSH</string>
+    <string name="ssh_host">Host</string>
+    <string name="ssh_host_hint">203.0.113.10</string>
+    <string name="ssh_port">Port</string>
+    <string name="ssh_user">Username</string>
+    <string name="ssh_user_hint">root</string>
+    <string name="ssh_key">Private key (paste it, or leave empty to use a password)</string>
+    <string name="ssh_password">Password</string>
+    <string name="ssh_remember">Remember the password on this device</string>
+    <string name="ssh_remember_note">Otherwise you will be asked each time you connect.</string>
+    <string name="ssh_ask_password">Login password</string>
+    <string name="ssh_ask_passphrase">Key passphrase</string>
+    <string name="connect">Connect</string>
+    <string name="connecting">Connecting…</string>
+    <string name="err_ssh_host_key">This server presented a different key than last time. It may have been reinstalled — or someone may be impersonating it. Only edit this server to clear the old key once you know why the key changed.</string>
+    <string name="err_ssh_auth">The server refused the login: wrong password, wrong key, or the account is not allowed.</string>
+    <string name="err_ssh_unreachable">Could not reach the server: no answer, wrong port, or a firewall is blocking it.</string>
+    <string name="err_url_user">Enter a username.</string>
+    <string name="err_url_port">The port must be between 1 and 65535.</string>
 </resources>

@@ -97,10 +97,10 @@ sunpanel reset-password -user admin
 - **Plugin**: mở rộng panel bằng dịch vụ chạy riêng khai báo qua YAML; panel
   chuyển tiếp yêu cầu kèm danh tính người gọi — xem [hướng dẫn](docs/PLUGINS.md).
 - **Ứng dụng máy tính**: bản gốc cho Windows, macOS và Linux mở panel trong cửa sổ
-  riêng của hệ điều hành, nhớ sẵn nhiều máy chủ và vào thẳng máy dùng lần trước —
-  xem [hướng dẫn](docs/DESKTOP.md).
-- **Ứng dụng điện thoại**: bản Android gốc mở panel toàn màn hình, nhớ nhiều máy
-  chủ, và hỏi trước khi tin chứng chỉ tự ký kèm vân tay để đối chiếu — xem
+  riêng của hệ điều hành, hoặc nối thẳng SSH vào một VPS chưa cài gì để có terminal,
+  thông số máy và duyệt tệp — xem [hướng dẫn](docs/DESKTOP.md).
+- **Ứng dụng điện thoại**: bản Android gốc mở panel toàn màn hình, hoặc nối thẳng
+  SSH vào một VPS chưa cài gì để có terminal kèm thông số máy — xem
   [hướng dẫn](docs/MOBILE.md).
 - **Giao diện**: chế độ sáng/tối, chuyển ngôn ngữ tức thời, bảng lệnh nhanh Ctrl+K
   (tìm được cả khi gõ không dấu), bố cục riêng cho điện thoại.
@@ -258,11 +258,12 @@ sunpanel reset-password -user admin
 - **Plugins**: extend the panel with a separate service declared in YAML; the panel
   forwards requests along with the caller's identity — see the [guide](docs/PLUGINS.md).
 - **Desktop app**: a native build for Windows, macOS and Linux that opens the panel
-  in its own OS window, remembers several servers and goes straight to the last one
-  you used — see the [guide](docs/DESKTOP.md).
-- **Mobile app**: a native Android build that opens the panel full screen, remembers
-  several servers, and asks before trusting a self-signed certificate, showing its
-  fingerprint to check — see the [guide](docs/MOBILE.md).
+  in its own OS window, or connects straight over SSH to a VPS with nothing installed
+  on it, giving you a terminal, resource figures and a file browser — see the
+  [guide](docs/DESKTOP.md).
+- **Mobile app**: a native Android build that opens the panel full screen, or connects
+  straight over SSH to a VPS with nothing installed on it, giving you a terminal and
+  live resource figures — see the [guide](docs/MOBILE.md).
 - **UI**: light/dark theme, instant language switching, Ctrl+K command palette
   (matches Vietnamese text typed without diacritics), dedicated mobile layout.
 

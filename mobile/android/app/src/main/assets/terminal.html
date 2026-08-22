@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Terminal</title>
+    <link rel="stylesheet" href="xterm.css" />
+    <style>
+      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+      html, body { height: 100%; margin: 0; background: #0b1220; overflow: hidden; }
+      body { display: flex; flex-direction: column; }
+
+      #term { flex: 1; min-height: 0; padding: 6px; }
+      #term .xterm { height: 100%; }
+
+      /* Bàn phím ảo của điện thoại không có Ctrl, Tab, Esc hay phím mũi tên, mà
+         thiếu chúng thì không thoát nổi vim hay dừng nổi một lệnh đang chạy. */
+      #phim {
+        display: flex;
+        gap: 6px;
+        padding: 6px;
+        overflow-x: auto;
+        background: #131c2b;
+        border-top: 1px solid #223049;
+      }
+      #phim button {
+        flex: 0 0 auto;
+        min-width: 44px;
+        padding: 9px 12px;
+        font: 13px/1 ui-monospace, Menlo, Consolas, monospace;
+        color: #cfd8e6;
+        background: #1b2536;
+        border: 1px solid #2c3a52;
+        border-radius: 7px;
+      }
+      #phim button:active, #phim button.bat { background: #18a058; border-color: #18a058; color: #fff; }
+    </style>
+  </head>
+  <body>
+    <div id="term"></div>
+    <div id="phim">
+      <button data-phim="ctrl" id="nut-ctrl">Ctrl</button>
+      <button data-ma="\x1b">Esc</button>
+      <button data-ma="\t">Tab</button>
+      <button data-ma="\x1b[A">↑</button>
+      <button data-ma="\x1b[B">↓</button>
+      <button data-ma="\x1b[D">←</button>
+      <button data-ma="\x1b[C">→</button>
+      <button data-ma="\x03">^C</button>
+      <button data-ma="\x04">^D</button>
+      <button data-ma="|">|</button>
+      <button data-ma="~">~</button>
+      <button data-ma="/">/</button>
+      <button data-ma="-">-</button>
+    </div>
+
+    <script src="xterm.js"></script>
+    <script src="addon-fit.js"></script>
+    <script>
+      const term = new Terminal({
+        fontFamily: 'ui-monospace, Menlo, Consolas, monospace',
+        fontSize: 12,
+        cursorBlink: true,
+        scrollback: 2000,
+        theme: { background: '#0b1220', foreground: '#dbe2ef', cursor: '#63e2b7' },
+      })
+      const fit = new FitAddon.FitAddon()
+      term.loadAddon(fit)
+      term.open(document.getElementById('term'))
+
+      // Chuyển byte thô sang chuỗi và ngược lại qua base64: cầu nối giữa Kotlin và
+      // trang này chỉ chuyển được chuỗi, mà đầu ra của máy chủ là byte bất kỳ.
+      const giaiMa = new TextDecoder()
+      const maHoa = new TextEncoder()
+
+      function base64ThanhByte(text) {
+        const chuoi = atob(text)
+        const byte = new Uint8Array(chuoi.length)
+        for (let i = 0; i < chuoi.length; i++) byte[i] = chuoi.charCodeAt(i)
+        return byte
+      }
+
+      function byteThanhBase64(byte) {
+        let chuoi = ''
+        for (let i = 0; i < byte.length; i++) chuoi += String.fromCharCode(byte[i])
+        return btoa(chuoi)
+      }
+
+      // Kotlin gọi hàm này mỗi khi máy chủ gửi gì đó về.
+      window.nhan = (base64) => term.write(giaiMa.decode(base64ThanhByte(base64)))
+
+      // Kotlin gọi khi phiên kết thúc.
+      window.ketThuc = (loi) => {
+        term.write('\r\n\x1b[33m' + (loi || 'Phiên đã kết thúc.') + '\x1b[0m\r\n')
+      }
+
+      function gui(chuoi) {
+        Cau.go(byteThanhBase64(maHoa.encode(chuoi)))
+      }
+
+      let ctrlDangBat = false
+      term.onData((data) => {
+        if (ctrlDangBat) {
+          ctrlDangBat = false
+          document.getElementById('nut-ctrl').classList.remove('bat')
+          const chu = data.toUpperCase().charCodeAt(0)
+          // Ctrl+A tới Ctrl+Z là mã 1 tới 26; ngoài khoảng đó thì gửi nguyên.
+          if (chu >= 64 && chu <= 95) {
+            gui(String.fromCharCode(chu - 64))
+            return
+          }
+        }
+        gui(data)
+      })
+
+      document.getElementById('phim').addEventListener('click', (event) => {
+        const nut = event.target.closest('button')
+        if (!nut) return
+
+        if (nut.dataset.phim === 'ctrl') {
+          ctrlDangBat = !ctrlDangBat
+          nut.classList.toggle('bat', ctrlDangBat)
+          term.focus()
+          return
+        }
+        gui(nut.dataset.ma)
+        term.focus()
+      })
+
+      function doiCo() {
+        fit.fit()
+        Cau.doiCo(term.cols, term.rows)
+      }
+
+      window.addEventListener('resize', doiCo)
+      if (window.visualViewport) {
+        // Bàn phím ảo bật lên làm khung nhìn thấp đi mà không phát sự kiện resize
+        // trên một số máy; thiếu chỗ này thì nửa dưới terminal nằm dưới bàn phím.
+        window.visualViewport.addEventListener('resize', doiCo)
+      }
+
+      // Đo lần đầu sau khi trình duyệt dàn trang xong: đo sớm thì số cột lệch, mà
+      // máy chủ ngắt dòng theo số nó được báo nên chữ sẽ đè lên nhau.
+      requestAnimationFrame(() => {
+        fit.fit()
+        Cau.sanSang(term.cols, term.rows)
+        term.focus()
+      })
+    </script>
+  </body>
+</html>
