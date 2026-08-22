@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Giao diện do Compose vẽ; chủ đề này chỉ lo cửa sổ lúc khởi động. -->
+    <style name="Theme.SunPanel" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
+    </style>
+</resources>

@@ -60,7 +60,5 @@ vào sẵn. Máy nào còn `4.0` thật thì tệp này không được dùng t�
 
 ## Điện thoại
 
-Chưa có bản gốc cho Android và iOS. Trong lúc chờ, panel là ứng dụng web cài
-được: mở panel bằng trình duyệt trên điện thoại rồi chọn **Cài ứng dụng** trong
-menu tài khoản — biểu tượng nằm ngoài màn hình chính và mở lên không có thanh
-địa chỉ.
+Bản Android nằm ở [`docs/MOBILE.md`](MOBILE.md). iPhone thì chưa có bản gốc; mở
+panel bằng Safari rồi chọn **Thêm vào màn hình chính**.

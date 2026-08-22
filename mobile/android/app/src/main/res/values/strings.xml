@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SunPanel</string>
+
+    <string name="server_add">Add server</string>
+    <string name="server_edit">Edit server</string>
+    <string name="server_name">Name</string>
+    <string name="server_name_hint">Saigon VPS</string>
+    <string name="server_url">Panel address</string>
+    <string name="server_url_hint">https://203.0.113.10:9527/qvzQfJuo56JQ/</string>
+    <string name="server_open">Connect</string>
+
+    <string name="edit">Edit</string>
+    <string name="remove">Delete</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="server_remove_title">Delete this server?</string>
+    <string name="server_remove_body">%1$s will be removed from this app. The server itself is untouched, but you will need its address and secret path to add it back.</string>
+    <string name="server_remove_confirm">Delete</string>
+
+    <string name="empty_title">No servers yet</string>
+    <string name="empty_body">Add the panel address your server printed during install, including its secret path.</string>
+
+    <string name="cert_title">Unrecognised certificate</string>
+    <string name="cert_body">%1$s presented a certificate this app has not seen before. Self-signed certificates are normal for a fresh panel — check the fingerprint matches the one your panel shows, then trust it.\n\nSHA-256:\n%2$s</string>
+    <string name="cert_trust">Trust</string>
+    <string name="cert_refuse">Go back</string>
+
+    <string name="err_url_empty">Enter the panel address.</string>
+    <string name="err_url_malformed">That address cannot be read.</string>
+    <string name="err_url_scheme">The address must start with http:// or https://</string>
+    <string name="err_url_host">The address is missing a host name.</string>
+</resources>

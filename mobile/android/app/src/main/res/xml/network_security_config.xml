@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Panel mặc định chạy HTTP cho tới khi người dùng gắn chứng chỉ, và rất nhiều máy
+  chủ chỉ mở trong mạng nội bộ. Chặn hẳn HTTP như mặc định của Android là ứng dụng
+  không mở nổi phần lớn panel đang chạy ngoài đời, nên ở đây cho phép — bù lại,
+  chứng chỉ lạ trên HTTPS vẫn phải được người dùng xác nhận từng cái một.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

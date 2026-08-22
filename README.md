@@ -98,8 +98,10 @@ sunpanel reset-password -user admin
   chuyển tiếp yêu cầu kèm danh tính người gọi — xem [hướng dẫn](docs/PLUGINS.md).
 - **Ứng dụng máy tính**: bản gốc cho Windows, macOS và Linux mở panel trong cửa sổ
   riêng của hệ điều hành, nhớ sẵn nhiều máy chủ và vào thẳng máy dùng lần trước —
-  xem [hướng dẫn](docs/DESKTOP.md). Trên điện thoại, panel cài được thẳng ra màn
-  hình chính từ trình duyệt.
+  xem [hướng dẫn](docs/DESKTOP.md).
+- **Ứng dụng điện thoại**: bản Android gốc mở panel toàn màn hình, nhớ nhiều máy
+  chủ, và hỏi trước khi tin chứng chỉ tự ký kèm vân tay để đối chiếu — xem
+  [hướng dẫn](docs/MOBILE.md).
 - **Giao diện**: chế độ sáng/tối, chuyển ngôn ngữ tức thời, bảng lệnh nhanh Ctrl+K
   (tìm được cả khi gõ không dấu), bố cục riêng cho điện thoại.
 
@@ -257,8 +259,10 @@ sunpanel reset-password -user admin
   forwards requests along with the caller's identity — see the [guide](docs/PLUGINS.md).
 - **Desktop app**: a native build for Windows, macOS and Linux that opens the panel
   in its own OS window, remembers several servers and goes straight to the last one
-  you used — see the [guide](docs/DESKTOP.md). On phones, the panel installs to the
-  home screen straight from the browser.
+  you used — see the [guide](docs/DESKTOP.md).
+- **Mobile app**: a native Android build that opens the panel full screen, remembers
+  several servers, and asks before trusting a self-signed certificate, showing its
+  fingerprint to check — see the [guide](docs/MOBILE.md).
 - **UI**: light/dark theme, instant language switching, Ctrl+K command palette
   (matches Vietnamese text typed without diacritics), dedicated mobile layout.
 

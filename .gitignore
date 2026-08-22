@@ -19,6 +19,12 @@ coverage.out
 master.key
 config.yaml
 
+# Sản phẩm build của ứng dụng Android
+/mobile/android/.gradle/
+/mobile/android/build/
+/mobile/android/app/build/
+/mobile/android/local.properties
+
 # Công cụ soạn thảo
 .idea/
 .vscode/

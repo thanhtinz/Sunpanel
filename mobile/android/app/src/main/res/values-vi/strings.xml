@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="server_add">Thêm máy chủ</string>
+    <string name="server_edit">Sửa máy chủ</string>
+    <string name="server_name">Tên gợi nhớ</string>
+    <string name="server_name_hint">VPS Sài Gòn</string>
+    <string name="server_url">Địa chỉ panel</string>
+    <string name="server_url_hint">https://203.0.113.10:9527/qvzQfJuo56JQ/</string>
+    <string name="server_open">Kết nối</string>
+
+    <string name="edit">Sửa</string>
+    <string name="remove">Xóa</string>
+    <string name="save">Lưu</string>
+    <string name="cancel">Hủy</string>
+
+    <string name="server_remove_title">Xóa máy chủ này?</string>
+    <string name="server_remove_body">%1$s sẽ bị gỡ khỏi ứng dụng. Máy chủ vẫn nguyên, nhưng muốn thêm lại thì phải có địa chỉ kèm đường dẫn bí mật.</string>
+    <string name="server_remove_confirm">Xóa</string>
+
+    <string name="empty_title">Chưa có máy chủ nào</string>
+    <string name="empty_body">Thêm địa chỉ panel mà máy chủ in ra lúc cài, nhớ kèm cả đường dẫn bí mật.</string>
+
+    <string name="cert_title">Chứng chỉ chưa từng gặp</string>
+    <string name="cert_body">%1$s dùng một chứng chỉ ứng dụng chưa từng thấy. Panel mới cài thì chứng chỉ tự ký là bình thường — đối chiếu vân tay dưới đây với vân tay panel hiện ra rồi mới tin.\n\nSHA-256:\n%2$s</string>
+    <string name="cert_trust">Tin</string>
+    <string name="cert_refuse">Quay lại</string>
+
+    <string name="err_url_empty">Hãy nhập địa chỉ panel.</string>
+    <string name="err_url_malformed">Không đọc được địa chỉ này.</string>
+    <string name="err_url_scheme">Địa chỉ phải bắt đầu bằng http:// hoặc https://</string>
+    <string name="err_url_host">Địa chỉ thiếu tên máy chủ.</string>
+</resources>
