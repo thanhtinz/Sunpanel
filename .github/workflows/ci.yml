@@ -77,12 +77,13 @@ jobs:
       - name: go vet
         run: go vet ./...
 
-      # Bản v6 của action chỉ cài được golangci-lint 1.x, mà bản 1.x dựng bằng
-      # Go 1.24 thì từ chối một mô-đun khai báo go 1.25.
+      # golangci-lint từ chối chạy khi bản thân nó dựng bằng Go cũ hơn phiên bản
+      # mô-đun nhắm tới, nên bản được ghim ở đây phải là bản dựng bằng Go 1.25
+      # trở lên — và action phải là v8 vì bản v6 chỉ cài được golangci-lint 1.x.
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
-          version: v2.1.6
+          version: v2.12.2
 
       - name: Test
         run: go test -race -coverprofile=coverage.out ./...
