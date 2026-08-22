@@ -88,7 +88,6 @@ fun PanelScreen(
                     // cục bộ của trình duyệt; tắt cái này là mỗi lần mở lại phải
                     // đăng nhập lại từ đầu.
                     settings.domStorageEnabled = true
-                    settings.databaseEnabled = true
                     settings.useWideViewPort = true
                     settings.loadWithOverviewMode = true
                     settings.setSupportZoom(false)

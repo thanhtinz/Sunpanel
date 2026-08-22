@@ -77,10 +77,12 @@ jobs:
       - name: go vet
         run: go vet ./...
 
+      # Bản v6 của action chỉ cài được golangci-lint 1.x, mà bản 1.x dựng bằng
+      # Go 1.24 thì từ chối một mô-đun khai báo go 1.25.
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v8
         with:
-          version: latest
+          version: v2.1.6
 
       - name: Test
         run: go test -race -coverprofile=coverage.out ./...
@@ -134,6 +136,7 @@ jobs:
   android:
     name: Ứng dụng Android
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -144,15 +147,14 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      # Phần xử lý danh sách máy chủ và địa chỉ panel viết thuần Kotlin nên chạy
-      # thẳng trên JVM, không cần máy ảo Android.
-      - name: Test
+      # Một lượt Gradle duy nhất cho cả test lẫn build: mỗi lần gọi lại là thêm
+      # một vòng cấu hình và tải phụ thuộc, mà đó mới là phần tốn thời gian.
+      #
+      # Phần xử lý danh sách máy chủ và địa chỉ panel viết thuần Kotlin nên bài
+      # kiểm thử chạy thẳng trên JVM, không cần máy ảo Android.
+      - name: Test và build
         working-directory: mobile/android
-        run: ./gradlew --no-daemon :app:testDebugUnitTest
-
-      - name: Build
-        working-directory: mobile/android
-        run: ./gradlew --no-daemon :app:assembleDebug
+        run: ./gradlew --no-daemon --stacktrace :app:testDebugUnitTest :app:assembleDebug
 
       - uses: actions/upload-artifact@v4
         with:
