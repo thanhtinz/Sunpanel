@@ -63,8 +63,19 @@ lint: ## Kiểm tra mã Go
 typecheck: ## Kiểm tra kiểu của giao diện
 	cd frontend && npm run typecheck
 
+# Máy 32-bit (linux/arm, tức Raspberry Pi) bắt được những lỗi mà máy 64-bit không
+# thấy: một hằng số 2 GB khai kiểu int tràn ở đó và binary không dựng nổi.
+.PHONY: build-all
+build-all: ## Dựng thử binary cho mọi nền tảng phát hành
+	@for platform in $(PLATFORMS); do \
+		os=$${platform%/*}; arch=$${platform#*/}; \
+		printf '  %-16s' "$$os/$$arch"; \
+		CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch go build -o /dev/null $(CMD) || exit 1; \
+		echo "ok"; \
+	done
+
 .PHONY: check
-check: lint test ## Chạy lint và test
+check: lint test build-all ## Chạy lint, test và dựng thử mọi nền tảng
 
 .PHONY: release
 release: frontend ## Build binary cho mọi nền tảng vào dist/

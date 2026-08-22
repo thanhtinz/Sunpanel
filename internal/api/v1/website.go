@@ -204,7 +204,7 @@ func (h *WebsiteHandler) SetEnabled(c *gin.Context) {
 }
 
 // maxSourceUploadSize giới hạn dung lượng tệp mã nguồn tải lên một lần.
-const maxSourceUploadSize = 2 << 30 // 2 GB
+const maxSourceUploadSize int64 = 2 << 30 // 2 GB
 
 // DeploySource xử lý POST /api/v1/websites/:id/source.
 //

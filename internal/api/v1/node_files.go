@@ -16,7 +16,7 @@ import (
 )
 
 // maxRemoteUpload giới hạn kích thước một tệp tải lên máy chủ từ xa.
-const maxRemoteUpload = 2 << 30
+const maxRemoteUpload int64 = 2 << 30
 
 // actor dựng thông tin người thao tác cho nhật ký kiểm toán.
 func actorOf(c *gin.Context) service.AuditEntry {

@@ -18,7 +18,10 @@ import (
 
 // maxExtractSize giới hạn tổng dung lượng giải nén được, chống "zip bomb" —
 // một tệp nén vài KB có thể phình thành hàng trăm GB và lấp đầy ổ đĩa.
-const maxExtractSize = 2 << 30 // 2 GB
+// Kiểu int64 là bắt buộc chứ không phải trang trí: trên máy 32-bit (linux/arm,
+// tức Raspberry Pi) kiểu int chỉ tới 2^31-1 nên hằng số này tràn, và binary
+// không dựng nổi.
+const maxExtractSize int64 = 2 << 30 // 2 GB
 
 // maxInMemoryArchive là ngưỡng nạp cả tệp nén vào bộ nhớ.
 //
@@ -26,7 +29,7 @@ const maxExtractSize = 2 << 30 // 2 GB
 // cho ra thẳng tệp trên đĩa nên không cần nạp gì; ngưỡng này chỉ dùng cho host
 // không mở được tệp kiểu đọc ngẫu nhiên, và giữ đủ thấp để một tệp lớn không
 // nuốt hết RAM của máy chủ.
-const maxInMemoryArchive = 256 << 20 // 256 MB
+const maxInMemoryArchive int64 = 256 << 20 // 256 MB
 
 // ArchiveFormat là định dạng tệp nén, giữ lại làm bí danh để lớp trên không
 // phải nhắc tới gói archive chỉ vì một tên kiểu.

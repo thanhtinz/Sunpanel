@@ -18,7 +18,7 @@ import (
 )
 
 // maxUploadSize giới hạn dung lượng một lần tải lên.
-const maxUploadSize = 2 << 30 // 2 GB
+const maxUploadSize int64 = 2 << 30 // 2 GB
 
 // FileHandler xử lý các endpoint quản lý tệp.
 type FileHandler struct {
