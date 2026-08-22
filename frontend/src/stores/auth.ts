@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { authApi, userApi, type User } from '@/api'
+import { ApiError, authApi, userApi, type User } from '@/api'
 import { configureClient } from '@/api/client'
 import { setLocale, type Locale } from '@/locales'
 
 const ACCESS_KEY = 'sunpanel.accessToken'
 const REFRESH_KEY = 'sunpanel.refreshToken'
+const USER_KEY = 'sunpanel.user'
 
 /**
  * Store xác thực giữ token và người dùng hiện tại.
@@ -35,10 +36,30 @@ export const useAuthStore = defineStore('auth', () => {
 
     if (refresh) localStorage.setItem(REFRESH_KEY, refresh)
     else localStorage.removeItem(REFRESH_KEY)
+
+    if (!access) localStorage.removeItem(USER_KEY)
+  }
+
+  /**
+   * Hồ sơ người dùng lần cuối đọc được.
+   *
+   * Giữ lại để mở ứng dụng lúc mất mạng vẫn dựng được giao diện đúng vai trò.
+   * Đây chỉ là dữ liệu để vẽ: mọi quyền thật vẫn do máy chủ kiểm ở từng lời
+   * gọi, nên một hồ sơ cũ nằm đây không mở thêm được cánh cửa nào.
+   */
+  function cachedUser(): User | null {
+    const raw = localStorage.getItem(USER_KEY)
+    if (!raw) return null
+    try {
+      return JSON.parse(raw) as User
+    } catch {
+      return null
+    }
   }
 
   function applyUser(next: User): void {
     user.value = next
+    localStorage.setItem(USER_KEY, JSON.stringify(next))
     if (next.language) setLocale(next.language as Locale)
   }
 
@@ -55,7 +76,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const pair = await authApi.refresh(refreshToken.value)
       setTokens(pair.accessToken, pair.refreshToken)
-      user.value = pair.user
+      applyUser(pair.user)
       return true
     } catch {
       // Refresh token cũng đã hỏng: xóa sạch để người dùng đăng nhập lại.
@@ -77,17 +98,32 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  /** Nạp lại thông tin người dùng; dùng khi mở lại trang với token đã lưu. */
+  /**
+   * Nạp lại thông tin người dùng; dùng khi mở lại trang với token đã lưu.
+   *
+   * Chỉ xóa phiên khi chính máy chủ từ chối token. Mở ứng dụng lúc điện thoại
+   * mất sóng là chuyện thường ngày, và coi đó là "token hỏng" nghĩa là bắt
+   * người dùng gõ lại mật khẩu mỗi lần đi qua chỗ không có mạng.
+   */
   async function loadUser(): Promise<boolean> {
     if (!accessToken.value) return false
 
     try {
       applyUser(await authApi.me())
       return true
-    } catch {
-      setTokens(null, null)
-      user.value = null
-      return false
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setTokens(null, null)
+        user.value = null
+        return false
+      }
+
+      // Không với tới được máy chủ: dùng hồ sơ đã lưu để ứng dụng vẫn mở được,
+      // và mỗi thao tác sau đó tự báo lỗi mạng của riêng nó.
+      const cached = cachedUser()
+      if (!cached) return false
+      user.value = cached
+      return true
     }
   }
 

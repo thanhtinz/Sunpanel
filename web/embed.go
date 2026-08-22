@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"mime"
 	"net/http"
 	"path"
 	"strings"
@@ -26,6 +27,15 @@ var distFS embed.FS
 
 // indexFile là trang đơn của giao diện.
 const indexFile = "index.html"
+
+// init khai kiểu nội dung cho tệp khai báo ứng dụng.
+//
+// Thư viện chuẩn không biết đuôi .webmanifest và trả về text/plain; trình duyệt
+// bỏ qua tệp khai báo có kiểu đó, và panel mất luôn khả năng cài thành ứng dụng
+// mà không báo lỗi ở đâu cả.
+func init() {
+	_ = mime.AddExtensionType(".webmanifest", "application/manifest+json")
+}
 
 // Register gắn các tuyến phục vụ giao diện vào engine.
 //
@@ -73,9 +83,15 @@ func Register(engine *gin.Engine, entryPath string) error {
 		if name != "" && name != indexFile {
 			if f, err := sub.Open(name); err == nil {
 				_ = f.Close()
+				switch {
 				// Tài nguyên build có tên chứa mã băm nội dung nên vĩnh viễn không đổi.
-				if strings.HasPrefix(name, "assets/") {
+				case strings.HasPrefix(name, "assets/"):
 					c.Header("Cache-Control", "public, max-age=31536000, immutable")
+				// Hai tệp này quyết định ứng dụng đã cài chạy phiên bản nào; để
+				// trình duyệt giữ lại bản cũ nghĩa là một bản cập nhật panel không
+				// bao giờ tới được máy người dùng.
+				case name == "sw.js" || name == "manifest.webmanifest":
+					c.Header("Cache-Control", "no-cache")
 				}
 				fileServer.ServeHTTP(c.Writer, c.Request)
 				return

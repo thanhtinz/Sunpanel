@@ -1,6 +1,14 @@
 {
   "app": {
-    "tagline": "Server management panel"
+    "tagline": "Server management panel",
+    "install": "Install app",
+    "installed": "SunPanel installed as an app.",
+    "installHint": {
+      "ios": "On iPhone or iPad: tap the Share button in Safari, then choose \"Add to Home Screen\".",
+      "android": "On Android: open the browser menu and choose \"Install app\" or \"Add to Home screen\".",
+      "desktop": "On desktop: click the install icon at the end of the address bar, or open the browser menu and choose \"Install SunPanel\"."
+    },
+    "installNote": "Once installed, the panel opens in its own window with its own icon and keeps you signed in."
   },
   "common": {
     "save": "Save",

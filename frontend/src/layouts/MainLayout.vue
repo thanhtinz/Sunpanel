@@ -15,8 +15,11 @@ import {
   NSpace,
   NText,
   type MenuOption,
+  useMessage,
+  NModal,
 } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
+import { install, installPrompt, platform, standalone } from '@/pwa'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import { SUPPORTED_LOCALES, setLocale, type Locale } from '@/locales'
@@ -52,6 +55,7 @@ import BrandLogo from '@/components/BrandLogo.vue'
 import IconGlobe from '@/components/icons/IconGlobe.vue'
 
 const { t, locale } = useI18n()
+const message = useMessage()
 const auth = useAuthStore()
 const theme = useThemeStore()
 const route = useRoute()
@@ -170,6 +174,8 @@ const pageLead = computed(() => {
 
 const userMenuOptions = computed(() => [
   { label: t('nav.profile'), key: 'profile' },
+  // Đã chạy dạng ứng dụng rồi thì không mời cài nữa.
+  ...(standalone.value ? [] : [{ label: t('app.install'), key: 'install' }]),
   { type: 'divider', key: 'divider' },
   { label: t('nav.logout'), key: 'logout' },
 ])
@@ -189,7 +195,27 @@ async function handleUserMenu(key: string): Promise<void> {
     await router.push({ name: 'login' })
     return
   }
+  if (key === 'install') {
+    await installApp()
+    return
+  }
   await router.push({ name: key })
+}
+
+const installHelp = ref(false)
+
+/**
+ * Cài panel thành ứng dụng.
+ *
+ * Có sự kiện mời cài thì gọi thẳng hộp thoại của trình duyệt; không có thì chỉ
+ * còn cách hướng dẫn — và đó là trường hợp của mọi iPhone.
+ */
+async function installApp(): Promise<void> {
+  if (installPrompt.value) {
+    if (await install()) message.success(t('app.installed'))
+    return
+  }
+  installHelp.value = true
 }
 
 async function handleLanguage(key: string): Promise<void> {
@@ -297,6 +323,18 @@ function toggleTheme(): void {
   </NLayout>
 
   <CommandPalette ref="palette" />
+
+  <NModal
+    v-model:show="installHelp"
+    preset="card"
+    :title="t('app.install')"
+    style="width: 92vw; max-width: 460px"
+  >
+    <NSpace vertical :size="10">
+      <NText>{{ t(`app.installHint.${platform()}`) }}</NText>
+      <NText depth="3" style="font-size: 12px">{{ t('app.installNote') }}</NText>
+    </NSpace>
+  </NModal>
 
   <NDrawer v-model:show="drawerOpen" :width="260" placement="left">
     <NDrawerContent :native-scrollbar="false" body-content-style="padding: 0">

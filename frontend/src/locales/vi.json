@@ -1,6 +1,14 @@
 {
   "app": {
-    "tagline": "Bảng điều khiển quản trị máy chủ"
+    "tagline": "Bảng điều khiển quản trị máy chủ",
+    "install": "Cài ứng dụng",
+    "installed": "Đã cài SunPanel thành ứng dụng.",
+    "installHint": {
+      "ios": "Trên iPhone hoặc iPad: bấm nút Chia sẻ ở thanh dưới của Safari, rồi chọn \"Thêm vào MH chính\".",
+      "android": "Trên Android: mở menu ba chấm của trình duyệt rồi chọn \"Cài ứng dụng\" hoặc \"Thêm vào màn hình chính\".",
+      "desktop": "Trên máy tính: bấm biểu tượng cài ở cuối thanh địa chỉ, hoặc mở menu trình duyệt rồi chọn \"Cài SunPanel\"."
+    },
+    "installNote": "Sau khi cài, panel mở trong cửa sổ riêng, có biểu tượng riêng và giữ nguyên phiên đăng nhập."
   },
   "common": {
     "save": "Lưu",
