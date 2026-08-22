@@ -76,7 +76,7 @@ func (s *DatabaseService) ListServers(ctx context.Context) ([]ServerInfo, error)
 			if conn, err = server.Open(ctx); err == nil {
 				info.Online = true
 				info.Version, _ = server.Version(ctx, conn)
-				conn.Close()
+				_ = conn.Close()
 			}
 		}
 		if err != nil {
@@ -235,7 +235,7 @@ func (s *DatabaseService) probe(ctx context.Context, record model.DatabaseServer
 	if err != nil {
 		return apperr.DBConnectFailed.Wrap(err)
 	}
-	conn.Close()
+	_ = conn.Close()
 	return nil
 }
 
@@ -259,7 +259,7 @@ func (s *DatabaseService) ListDatabases(ctx context.Context, id uint) ([]dbx.Dat
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	list, err := server.ListDatabases(ctx, conn)
 	if err != nil {
@@ -274,7 +274,7 @@ func (s *DatabaseService) CreateDatabase(ctx context.Context, id uint, name stri
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	if err := server.CreateDatabase(ctx, conn, name); err != nil {
 		return translateDBError(err)
@@ -288,7 +288,7 @@ func (s *DatabaseService) DropDatabase(ctx context.Context, id uint, name string
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	if err := server.DropDatabase(ctx, conn, name); err != nil {
 		return translateDBError(err)
@@ -302,7 +302,7 @@ func (s *DatabaseService) ListTables(ctx context.Context, id uint, database stri
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	tables, err := server.ListTables(ctx, conn, database)
 	if err != nil {
@@ -317,7 +317,7 @@ func (s *DatabaseService) ListUsers(ctx context.Context, id uint) ([]dbx.UserInf
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	users, err := server.ListUsers(ctx, conn)
 	if err != nil {
@@ -342,7 +342,7 @@ func (s *DatabaseService) CreateUser(ctx context.Context, id uint, req DBUserReq
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	if err := server.CreateUser(ctx, conn, req.Name, req.Password, req.Database, req.Host); err != nil {
 		return translateDBError(err)
@@ -356,7 +356,7 @@ func (s *DatabaseService) DropUser(ctx context.Context, id uint, name, host stri
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	if err := server.DropUser(ctx, conn, name, host); err != nil {
 		return translateDBError(err)
@@ -370,7 +370,7 @@ func (s *DatabaseService) ChangePassword(ctx context.Context, id uint, req DBUse
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	if err := server.ChangePassword(ctx, conn, req.Name, req.Password, req.Host); err != nil {
 		return translateDBError(err)
@@ -387,7 +387,7 @@ func (s *DatabaseService) Query(ctx context.Context, id uint, database, statemen
 	if err != nil {
 		return dbx.QueryResult{}, err
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	// Câu lệnh trả về dòng dữ liệu và câu lệnh chỉ ghi cần hai đường xử lý khác
 	// nhau: Query trên một lệnh INSERT không cho biết số dòng bị ảnh hưởng.

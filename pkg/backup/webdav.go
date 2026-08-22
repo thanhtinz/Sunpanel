@@ -85,7 +85,7 @@ func (d *WebDAVDestination) Put(ctx context.Context, name string, r io.Reader, s
 	if err != nil {
 		return fmt.Errorf("tải tệp lên WebDAV: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	return expectOK(res, "tải tệp lên WebDAV")
 }
 
@@ -106,11 +106,11 @@ func (d *WebDAVDestination) Get(ctx context.Context, name string) (io.ReadCloser
 		return nil, fmt.Errorf("tải tệp từ WebDAV: %w", err)
 	}
 	if res.StatusCode == http.StatusNotFound {
-		res.Body.Close()
+		_ = res.Body.Close()
 		return nil, fmt.Errorf("%w: %s", ErrNotFound, name)
 	}
 	if err := expectOK(res, "tải tệp từ WebDAV"); err != nil {
-		res.Body.Close()
+		_ = res.Body.Close()
 		return nil, err
 	}
 	return res.Body, nil
@@ -154,7 +154,7 @@ func (d *WebDAVDestination) List(ctx context.Context) ([]Object, error) {
 	if err != nil {
 		return nil, fmt.Errorf("liệt kê tệp WebDAV: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if err := expectOK(res, "liệt kê tệp WebDAV"); err != nil {
 		return nil, err
 	}
@@ -213,7 +213,7 @@ func (d *WebDAVDestination) Delete(ctx context.Context, name string) error {
 	if err != nil {
 		return fmt.Errorf("xóa tệp WebDAV: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode == http.StatusNotFound {
 		return nil
 	}

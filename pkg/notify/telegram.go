@@ -67,21 +67,21 @@ func (c *telegramChannel) Send(ctx context.Context, message Message) error {
 		"parse_mode": "MarkdownV2",
 	})
 	if err != nil {
-		return fmt.Errorf("%w: dựng nội dung: %s", ErrSendFailed, err)
+		return fmt.Errorf("%w: dựng nội dung: %w", ErrSendFailed, err)
 	}
 
 	url := fmt.Sprintf("%s/bot%s/sendMessage", c.apiBase, c.token)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(payload))
 	if err != nil {
-		return fmt.Errorf("%w: dựng yêu cầu: %s", ErrSendFailed, err)
+		return fmt.Errorf("%w: dựng yêu cầu: %w", ErrSendFailed, err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	res, err := c.client.Do(req)
 	if err != nil {
-		return fmt.Errorf("%w: gọi Telegram: %s", ErrSendFailed, err)
+		return fmt.Errorf("%w: gọi Telegram: %w", ErrSendFailed, err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
 		// Telegram nói rõ vì sao trong thân phản hồi: sai token, sai chat, hoặc

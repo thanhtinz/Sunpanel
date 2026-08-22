@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -29,7 +30,9 @@ func ArchiveDirectory(ctx context.Context, source, target string, exclude []stri
 	if err != nil {
 		return 0, fmt.Errorf("tạo tệp nén: %w", err)
 	}
-	defer file.Close()
+	// Đóng lần cuối cho trường hợp thoát sớm; đường đi thành công đóng tường minh
+	// bên dưới và có kiểm lỗi, vì lỗi lúc đóng tệp ghi nghĩa là tệp nén cụt.
+	defer func() { _ = file.Close() }()
 
 	gzipWriter := gzip.NewWriter(file)
 	tarWriter := tar.NewWriter(gzipWriter)
@@ -83,7 +86,7 @@ func ArchiveDirectory(ctx context.Context, source, target string, exclude []stri
 		if err != nil {
 			return nil
 		}
-		defer source.Close()
+		defer func() { _ = source.Close() }()
 
 		if _, err := io.Copy(tarWriter, source); err != nil {
 			return fmt.Errorf("nén tệp %s: %w", relative, err)
@@ -91,8 +94,8 @@ func ArchiveDirectory(ctx context.Context, source, target string, exclude []stri
 		return nil
 	})
 	if walkErr != nil {
-		tarWriter.Close()
-		gzipWriter.Close()
+		_ = tarWriter.Close()
+		_ = gzipWriter.Close()
 		return 0, walkErr
 	}
 
@@ -106,6 +109,9 @@ func ArchiveDirectory(ctx context.Context, source, target string, exclude []stri
 	written, err := file.Stat()
 	if err != nil {
 		return 0, fmt.Errorf("đọc kích thước tệp nén: %w", err)
+	}
+	if err := file.Close(); err != nil {
+		return 0, fmt.Errorf("đóng tệp nén: %w", err)
 	}
 	return written.Size(), nil
 }
@@ -136,7 +142,7 @@ func ExtractArchive(ctx context.Context, r io.Reader, target string) error {
 	if err != nil {
 		return fmt.Errorf("mở luồng nén: %w", err)
 	}
-	defer gzipReader.Close()
+	defer func() { _ = gzipReader.Close() }()
 
 	tarReader := tar.NewReader(gzipReader)
 	for {
@@ -147,7 +153,7 @@ func ExtractArchive(ctx context.Context, r io.Reader, target string) error {
 		}
 
 		header, err := tarReader.Next()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			return nil
 		}
 		if err != nil {
@@ -159,9 +165,13 @@ func ExtractArchive(ctx context.Context, r io.Reader, target string) error {
 			return err
 		}
 
+		// Quyền trong tệp nén là số do bên tạo tệp ghi vào, không phải thứ đáng
+		// tin: giữ lại đúng phần quyền và bỏ mọi bit thừa.
+		mode := os.FileMode(header.Mode & 0o7777)
+
 		switch header.Typeflag {
 		case tar.TypeDir:
-			if err := os.MkdirAll(path, os.FileMode(header.Mode)); err != nil {
+			if err := os.MkdirAll(path, mode); err != nil {
 				return fmt.Errorf("tạo thư mục: %w", err)
 			}
 		case tar.TypeSymlink:
@@ -172,15 +182,24 @@ func ExtractArchive(ctx context.Context, r io.Reader, target string) error {
 			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 				return fmt.Errorf("tạo thư mục cha: %w", err)
 			}
-			file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.FileMode(header.Mode))
+			file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, mode)
 			if err != nil {
 				return fmt.Errorf("tạo tệp: %w", err)
 			}
-			if _, err := io.Copy(file, tarReader); err != nil {
-				file.Close()
+			// Chỉ ghi đúng số byte tệp nén khai báo. Chép không giới hạn nghĩa là
+			// một tệp nén dựng sẵn có thể bung ra tới khi đầy đĩa.
+			written, err := io.CopyN(file, tarReader, header.Size)
+			if err != nil && !errors.Is(err, io.EOF) {
+				_ = file.Close()
 				return fmt.Errorf("ghi tệp: %w", err)
 			}
-			file.Close()
+			if written != header.Size {
+				_ = file.Close()
+				return fmt.Errorf("tệp %s trong bản nén bị cụt", header.Name)
+			}
+			if err := file.Close(); err != nil {
+				return fmt.Errorf("đóng tệp vừa giải nén: %w", err)
+			}
 		}
 	}
 }

@@ -73,12 +73,12 @@ func (c *webhookChannel) Send(ctx context.Context, message Message) error {
 		"text": message.PlainText(),
 	})
 	if err != nil {
-		return fmt.Errorf("%w: dựng nội dung: %s", ErrSendFailed, err)
+		return fmt.Errorf("%w: dựng nội dung: %w", ErrSendFailed, err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, c.method, c.url, bytes.NewReader(payload))
 	if err != nil {
-		return fmt.Errorf("%w: dựng yêu cầu: %s", ErrSendFailed, err)
+		return fmt.Errorf("%w: dựng yêu cầu: %w", ErrSendFailed, err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	for name, value := range c.headers {
@@ -87,9 +87,9 @@ func (c *webhookChannel) Send(ctx context.Context, message Message) error {
 
 	res, err := c.client.Do(req)
 	if err != nil {
-		return fmt.Errorf("%w: gọi webhook: %s", ErrSendFailed, err)
+		return fmt.Errorf("%w: gọi webhook: %w", ErrSendFailed, err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
 		detail, _ := io.ReadAll(io.LimitReader(res.Body, 1000))

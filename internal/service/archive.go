@@ -8,7 +8,6 @@ import (
 	"errors"
 	"io"
 	"io/fs"
-	"os"
 	"path"
 	"strings"
 
@@ -266,7 +265,7 @@ type hostSink struct {
 }
 
 func (h *hostSink) Dir(ctx context.Context, name string, mode fs.FileMode) error {
-	return translateFSError(h.fs.Mkdir(ctx, path.Join(h.dir, name), os.FileMode(mode)))
+	return translateFSError(h.fs.Mkdir(ctx, path.Join(h.dir, name), mode))
 }
 
 func (h *hostSink) File(ctx context.Context, name string, mode fs.FileMode, r io.Reader) error {
@@ -274,7 +273,7 @@ func (h *hostSink) File(ctx context.Context, name string, mode fs.FileMode, r io
 	if err := h.fs.Mkdir(ctx, path.Dir(target), 0o755); err != nil {
 		return translateFSError(err)
 	}
-	return translateFSError(h.fs.Write(ctx, target, r, os.FileMode(mode)))
+	return translateFSError(h.fs.Write(ctx, target, r, mode))
 }
 
 // translateArchiveError đổi lỗi của gói archive sang mã lỗi giao diện dịch được.

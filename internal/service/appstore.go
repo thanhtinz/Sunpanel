@@ -77,7 +77,7 @@ func NewAppStoreService(
 	}
 }
 
-// Status là tình trạng của công cụ compose trên máy chủ.
+// ComposeStatus là tình trạng của công cụ compose trên máy chủ.
 type ComposeStatus struct {
 	Available bool   `json:"available"`
 	Version   string `json:"version"`

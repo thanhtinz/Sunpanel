@@ -110,7 +110,7 @@ func (d *S3Destination) Put(ctx context.Context, name string, r io.Reader, size 
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	return expectOK(res, "tải tệp lên S3")
 }
 
@@ -126,11 +126,11 @@ func (d *S3Destination) Get(ctx context.Context, name string) (io.ReadCloser, er
 		return nil, err
 	}
 	if res.StatusCode == http.StatusNotFound {
-		res.Body.Close()
+		_ = res.Body.Close()
 		return nil, fmt.Errorf("%w: %s", ErrNotFound, name)
 	}
 	if err := expectOK(res, "tải tệp từ S3"); err != nil {
-		res.Body.Close()
+		_ = res.Body.Close()
 		return nil, err
 	}
 	return res.Body, nil
@@ -168,13 +168,13 @@ func (d *S3Destination) List(ctx context.Context) ([]Object, error) {
 			return nil, err
 		}
 		if err := expectOK(res, "liệt kê tệp trên S3"); err != nil {
-			res.Body.Close()
+			_ = res.Body.Close()
 			return nil, err
 		}
 
 		var parsed listBucketResult
 		err = xml.NewDecoder(res.Body).Decode(&parsed)
-		res.Body.Close()
+		_ = res.Body.Close()
 		if err != nil {
 			return nil, fmt.Errorf("đọc danh sách tệp S3: %w", err)
 		}
@@ -210,7 +210,7 @@ func (d *S3Destination) Delete(ctx context.Context, name string) error {
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	// S3 trả 204 khi xóa xong, và cũng trả 204 khi tệp vốn không tồn tại.
 	return expectOK(res, "xóa tệp trên S3")
 }

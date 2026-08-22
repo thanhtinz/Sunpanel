@@ -147,7 +147,7 @@ func (s Server) Open(ctx context.Context) (*sql.DB, error) {
 	ctx, cancel := context.WithTimeout(ctx, connectTimeout)
 	defer cancel()
 	if err := db.PingContext(ctx); err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, fmt.Errorf("kết nối tới máy chủ: %w", err)
 	}
 	return db, nil

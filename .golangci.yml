@@ -26,6 +26,25 @@ linters:
         # (host.SafeJoin và allowlist của host.Exec) đã có test riêng.
         - G204
         - G304
+        # Cùng lý do, nhưng là các quy tắc lần theo dòng dữ liệu: mọi đường dẫn,
+        # lệnh và địa chỉ đều do quản trị viên đã đăng nhập nhập vào.
+        - G702
+        - G703
+        - G704
+        # Tên hằng chứa "token", "key" bị nhận nhầm là mật khẩu ghi cứng. Đó là
+        # tên khóa header và khóa context, không phải giá trị bí mật nào.
+        - G101
+        # Quyền tệp là lựa chọn có chủ ý ở từng chỗ và đã ghi rõ lý do tại nơi
+        # dùng: cấu hình nginx và chứng chỉ công khai phải đọc được, còn khóa
+        # riêng và cơ sở dữ liệu thì luôn 0600.
+        - G301
+        - G306
+        # Bỏ qua kiểm chứng chỉ là tùy chọn quản trị viên tự bật cho máy chủ SMTP
+        # hoặc agent dùng chứng chỉ tự ký, mặc định luôn tắt.
+        - G402
+        # Duyệt cây thư mục để nén: chỉ đọc, và tệp không phải tệp thường bị bỏ
+        # qua nên không có đường đi theo liên kết tượng trưng.
+        - G122
     revive:
       rules:
         - name: exported

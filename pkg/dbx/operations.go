@@ -98,7 +98,7 @@ func (s Server) listMySQLDatabases(ctx context.Context, db *sql.DB) ([]DatabaseI
 	if err != nil {
 		return nil, fmt.Errorf("liệt kê cơ sở dữ liệu: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var out []DatabaseInfo
 	for rows.Next() {
@@ -127,7 +127,7 @@ func (s Server) listPostgresDatabases(ctx context.Context, db *sql.DB) ([]Databa
 	if err != nil {
 		return nil, fmt.Errorf("liệt kê cơ sở dữ liệu: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var out []DatabaseInfo
 	for rows.Next() {
@@ -147,8 +147,11 @@ func (s Server) CreateDatabase(ctx context.Context, db *sql.DB, name string) err
 		return err
 	}
 
+	// Tên đã qua ValidateIdentifier rồi mới được trích dẫn theo đúng cú pháp của
+	// từng loại máy chủ; CREATE DATABASE không nhận tham số nên nối chuỗi là cách
+	// duy nhất.
 	quoted := s.quoteIdentifier(name)
-	query := "CREATE DATABASE " + quoted
+	query := "CREATE DATABASE " + quoted //nolint:gosec
 	if s.Kind == MySQL {
 		// utf8mb4 là bộ mã duy nhất của MySQL chứa đủ tiếng Việt lẫn biểu tượng
 		// cảm xúc; utf8 của MySQL chỉ có 3 byte và cắt mất chúng.
@@ -187,7 +190,7 @@ func (s Server) ListUsers(ctx context.Context, db *sql.DB) ([]UserInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("liệt kê tài khoản: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var out []UserInfo
 	for rows.Next() {
@@ -300,7 +303,7 @@ func (s Server) grantPostgresSchema(ctx context.Context, name, database string) 
 	if err != nil {
 		return fmt.Errorf("kết nối vào %s để cấp quyền schema: %w", database, err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	statements := []string{
 		fmt.Sprintf("GRANT ALL ON SCHEMA public TO %s", s.quoteIdentifier(name)),
@@ -438,7 +441,7 @@ func (s Server) ListTables(ctx context.Context, db *sql.DB, database string) ([]
 	if err != nil {
 		return nil, fmt.Errorf("liệt kê bảng: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var out []TableInfo
 	for rows.Next() {
@@ -468,7 +471,7 @@ func (s Server) Query(ctx context.Context, db *sql.DB, statement string) (QueryR
 	if err != nil {
 		return QueryResult{}, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	columns, err := rows.Columns()
 	if err != nil {

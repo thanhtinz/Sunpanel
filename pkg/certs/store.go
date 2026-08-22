@@ -194,7 +194,7 @@ func Parse(certPEM []byte) (Info, error) {
 
 	cert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
-		return Info{}, fmt.Errorf("%w: %s", ErrInvalidCertificate, err)
+		return Info{}, fmt.Errorf("%w: %w", ErrInvalidCertificate, err)
 	}
 
 	ips := make([]string, 0, len(cert.IPAddresses))
@@ -223,7 +223,7 @@ func Parse(certPEM []byte) (Info, error) {
 }
 
 func issuerName(cert *x509.Certificate) string {
-	if cert.Issuer.Organization != nil && len(cert.Issuer.Organization) > 0 {
+	if len(cert.Issuer.Organization) > 0 {
 		return strings.Join(cert.Issuer.Organization, ", ")
 	}
 	if cert.Issuer.CommonName != "" {

@@ -111,11 +111,13 @@ func (h *RemoteHost) call(ctx context.Context, path string, payload, out any) er
 	if err != nil {
 		return fmt.Errorf("gọi agent %s: %w", h.Name(), err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
 		var failure ErrorResponse
-		json.NewDecoder(io.LimitReader(res.Body, 8000)).Decode(&failure)
+		// Agent có thể trả về thứ không phải JSON; đã có mã trạng thái làm nội
+		// dung thay thế bên dưới.
+		_ = json.NewDecoder(io.LimitReader(res.Body, 8000)).Decode(&failure)
 		if failure.Error == "" {
 			failure.Error = res.Status
 		}

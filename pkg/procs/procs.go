@@ -79,7 +79,9 @@ type sample struct {
 
 // NewSampler tạo bộ lấy mẫu tiến trình.
 func NewSampler() *Sampler {
-	return &Sampler{last: make(map[int32]sample), self: int32(os.Getpid())}
+	// PID nằm gọn trong int32 trên mọi nền tảng panel chạy; đây là số của chính
+	// tiến trình này, không phải dữ liệu bên ngoài.
+	return &Sampler{last: make(map[int32]sample), self: int32(os.Getpid())} //nolint:gosec
 }
 
 // protected cho biết tiến trình có được phép kết thúc từ giao diện hay không.

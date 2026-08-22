@@ -119,16 +119,16 @@ func (d *LocalDestination) Put(_ context.Context, name string, r io.Reader, _ in
 	}
 
 	if _, err := io.Copy(file, r); err != nil {
-		file.Close()
-		os.Remove(temp)
+		_ = file.Close()
+		_ = os.Remove(temp)
 		return fmt.Errorf("ghi tệp sao lưu: %w", err)
 	}
 	if err := file.Close(); err != nil {
-		os.Remove(temp)
+		_ = os.Remove(temp)
 		return fmt.Errorf("đóng tệp sao lưu: %w", err)
 	}
 	if err := os.Rename(temp, target); err != nil {
-		os.Remove(temp)
+		_ = os.Remove(temp)
 		return fmt.Errorf("đổi tên tệp sao lưu: %w", err)
 	}
 	return nil

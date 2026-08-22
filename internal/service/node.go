@@ -224,7 +224,7 @@ func (s *NodeService) forget(id uint) {
 	defer s.mu.Unlock()
 
 	if remote, ok := s.hosts[id]; ok {
-		remote.Close()
+		_ = remote.Close()
 		delete(s.hosts, id)
 	}
 }
@@ -346,7 +346,7 @@ func (s *NodeService) probe(ctx context.Context, record model.Node) error {
 		Name: record.Name, BaseURL: record.Address,
 		Token: token, SkipVerify: record.SkipVerify,
 	})
-	defer remote.Close()
+	defer func() { _ = remote.Close() }()
 
 	ctx, cancel := context.WithTimeout(ctx, nodeProbeTimeout)
 	defer cancel()

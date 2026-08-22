@@ -94,7 +94,7 @@ func (s *PluginService) proxyFor(manifest plugin.Manifest) (*httputil.ReversePro
 	proxy.ErrorHandler = func(w http.ResponseWriter, _ *http.Request, err error) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusBadGateway)
-		fmt.Fprintf(w, `{"success":false,"code":"plugin.unreachable","params":{"plugin":%q,"message":%q}}`,
+		_, _ = fmt.Fprintf(w, `{"success":false,"code":"plugin.unreachable","params":{"plugin":%q,"message":%q}}`,
 			manifest.Key, err.Error())
 	}
 

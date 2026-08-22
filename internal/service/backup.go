@@ -528,8 +528,10 @@ func (s *BackupService) perform(
 	}
 	tempPath := temp.Name()
 	defer func() {
-		temp.Close()
-		os.Remove(tempPath)
+		// Tệp có thể đã được đóng ở nhánh thư mục; đóng lần nữa chỉ trả lỗi vô
+		// hại, còn xóa thì luôn cần vì bản sao lưu đã tải lên xong.
+		_ = temp.Close()
+		_ = os.Remove(tempPath)
 	}()
 
 	stamp := time.Now().Format("20060102-150405")
@@ -537,9 +539,16 @@ func (s *BackupService) perform(
 	case BackupSourceDatabase:
 		object = fmt.Sprintf("%s-%s-%s.sql.gz", plan.Name, plan.Database, stamp)
 		size, err = s.dumpDatabase(ctx, plan, temp)
+		if err == nil {
+			// Đóng trước khi mở lại để đọc: lỗi lúc đóng nghĩa là bản kết xuất
+			// cụt, mà tải một bản cụt lên còn tệ hơn báo hỏng ngay.
+			if closeErr := temp.Close(); closeErr != nil {
+				err = fmt.Errorf("đóng tệp sao lưu tạm: %w", closeErr)
+			}
+		}
 	case BackupSourceDirectory:
 		object = fmt.Sprintf("%s-%s.tar.gz", plan.Name, stamp)
-		temp.Close()
+		_ = temp.Close()
 		size, err = backup.ArchiveDirectory(ctx, plan.Path, tempPath, splitList(plan.Exclude))
 	default:
 		err = apperr.BackupInvalidConfig.WithParam("field", "source")
@@ -555,7 +564,7 @@ func (s *BackupService) perform(
 	if err != nil {
 		return "", 0, nil, fmt.Errorf("mở tệp sao lưu tạm: %w", err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	if err := destination.Put(ctx, object, file, size); err != nil {
 		return "", 0, nil, err
@@ -589,7 +598,7 @@ func (s *BackupService) dumpDatabase(ctx context.Context, plan model.BackupPlan,
 
 	gzipWriter := newGzipWriter(w)
 	if err := server.Dump(ctx, plan.Database, gzipWriter); err != nil {
-		gzipWriter.Close()
+		_ = gzipWriter.Close()
 		return 0, err
 	}
 	if err := gzipWriter.Close(); err != nil {
@@ -663,7 +672,7 @@ func (s *BackupService) Restore(ctx context.Context, id uint, object, target str
 		}
 		return apperr.BackupDestinationFailed.WithParam("message", trimMessage(err.Error()))
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	switch plan.Source {
 	case BackupSourceDatabase:
@@ -698,7 +707,7 @@ func (s *BackupService) restoreDatabase(
 	if err != nil {
 		return apperr.BackupRestoreFailed.WithParam("message", trimMessage(err.Error()))
 	}
-	defer gzipReader.Close()
+	defer func() { _ = gzipReader.Close() }()
 
 	if err := server.Restore(ctx, database, gzipReader); err != nil {
 		return apperr.BackupRestoreFailed.WithParam("message", trimMessage(err.Error()))

@@ -152,7 +152,7 @@ func (s *Server) handleFS(w http.ResponseWriter, r *http.Request) error {
 		if err != nil {
 			return fsError(w, err)
 		}
-		defer reader.Close()
+		defer func() { _ = reader.Close() }()
 
 		content, err := io.ReadAll(io.LimitReader(reader, maxRequestSize))
 		if err != nil {
@@ -227,5 +227,6 @@ func writeJSON(w http.ResponseWriter, payload any) error {
 func writeError(w http.ResponseWriter, status int, message string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(ErrorResponse{Error: message})
+	// Tiêu đề đã gửi đi rồi; nếu ghi thân hỏng thì cũng không sửa được nữa.
+	_ = json.NewEncoder(w).Encode(ErrorResponse{Error: message})
 }

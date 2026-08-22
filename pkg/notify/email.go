@@ -85,22 +85,24 @@ func (c *emailChannel) Send(ctx context.Context, message Message) error {
 		conn, err = dialer.DialContext(ctx, "tcp", address)
 	}
 	if err != nil {
-		return fmt.Errorf("%w: kết nối SMTP: %s", ErrSendFailed, err)
+		return fmt.Errorf("%w: kết nối SMTP: %w", ErrSendFailed, err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	client, err := smtp.NewClient(conn, c.host)
 	if err != nil {
-		return fmt.Errorf("%w: bắt tay SMTP: %s", ErrSendFailed, err)
+		return fmt.Errorf("%w: bắt tay SMTP: %w", ErrSendFailed, err)
 	}
-	defer client.Quit()
+	// Quit chỉ là lời chào tạm biệt với máy chủ SMTP; thư đã gửi xong trước đó
+	// nên lỗi ở đây không đổi được kết quả.
+	defer func() { _ = client.Quit() }()
 
 	// STARTTLS nâng cấp kết nối đang mở lên TLS. Không có nó thì mật khẩu SMTP
 	// đi qua mạng ở dạng rõ.
 	if !c.useTLS {
 		if ok, _ := client.Extension("STARTTLS"); ok {
 			if err := client.StartTLS(c.tlsConfig()); err != nil {
-				return fmt.Errorf("%w: bật STARTTLS: %s", ErrSendFailed, err)
+				return fmt.Errorf("%w: bật STARTTLS: %w", ErrSendFailed, err)
 			}
 		}
 	}
@@ -108,29 +110,29 @@ func (c *emailChannel) Send(ctx context.Context, message Message) error {
 	if c.username != "" {
 		auth := smtp.PlainAuth("", c.username, c.password, c.host)
 		if err := client.Auth(auth); err != nil {
-			return fmt.Errorf("%w: đăng nhập SMTP: %s", ErrSendFailed, err)
+			return fmt.Errorf("%w: đăng nhập SMTP: %w", ErrSendFailed, err)
 		}
 	}
 
 	if err := client.Mail(c.from); err != nil {
-		return fmt.Errorf("%w: đặt người gửi: %s", ErrSendFailed, err)
+		return fmt.Errorf("%w: đặt người gửi: %w", ErrSendFailed, err)
 	}
 	for _, recipient := range c.to {
 		if err := client.Rcpt(recipient); err != nil {
-			return fmt.Errorf("%w: đặt người nhận %s: %s", ErrSendFailed, recipient, err)
+			return fmt.Errorf("%w: đặt người nhận %s: %w", ErrSendFailed, recipient, err)
 		}
 	}
 
 	writer, err := client.Data()
 	if err != nil {
-		return fmt.Errorf("%w: mở luồng dữ liệu: %s", ErrSendFailed, err)
+		return fmt.Errorf("%w: mở luồng dữ liệu: %w", ErrSendFailed, err)
 	}
 	if _, err := writer.Write([]byte(c.compose(message))); err != nil {
-		writer.Close()
-		return fmt.Errorf("%w: ghi nội dung: %s", ErrSendFailed, err)
+		_ = writer.Close()
+		return fmt.Errorf("%w: ghi nội dung: %w", ErrSendFailed, err)
 	}
 	if err := writer.Close(); err != nil {
-		return fmt.Errorf("%w: kết thúc nội dung: %s", ErrSendFailed, err)
+		return fmt.Errorf("%w: kết thúc nội dung: %w", ErrSendFailed, err)
 	}
 	return nil
 }
